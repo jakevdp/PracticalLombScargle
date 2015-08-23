@@ -1,0 +1,190 @@
+\documentclass[preprint]{aastex}
+%\documentclass{emulateapj}
+
+
+% has to be before amssymb it seems
+%\usepackage{color,hyperref}
+%\definecolor{linkcolor}{rgb}{0,0,0.5}
+%\hypersetup{colorlinks=true,linkcolor=linkcolor,citecolor=linkcolor,
+%            filecolor=linkcolor,urlcolor=linkcolor}
+%\usepackage{amssymb,amsmath}
+
+\usepackage{color}
+\usepackage{url}
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+
+% For Python code
+\usepackage{listings}
+\definecolor{lbcolor}{rgb}{0.9,0.9,0.9}
+\lstset{language=Python,
+        basicstyle=\footnotesize\ttfamily,
+        showspaces=false,
+        showstringspaces=false,
+        tabsize=2,
+        breaklines=false,
+        breakatwhitespace=true,
+        identifierstyle=\ttfamily,
+        keywordstyle=\bfseries\color[rgb]{0.133,0.545,0.133},
+        commentstyle=\color[rgb]{0.133,0.545,0.133},
+        stringstyle=\color[rgb]{0.627,0.126,0.941},
+    }
+
+% Draft watermark:
+%\usepackage{draftwatermark}
+%\SetWatermarkLightness{0.9}
+%\SetWatermarkScale{4}
+
+% Some macros
+\newcommand{\todo}[1]{{\color{red} [TODO: #1]}}
+\newcommand{\foreign}[1]{{\it #1}}
+
+\newcommand{\apriori}{\foreign{a priori}}
+\newcommand{\adhoc}{\foreign{ad hoc}}
+\newcommand{\etal}{\foreign{et\,al.}}
+\newcommand{\etc}{\foreign{etc.}}
+
+\newcommand{\Fig}[1]{Figure~\ref{fig:#1}}
+\newcommand{\fig}[1]{\Fig{#1}}
+\newcommand{\figlabel}[1]{\label{fig:#1}}
+\newcommand{\Eq}[1]{Equation~(\ref{eq:#1})}
+\newcommand{\eq}[1]{\Eq{#1}}
+\newcommand{\eqs}[2]{Equations~(\ref{eq:#1})-(\ref{eq:#2})}
+\newcommand{\eqlabel}[1]{\label{eq:#1}}
+\newcommand{\Sect}[1]{Section~\ref{sect:#1}}
+\newcommand{\sect}[1]{\Sect{#1}}
+\newcommand{\sects}[1]{Sections~#1}
+\newcommand{\App}[1]{Appendix~\ref{sect:#1}}
+\newcommand{\app}[1]{\App{#1}}
+\newcommand{\sectlabel}[1]{\label{sect:#1}}
+
+\usepackage[normalem]{ulem}
+\newcommand{\new}[1]{{\color{red} #1}}
+\newcommand{\old}[1]{{\sout{#1}}}
+
+
+\begin{document}
+
+\title{Practical Considerations for Lomb-Scargle Periodic Analysis}
+
+\newcommand{\escience}{1}
+\newcommand{\uwastro}{2}
+\author{Jacob T. VanderPlas\altaffilmark{\escience}}
+\altaffiltext{\escience}{eScience Institute, University of Washington}
+
+
+\begin{abstract}
+An introduction to practical aspects of the use of Lomb-Scargle-type algorithms for periodic analysis.
+\end{abstract}
+
+\keywords{
+    methods: data analysis ---
+    methods: statistical
+}
+
+\section{Introduction}
+\sectlabel{introduction}
+
+\todo{Quick motivating example with code \& figures}
+
+
+\section{Measuring Periods in Continuous Signals}
+
+Continuous signal $g(t)$:
+
+\begin{equation}
+  \hat{g}(\omega) = \int_{-\infty}^\infty g(t) e^{-2\pi i \nu t} dt
+\end{equation}
+
+We can denote this
+
+\begin{equation}
+  \hat{g} = \mathcal{F}\left\{g\right\}
+\end{equation}
+
+\subsection{Important Properties of the CFT}
+
+\subsubsection{Linearity}
+The Fourier Transform is a linear operation, meaning that for two functions $f(t)$ and $g(t)$ and a scalar value $A$,
+
+\begin{eqnarray}
+  \mathcal{F}\{g + h\} &=& \mathcal{F}\{g\} + \mathcal{F}\{h\}\\
+  \mathcal{F}\{A g\} &=& A\mathcal{F}\{g\}
+\end{eqnarray}
+
+These properties follow straightforwardly from the linearity of the Fourier transform definition.
+
+\subsubsection{The Convolution Theorem}
+
+The Fourier transform is central to an identity known as {\it the convolution theorem}.
+The convolution of two functions $g(t)$ and $h(t)$ is itself a function of $t$, denoted $\{g \ast h\}(t)$, and is defined as
+
+\begin{equation}
+  \{g \ast h\}(t) = \int_{-\infty}^\infty g(t - \tau) h(\tau) d\tau
+\end{equation}
+
+The convolution theorem states that the Fourier transform of a convolution is equal to the product of Fourier transforms; that is,
+
+\begin{equation}
+  \mathcal{F}\{g \ast h\} = \mathcal{F}\{g\}\mathcal{F}\{h\}
+\end{equation}
+
+This property can also be shown (relatively) straightforwardly from the convolution and Fourier transform definitions.
+
+A particularly special function in the complex exponential, $e^{2\pi i\nu_0 t}$, which has the Fourier transform $\mathcal{F}\{e^{2\pi i\nu_0 t}\} = \delta(\nu - \nu_0)$, which follows directly from the definition of the Dirac delta function:
+
+\begin{equation}
+  \delta(\nu) \equiv \int_{-\infty}^\infty e^{-2\pi i\nu t}dt
+\end{equation}
+
+This is the sense in which a Fourier power is an ideal measure of periodicity: the Fourier transform of a pure periodic signal is a single localized spike identifying its frequency.
+
+\subsection{Fourier Power}
+
+\todo{talk about offsets and phase-shifts?}
+
+With this in mind, we can define the Fourier power,
+
+\begin{equation}
+  P(\nu) = \left|\hat{g}(\nu)\right|^2,
+\end{equation}
+
+which measures the (real) squared-magnitude of the (complex) Fourier transform.
+
+\todo{Some examples of functions, their transforms, and their power.}
+
+\todo{convolution function and windowing}
+
+
+\subsection{Evenly-Spaced Discrete Data: the Schuster Periodogram}
+
+\todo{Evenly-spaced delta functions $\to$ evenly-spaced delta in frequency, separated by nyquist}
+
+\subsection{Unevenly-Spaced Discrete Data: the Lomb-Scargle Periodogram}
+
+\todo{Unevenly-spaced delta functions: no cancelations, and so window is generally {\it infinitely} wide.}
+
+\todo{Least-squares equivalence of Lomb-Scargle}
+
+\section{What Frequency Grid to Use?}
+
+\todo{Follow discussion from gatspy documentation}
+
+\section{Reporting errors in Frequency: Uncertainty vs. Precision}
+
+\todo{Talk about peak width and False Alarm Probability; recommend bootstrap (show example of when analytic FAP fails?)}
+
+\section{Algorithmic Considerations}
+
+\todo{Talk about Press \& Rybicki method; show some benchmarks.}
+
+\section{Generalizations \& Challenges}
+
+\todo{Multiterm makes the true period fit better, but also bumps the background noise.}
+
+\citet{VanderPlas2015}
+
+\bibliographystyle{apj}
+\bibliography{paper}
+
+\end{document}
