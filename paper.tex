@@ -85,10 +85,12 @@ An introduction to practical aspects of the use of Lomb-Scargle-type algorithms 
 \section{Introduction}
 \sectlabel{introduction}
 
-\todo{Quick motivating example with code \& figures}
+[Quick motivating example with figures: RR Lyrae star from LINEAR?]
 
 
 \section{Measuring Periods in Continuous Signals}
+
+[Perhaps put this info in an appendix?]
 
 Continuous signal $g(t)$:
 
@@ -131,56 +133,84 @@ The convolution theorem states that the Fourier transform of a convolution is eq
 
 This property can also be shown (relatively) straightforwardly from the convolution and Fourier transform definitions.
 
-A particularly special function in the complex exponential, $e^{2\pi i\nu_0 t}$, which has the Fourier transform $\mathcal{F}\{e^{2\pi i\nu_0 t}\} = \delta(\nu - \nu_0)$, which follows directly from the definition of the Dirac delta function:
+\subsubsection{Fourier Transform and Periodic Functions}
+
+A particularly special function in the complex exponential, $e^{2\pi i\nu_0 t} \equiv \cos(2\pi \nu_0 t) + i\sin(2\pi\nu_0 t)$, which has the Fourier transform $\mathcal{F}\{e^{2\pi i\nu_0 t}\} = \delta(\nu - \nu_0)$, which follows directly from the definition of the Dirac delta function:
 
 \begin{equation}
   \delta(\nu) \equiv \int_{-\infty}^\infty e^{-2\pi i\nu t}dt
 \end{equation}
 
-This is the sense in which a Fourier power is an ideal measure of periodicity: the Fourier transform of a pure periodic signal is a single localized spike identifying its frequency.
+Similarly, if we have a signal composed of a sum of complex exponentials, the linearity of the Fourier transform assures that the transform is simply a sum of delta functions:
+\begin{equation}
+  \mathcal{F}\left\{ \sum_{n=1}^N e^{-2\pi i \nu_n t} \right\} = \sum_{n=1}^N \delta(\nu - \nu_n)
+\end{equation}
+This result shows the sense in which a Fourier transform is an ideal measure of periodicity: the Fourier transform pulls-out and identifies the individual periodic components of any input.
 
 \subsection{Fourier Power}
 
-\todo{talk about offsets and phase-shifts?}
-
-With this in mind, we can define the Fourier power,
-
+Using the above definitions, it is straightforward to show that a time-offset in a function leads to a multiplicative phase in the Fourier transform; that is, if
 \begin{equation}
-  P(\nu) = \left|\hat{g}(\nu)\right|^2,
+  g_\tau(t) \equiv g(t - \tau)
 \end{equation}
+then 
+\begin{equation}
+  \mathcal{F}\{g_\tau\} = e^{-2\pi i \nu \tau}\mathcal{F}\{g\}
+\end{equation}
+Because the phase merely represents the chosen coordinate system, we'd like to remove it for spectral analysis.
+One way to do this is to compute the power spectral density, which is proportional to \todo{const of proportionality?} the squared modulus of the Fourier Transform:
+\begin{equation}
+  P\{g\} \propto \left| \mathcal{F}\{g\} \right|^2.
+\end{equation}
+Because the modulus of a phase is equal to unity, the resulting measure is unchanged under time-translations in $g(t)$.
 
-which measures the (real) squared-magnitude of the (complex) Fourier transform.
+\begin{itemize}
+\item Some examples of functions, their transforms, and their power.
+\end{itemize}
 
-\todo{Some examples of functions, their transforms, and their power.}
+\subsection{Effect of Window Functions}
 
-\todo{convolution function and windowing}
-
+\begin{itemize}
+\item convolution function and windowing
+\end{itemize}
 
 \subsection{Evenly-Spaced Discrete Data: the Schuster Periodogram}
 
-\todo{Evenly-spaced delta functions $\to$ evenly-spaced delta in frequency, separated by nyquist}
+\begin{itemize}
+\item Evenly-spaced delta functions $\to$ evenly-spaced delta in frequency, separated by nyquist
+\end{itemize}
 
 \subsection{Unevenly-Spaced Discrete Data: the Lomb-Scargle Periodogram}
 
-\todo{Unevenly-spaced delta functions: no cancelations, and so window is generally {\it infinitely} wide.}
 
-\todo{Least-squares equivalence of Lomb-Scargle}
+\begin{itemize}
+\item Unevenly-spaced delta functions: no cancelations, and so window is generally {\it infinitely} wide.
+\item Least-squares equivalence of Lomb-Scargle
+\end{itemize}
 
 \section{What Frequency Grid to Use?}
 
-\todo{Follow discussion from gatspy documentation}
+\begin{itemize}
+\item Follow discussion from gatspy documentation
+\end{itemize}
 
 \section{Reporting errors in Frequency: Uncertainty vs. Precision}
 
-\todo{Talk about peak width and False Alarm Probability; recommend bootstrap (show example of when analytic FAP fails?)}
+\begin{itemize}
+\item Talk about peak width and False Alarm Probability; recommend bootstrap (show example of when analytic FAP fails?)
+\end{itemize}
 
 \section{Algorithmic Considerations}
 
-\todo{Talk about Press \& Rybicki method; show some benchmarks.}
+\begin{itemize}
+\item Talk about Press \& Rybicki method; show some benchmarks.
+\end{itemize}
 
 \section{Generalizations \& Challenges}
 
-\todo{Multiterm makes the true period fit better, but also bumps the background noise.}
+\begin{itemize}
+\item Multiterm makes the true period fit better, but also bumps the background noise.
+\end{itemize}
 
 \citet{VanderPlas2015}
 
