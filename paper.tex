@@ -133,7 +133,11 @@ The convolution theorem states that the Fourier transform of a convolution is eq
 
 This property can also be shown (relatively) straightforwardly from the convolution and Fourier transform definitions.
 
-\subsubsection{Fourier Transform and Periodic Functions}
+\subsubsection{$\mathcal{F}$ of a Gaussian is a Gaussian}
+One of the special functions under a Fourier transform is the Gaussian distribution, which is proportional to
+
+
+\subsubsection{$\mathcal{F}$ of a Periodic Function is a Delta Function}
 
 A particularly special function in the complex exponential, $e^{2\pi i\nu_0 t} \equiv \cos(2\pi \nu_0 t) + i\sin(2\pi\nu_0 t)$, which has the Fourier transform $\mathcal{F}\{e^{2\pi i\nu_0 t}\} = \delta(\nu - \nu_0)$, which follows directly from the definition of the Dirac delta function:
 
@@ -162,7 +166,7 @@ One way to do this is to compute the power spectral density, which is proportion
 \begin{equation}
   P\{g\} \propto \left| \mathcal{F}\{g\} \right|^2.
 \end{equation}
-Because the modulus of a phase is equal to unity, the resulting measure is unchanged under time-translations in $g(t)$.
+Because the modulus of a phase is equal to unity, the resulting measure is unchanged under time-translations in $g(t)$, and $P\{g\} = P\{g_\tau\}$ for any time-shift $\tau$.
 
 \begin{itemize}
 \item Some examples of functions, their transforms, and their power.
@@ -174,7 +178,18 @@ Because the modulus of a phase is equal to unity, the resulting measure is uncha
 \item convolution function and windowing
 \end{itemize}
 
+\section{From Idealistic to Realistic}
+
+All of the above theory is beautiful and elegant, but when the theory meets the real world things get a bit more messy.
+In particular, we rarely (if ever) are able to measure continuous functions like $g(t)$, but instead measure discrete realizations of the underlying function at a finite number of particular times $t_n$.
+These discrete observations are effectively a window function over our data, and as we saw above, the presence of such a window function will propagate through our computation of the Fourier power!
+The quantitative result of this windowning depends on the exact nature of the observation pattern; we will first consider the somewhat simpler case of evenly-spaced discrete data.
+
 \subsection{Evenly-Spaced Discrete Data: the Schuster Periodogram}
+
+Let's first consider the case of a large series of evenly-spaced observations.
+Discrete samples can 
+
 
 \begin{itemize}
 \item Evenly-spaced delta functions $\to$ evenly-spaced delta in frequency, separated by nyquist
