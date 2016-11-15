@@ -67,8 +67,8 @@
 
 \title{Practical Considerations for Lomb-Scargle Periodic Analysis}
 
-\newcommand{\escience}{1}
-\newcommand{\uwastro}{2}
+\newcommand{\escience}{*}
+\newcommand{\uwastro}{+}
 \author{Jacob T. VanderPlas\altaffilmark{\escience}}
 \altaffiltext{\escience}{eScience Institute, University of Washington}
 
@@ -85,29 +85,6 @@ An introduction to practical aspects of the use of Lomb-Scargle-type algorithms 
 \section{Introduction}
 \sectlabel{introduction}
 
-The Lomb-Scargle periodogram is a classic algorithm for detecting periodicity
-in unevenly-sampled time-series, particularly within the astronomy community.
-For example, consider the data showing in \Fig{LINEAR_data}.
-This is an irregularly-sampled timeseries showing a single object from the
-LINEAR survey, with magnitude measured 280 times over the course of five and
-a half years.
-
-It is clear that this object varies with an amplitude of around 0.6 magnitudes.
-Computing the Lomb-Scargle periodogram for the data gives us a measure of the
-power as a function of period of oscillation (\fig{LINEAR_power}, left), from
-which we can determine the period of oscillation of approximately 2.58 hours.
-The right panel of \fig{LINEAR_power} shows a folded visualization of
-the same data as \fig{LINEAR_data} -- i.e.{} plotted as a function of phase
-rather than time.
-
-Often this is exactly how the Lomb-Scargle periodogram is presented: as a clean
-procedure to detect the periodic component in an unevenly-sampled dataset.
-In practice, however, there are a number of subtle issues that must be considered
-when applying a Lomb-Scargle analysis to real-world datasets.
-This paper contains a practical guide to the effective use of the Lomb-Scargle
-periodogram for analyzing real-world time-series.
-
-
 \begin{figure}[ht]
 \centering
 \includegraphics[width=\textwidth]{fig01_LINEAR_data}
@@ -121,68 +98,139 @@ periodogram for analyzing real-world time-series.
 \centering
 \includegraphics[width=\textwidth]{fig02_LINEAR_PSD}
 \caption{{\it Left panel:} the Lomb-Scargle periodogram computed from the data
-    in \fig{LINEAR_data}, with an inset detailing the interesting region.
+    shown in \fig{LINEAR_data}, with an inset detailing the interesting region.
     {\it Right panel:} the input data in \fig{LINEAR_data}, folded over the
     2.58-hour period to show the coherent periodic variability.
     \figlabel{LINEAR_power}
 }
 \end{figure}
 
+The Lomb-Scargle periodogram \citep{Lomb76, Scargle82}
+is a well-known algorithm for detecting periodicity
+in unevenly-sampled time-series, particularly within the astronomy community.
+For example, consider the data showing in \Fig{LINEAR_data}.
+This is an irregularly-sampled timeseries showing a single object from the
+LINEAR survey, with magnitude measured 280 times over the course of five and
+a half years.
 
-\section{Background: Periods in Continuous Signals}
+It is clear that this object varies with an amplitude of around 0.6 magnitudes.
+Computing the Lomb-Scargle periodogram for the data gives us a measure of the
+power as a function of period of oscillation (\fig{LINEAR_power}, left)\footnote{
+This periodogram was computed using tools in the AstroPy project \citep{Astropy2013};
+code is available at \url{http://github.com/jakevdp/PracticalLombScargle/}
+}, from
+which we can determine the period of oscillation of approximately 2.58 hours.
+The right panel of \fig{LINEAR_power} shows a folded visualization of
+the same data as \fig{LINEAR_data} -- i.e.{} plotted as a function of phase
+rather than time.
 
-for a continuously defined signal $g(t)$, the Fourier transform is $\hat{g}(\nu)$,
+Often this is exactly how the Lomb-Scargle periodogram is presented: as a clean,
+well-defined procedure to detect the periodic component in an unevenly-sampled dataset.
+In practice, however, there are a number of subtle issues that must be considered
+when applying a Lomb-Scargle analysis to real-world datasets, and I have found
+that these are rarely presented together at an introductory level.
+This paper seeks to fill that gap, and provide a practical, semi-technical
+guide to the effective use of the Lomb-Scargle method of periodic analysis.
 
+
+\section{Background: Continuous Fourier Transform}
+
+To understand what the Lomb-Scargle periodogram is doing, we will first step
+back and review the subject of Fourier analysis of continuous signals.
+If we have a continuously-defined signal $g(t)$, we can compute its Fourier
+transform $\hat{g}(f)$ using the following integral:
 \begin{equation}
-    \mathcal{F}\left\{g\right\}(f) = \int_{-\infty}^\infty g(t) e^{-2\pi i f t} dt
+    \hat{g}(f) \equiv \int_{-\infty}^\infty g(t) e^{-2\pi i f t} dt
+    \eqlabel{FT-def}
 \end{equation}
-
-[Perhaps put this info in an appendix?]
-
-Continuous signal $g(t)$:
-
+The inverse relationship is given by:
 \begin{equation}
-  \mathcal{F}\left\{g\right\}(f) = \int_{-\infty}^\infty g(t) e^{-2\pi i f t} dt
+    g(t) \equiv \int_{-\infty}^\infty \hat{g}(f) e^{+2\pi i f t} df
+    \eqlabel{IFT-def}
 \end{equation}
-
-The inverse of this operation is
-
-\begin{equation}
-  \mathcal{F}^{-1}\left\{g\right\}(f) = \int_{-\infty}^\infty g(t) e^{+2\pi i f t} dt
-\end{equation}
-
-We can denote this
-
-\begin{equation}
-  \hat{g} = \mathcal{F}\left\{g\right\}
-\end{equation}
-
-\subsection{Important Properties of the CFT}
-
-\subsubsection{Linearity}
-The Fourier Transform is a linear operation, meaning that for two functions $f(t)$ and $g(t)$ and a scalar value $A$,
-
+This can be straightforwardly confirmed using the linearity of integration and
+the integral definition of the Dirac delta function.
+For convenience below, we will define the Fourier transform operator $\mathcal{F}$,
+such that
 \begin{eqnarray}
-  \mathcal{F}\{g + h\} &=& \mathcal{F}\{g\} + \mathcal{F}\{h\}\\
-  \mathcal{F}\{A g\} &=& A\mathcal{F}\{g\}
+    \mathcal{F}\{g\} &=& \hat{g} \\
+    \mathcal{F}^{-1}\{\hat{g}\} &=& g
 \end{eqnarray}
 
-These properties follow straightforwardly from the linearity of the Fourier transform definition.
+\subsection{Motivating the Power Spectral Density}
+
+If you explore the properties of the Fourier transform, you will discover
+a couple important properties:
+
+\begin{description}
+\item[The Fourier Transform of a Sine wave is a delta function at its frequency.]
+    That is, if $g(t) = \sin(2\pi f_0 t)$, then
+    \begin{equation}
+        \hat{g}(f) \propto \delta(f - f_0) - \delta(f + f_0)
+    \end{equation}
+\item[The Fourier Transform is a Linear Operation.]
+    This means that for functions $a$ and $b$ and scalar $A$,
+    \begin{eqnarray}
+        \mathcal{F}(a + b) &=& \mathcal{F}(a) + \mathcal{F}(b) \\
+        \mathcal{F}(A \cdot a) &=& A\cdot\mathcal{F}(a).
+    \end{eqnarray}
+    These properties follow straightforwardly from the linearity of integration.
+\item[The Fourier Transform of a time-shifted function is unchanged up to a phase.]
+    That is, if $g_\tau(t) = g(t - \tau)$, then
+    \begin{equation}
+        \hat{g}_\tau(f) = e^{-2\pi i f \tau}\hat{g}(f)
+    \end{equation}
+    This can be confirmed via a change of variables in \eq{FT-def}.
+\end{description}
+
+Taken together, what this tells us is that if we define the spectral density
+\begin{equation}
+    \mathcal{P}(g) \equiv \left|\mathcal{F}(g)\right|^2
+\end{equation}
+we have a quantity that is {\it insensitive to time-shifts} and consists of a
+{\it delta function for each sinusoidal frequency within the data}. In other
+words, the spectral density {\it P} measures ...
+
+Because of the first two properties, we see that the Fourier transform can essentially
+extract sinusoidal components within a signal:
+
+
+\begin{description}
+
+\item[Convolution Theorem.]
+    The convolution theorem states that the
+    Fourier transform of a convolution is a product of the Fourier transforms:
+    \begin{equation}
+      \mathcal{F}\{g \ast h\} = \mathcal{F}\{g\}\mathcal{F}\{h\}
+    \end{equation}
+    where the convlution operator $\ast$ is defined by
+    \begin{equation}
+      \{g \ast h\}(t) \equiv \int_{-\infty}^\infty g(t - \tau) h(\tau) d\tau.
+    \end{equation}
+    This can be confirmed via the linearity of integration and the integral
+    definition of the Dirac delta function.
+
+\item[The Fourier Transform of a Gaussian is a Gaussian.]
+    The Gaussian function is defined as
+    \begin{equation}
+    G(t;\sigma) \propto \exp\left[\frac{-t^2}{2\sigma^2}\right].
+    \end{equation}
+    The Fourier transform of a Gaussian is another Gaussian:
+    \begin{equation}
+    \mathcal{F}\{G(t;\sigma)\} \propto G(f; \sigma_f)
+    \end{equation}
+    where $\sigma_f = (2\pi\sigma)^{-1}$. This can be shown by completing the
+    square within the integrand.
+\end{description}
 
 \subsubsection{The Convolution Theorem}
 
 The Fourier transform is central to an identity known as {\it the convolution theorem}.
 The convolution of two functions $g(t)$ and $h(t)$ is itself a function of $t$, denoted $\{g \ast h\}(t)$, and is defined as
 
-\begin{equation}
-  \{g \ast h\}(t) \equiv \int_{-\infty}^\infty g(t - \tau) h(\tau) d\tau
-\end{equation}
 
 The convolution theorem states that the Fourier transform of a convolution is equal to the product of Fourier transforms; that is,
 
-\begin{equation}
-  \mathcal{F}\{g \ast h\} = \mathcal{F}\{g\}\mathcal{F}\{h\}
-\end{equation}
 
 This property can also be shown (relatively) straightforwardly from the convolution and Fourier transform definitions.
 
