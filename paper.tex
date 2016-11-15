@@ -85,17 +85,70 @@ An introduction to practical aspects of the use of Lomb-Scargle-type algorithms 
 \section{Introduction}
 \sectlabel{introduction}
 
-[Quick motivating example with figures: RR Lyrae star from LINEAR?]
+The Lomb-Scargle periodogram is a classic algorithm for detecting periodicity
+in unevenly-sampled time-series, particularly within the astronomy community.
+For example, consider the data showing in \Fig{LINEAR_data}.
+This is an irregularly-sampled timeseries showing a single object from the
+LINEAR survey, with magnitude measured 280 times over the course of five and
+a half years.
+
+It is clear that this object varies with an amplitude of around 0.6 magnitudes.
+Computing the Lomb-Scargle periodogram for the data gives us a measure of the
+power as a function of period of oscillation (\fig{LINEAR_power}, left), from
+which we can determine the period of oscillation of approximately 2.58 hours.
+The right panel of \fig{LINEAR_power} shows a folded visualization of
+the same data as \fig{LINEAR_data} -- i.e.{} plotted as a function of phase
+rather than time.
+
+Often this is exactly how the Lomb-Scargle periodogram is presented: as a clean
+procedure to detect the periodic component in an unevenly-sampled dataset.
+In practice, however, there are a number of subtle issues that must be considered
+when applying a Lomb-Scargle analysis to real-world datasets.
+This paper contains a practical guide to the effective use of the Lomb-Scargle
+periodogram for analyzing real-world time-series.
 
 
-\section{Measuring Periods in Continuous Signals}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{fig01_LINEAR_data}
+\caption{Observed light curve from LINEAR object ID 11375941
+    \figlabel{LINEAR_data}.
+}
+\end{figure}
+
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{fig02_LINEAR_PSD}
+\caption{{\it Left panel:} the Lomb-Scargle periodogram computed from the data
+    in \fig{LINEAR_data}, with an inset detailing the interesting region.
+    {\it Right panel:} the input data in \fig{LINEAR_data}, folded over the
+    2.58-hour period to show the coherent periodic variability.
+    \figlabel{LINEAR_power}
+}
+\end{figure}
+
+
+\section{Background: Periods in Continuous Signals}
+
+for a continuously defined signal $g(t)$, the Fourier transform is $\hat{g}(\nu)$,
+
+\begin{equation}
+    \mathcal{F}\left\{g\right\}(f) = \int_{-\infty}^\infty g(t) e^{-2\pi i f t} dt
+\end{equation}
 
 [Perhaps put this info in an appendix?]
 
 Continuous signal $g(t)$:
 
 \begin{equation}
-  \hat{g}(\omega) = \int_{-\infty}^\infty g(t) e^{-2\pi i \nu t} dt
+  \mathcal{F}\left\{g\right\}(f) = \int_{-\infty}^\infty g(t) e^{-2\pi i f t} dt
+\end{equation}
+
+The inverse of this operation is
+
+\begin{equation}
+  \mathcal{F}^{-1}\left\{g\right\}(f) = \int_{-\infty}^\infty g(t) e^{+2\pi i f t} dt
 \end{equation}
 
 We can denote this
@@ -122,7 +175,7 @@ The Fourier transform is central to an identity known as {\it the convolution th
 The convolution of two functions $g(t)$ and $h(t)$ is itself a function of $t$, denoted $\{g \ast h\}(t)$, and is defined as
 
 \begin{equation}
-  \{g \ast h\}(t) = \int_{-\infty}^\infty g(t - \tau) h(\tau) d\tau
+  \{g \ast h\}(t) \equiv \int_{-\infty}^\infty g(t - \tau) h(\tau) d\tau
 \end{equation}
 
 The convolution theorem states that the Fourier transform of a convolution is equal to the product of Fourier transforms; that is,
@@ -134,7 +187,11 @@ The convolution theorem states that the Fourier transform of a convolution is eq
 This property can also be shown (relatively) straightforwardly from the convolution and Fourier transform definitions.
 
 \subsubsection{$\mathcal{F}$ of a Gaussian is a Gaussian}
-One of the special functions under a Fourier transform is the Gaussian distribution, which is proportional to
+One of the special functions under a Fourier transform is the Gaussian distribution:
+
+\begin{equation}
+    g(t; \mu, \sigma) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left[\frac{- (x - \mu)^2}{2\sigma^2}\right]
+\end{equation}, which is proportional to
 
 
 \subsubsection{$\mathcal{F}$ of a Periodic Function is a Delta Function}
@@ -157,7 +214,7 @@ Using the above definitions, it is straightforward to show that a time-offset in
 \begin{equation}
   g_\tau(t) \equiv g(t - \tau)
 \end{equation}
-then 
+then
 \begin{equation}
   \mathcal{F}\{g_\tau\} = e^{-2\pi i \nu \tau}\mathcal{F}\{g\}
 \end{equation}
@@ -188,7 +245,7 @@ The quantitative result of this windowning depends on the exact nature of the ob
 \subsection{Evenly-Spaced Discrete Data: the Schuster Periodogram}
 
 Let's first consider the case of a large series of evenly-spaced observations.
-Discrete samples can 
+Discrete samples can
 
 
 \begin{itemize}
