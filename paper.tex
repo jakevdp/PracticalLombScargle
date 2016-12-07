@@ -108,37 +108,39 @@ An introduction to practical aspects of the use of Lomb-Scargle-type algorithms 
 The Lomb-Scargle periodogram \citep{Lomb76, Scargle82}
 is a well-known algorithm for detecting periodicity
 in unevenly-sampled time-series, particularly within the astronomy community.
-For example, consider the data showing in \Fig{LINEAR_data}.
+For example, consider the data shown in \fig{LINEAR_data}.
 This is an irregularly-sampled timeseries showing a single object from the
 LINEAR survey, with magnitude measured 280 times over the course of five and
 a half years.
 
-It is clear that this object varies with an amplitude of around 0.6 magnitudes.
+By eye, it is clear that the brightness of the object varies in time with a range spanning approximately 0.8 magnitudes, but what is not immediately clear is that this variation is periodic in time.
+The Lomb-Scargle periodogram is a method that allows efficient computation of a Fourier-like power spectrum from such unevenly-sampled data, resulting in an intuitive means of determining the period of oscillation.
+
+The left panel of \fig{LINEAR_power} shows the Lomb-Scargle periodogram computed for the data in \fig{LINEAR_data}
 Computing the Lomb-Scargle periodogram for the data gives us a measure of the
-power as a function of period of oscillation (\fig{LINEAR_power}, left)\footnote{
-This periodogram was computed using tools in the AstroPy project \citep{Astropy2013};
-code is available at \url{http://github.com/jakevdp/PracticalLombScargle/}
-}, from
+power as a function of period of oscillation (\fig{LINEAR_power}, left), from
 which we can determine the period of oscillation of approximately 2.58 hours.
 The right panel of \fig{LINEAR_power} shows a folded visualization of
 the same data as \fig{LINEAR_data} -- i.e.{} plotted as a function of phase
-rather than time.
+rather than time.\footnote{
+    The periodogram in \fig{LINEAR_power}was computed using
+    {\tt astropy.stats.LombScargle}
+    from the AstroPy project \citep{Astropy2013};
+    Python code to reproduce this figure is available at
+    \url{http://github.com/jakevdp/PracticalLombScargle/}
+}
 
-Often this is exactly how the Lomb-Scargle periodogram is presented: as a clean,
-well-defined procedure to detect the periodic component in an unevenly-sampled dataset.
-In practice, however, there are a number of subtle issues that must be considered
-when applying a Lomb-Scargle analysis to real-world datasets, and I have found
-that these are rarely presented together at an introductory level.
-This paper seeks to fill that gap, and provide a practical, semi-technical
-guide to the effective use of the Lomb-Scargle method of periodic analysis.
+Often this is exactly how the Lomb-Scargle periodogram is presented: as a clean, well-defined procedure to detect the periodic component in an unevenly-sampled dataset.
+In practice, however, there are a number of subtle issues that must be considered when applying a Lomb-Scargle analysis to real-world datasets, and I have found that these are rarely presented together at an introductory level.
+This paper seeks to fill that gap, and provide a practical, semi-technical guide to the effective use of the Lomb-Scargle method of periodic analysis.
+This paper does not seek a complete or rigorous treatment of the mathematics involved, but rather seeks to develop the intuition of {\it how} to think about the issues involved.
 
 
-\section{Background: Continuous Fourier Transform}
+\section{Background: the Continuous Fourier Transform}
 
-To understand what the Lomb-Scargle periodogram is doing, we will first step
-back and review the subject of Fourier analysis of continuous signals.
-If we have a continuously-defined signal $g(t)$, we can compute its Fourier
-transform $\hat{g}(f)$ using the following integral:
+In order to understand how we should interpret the Lomb-Scargle periodogram, we will first briefly step back and review the subject of Fourier analysis of continuous signals.
+Consider a continuously-defined signal $g(t)$.
+Its Fourier transform is given by the following integral:
 \begin{equation}
     \hat{g}(f) \equiv \int_{-\infty}^\infty g(t) e^{-2\pi i f t} dt
     \eqlabel{FT-def}
@@ -148,14 +150,183 @@ The inverse relationship is given by:
     g(t) \equiv \int_{-\infty}^\infty \hat{g}(f) e^{+2\pi i f t} df
     \eqlabel{IFT-def}
 \end{equation}
-This can be straightforwardly confirmed using the linearity of integration and
-the integral definition of the Dirac delta function.
-For convenience below, we will define the Fourier transform operator $\mathcal{F}$,
-such that
+For convenience we will also define the Fourier transform operator
+$\mathcal{F}$, such that
 \begin{eqnarray}
     \mathcal{F}\{g\} &=& \hat{g} \\
     \mathcal{F}^{-1}\{\hat{g}\} &=& g
 \end{eqnarray}
+
+The continuous Fourier transform has a number of useful properties that we will make use of in our discussion.
+
+\begin{description}
+   \item[The Fourier transform is a linear operation.]
+     That is, for any constant $A$ and any functions $f$ and $g$, we can write
+     \begin{eqnarray}
+       \mathcal{F}\{f(t) + g(t)\} &=& \mathcal{F}\{f(t)\} + \mathcal{F}\{g(t)\}\nonumber\\
+       \mathcal{F}\{A f(t)\} &=& A\mathcal{F}\{f(t)\},
+     \end{eqnarray}
+     which follows from the linearity of the Fourier integral.
+
+   \item[The Fourier transform of sinusoid with frequency $f_0$ is a sum of delta functions at $\pm f_0$.]
+     Given the integral definition of the Dirac delta function, it is straightforward to show that
+     \begin{equation}
+       \mathcal{F}\{e^{2\pi f_0 t}\} = \delta(f - f_0).
+       \eqlabel{delta_FT}
+     \end{equation}
+     Euler's formula shows how such a complex exponential
+     can be expressed in terms of sines and cosines:
+     \begin{equation}
+       e^{2\pi f_0 t} = \cos(2\pi f_0 t) + i\sin(2\pi f_0 t).
+       \eqlabel{Euler_formula}
+     \end{equation}
+     Using the linearity of the Fourier transform, we can take these identites
+     and derive the following:
+     \begin{eqnarray}
+       \mathcal{F}\{\cos(2\pi f_0 t)\} &=& \frac{1}{2}\left[\delta(f - f_0) + \delta(f + f_0)\right]\\
+       \mathcal{F}\{\sin(2\pi f_0 t)\} &=& \frac{1}{2i}\left[\delta(f - f_0) - \delta(f + f_0)\right].
+     \end{eqnarray}
+     In other words, a sinusoidal signal with frequency $f_0$ has a Fourier transform consisting of a weighted sum of delta functions at $\pm f_0$.
+
+   \item[A time-shift imparts a phase in the Fourier transform.]
+     That is for any function $g(t)$,
+     \begin{equation}
+       \mathcal{F}\{g(t - t_0)\} = e^{-2\pi i ft_0}\mathcal{F}\{g(t)\}
+     \end{equation}
+     The key observation here is that the time-shift does not change the
+     amplitude of the result, but only the phase.
+\end{description}
+
+There are a couple useful consequences of these properties.
+
+...
+
+\subsection{Some Useful Fourier Pairs}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{fig03_Fourier_pairs}
+\caption{Visualization of important Fourier pairs.}
+\end{figure}
+
+Dirac comb
+\begin{equation}
+    C(t, \Delta t) = \sum_{k=-\infty}^\infty \delta(t - k\Delta t)
+\end{equation}
+Fourier transform is
+\begin{equation}
+    \mathcal{F}\{C(t, \Delta t)\} = \frac{1}{\Delta t} C(f, 1/\Delta t)
+\end{equation}
+
+
+Tophat and Sinc
+\begin{equation}
+  tophat(t; T) \equiv \left\{
+  \begin{array}{ll}
+    1 / T & {\rm if}\ |t| < T / 2 \\
+    0     & {\rm otherwise}
+  \end{array}
+  \right.
+\end{equation}
+Fourier transform is
+\begin{equation}
+  sinc(t) \equiv \frac{\sin(\pi t)}{\pi t}
+\end{equation}
+
+Gaussian
+
+
+
+\begin{itemize}
+  \item Chart of Fourier pairs
+\end{itemize}
+
+\subsection{Windowing and Convolution}
+
+\begin{itemize}
+  \item mention convolution theorem; show how it leads to windowing
+  \item figure: show how windowing works
+\end{itemize}
+
+
+\section{From Continuous to Discrete Signals}
+
+\begin{itemize}
+  \item discrete signal as a Dirac comb window
+  \item derive the Nyquist limit from the Dirac comb FT
+  \item derive the Schuster periodogram
+  \item mention the FFT
+\end{itemize}
+
+
+\section{Non-uniform sampling}
+
+\begin{itemize}
+  \item nonuniform signal as sum-of-deltas window function
+  \item Nyquist limit does not exist!
+  \item 
+\end{itemize}
+
+
+\section{The Lomb-Scargle Periodogram}
+
+\begin{itemize}
+  \item Show relation to Schuster periodogram
+  \item Show relation to least squares fitting of sinusoid
+  \item Key: LS measures {\it windowed} power spectrum
+  \item Show effects of truely random sampling; of Kepler-like sampling; of ground-based nightly sampling
+\end{itemize}
+
+
+\section{Using Lomb-Scargle Effectively}
+
+\begin{itemize}
+  \item Frequency grid
+  \item Peak width
+\end{itemize}
+
+
+\subsection{Uncertainties in Periods}
+
+\begin{itemize}
+  \item Peak Width
+  \item False Alarm Probability and why it fails
+  \item Baluev method and why it's not enough
+  \item Boostrap
+
+\end{itemize}
+
+
+
+\section{Algorithmic Considerations}
+
+\begin{itemize}
+\item Press \& Rybicki method; show some benchmarks.
+\item NFFT method
+\end{itemize}
+
+
+
+\section{Generalizations \& Challenges}
+
+\begin{itemize}
+\item Bayesian view doesn't make sense
+\item Multiterm makes the true period fit better, but also bumps the background noise.
+\end{itemize}
+
+
+
+
+\newpage
+
+\section{Draft stuff below...}
+
+\begin{itemize}
+    \item transform and inverse
+    \item properties (delta function $\to$ sinusoid, time shift $\to$ phase, convolution theorem)
+    \item motivating the power spectrum
+    \item some important Fourier pairs (sinusoid$\to$delta, dirac comb$\to$dirac comb, Gaussian$\to$gaussian, top-hat$\to$sinc)
+\end{itemize}
 
 \subsection{Motivating the Power Spectral Density}
 
@@ -163,40 +334,47 @@ If you explore the properties of the Fourier transform, you will discover
 a couple important properties:
 
 \begin{description}
-\item[The Fourier Transform of a Sine wave is a delta function at its frequency.]
+\item[The Fourier Transform is a Linear Operation.]
+This means that for functions $a$ and $b$ and scalar $A$,
+\begin{eqnarray}
+    \mathcal{F}(a + b) &=& \mathcal{F}(a) + \mathcal{F}(b) \\
+    \mathcal{F}(A \cdot a) &=& A\cdot\mathcal{F}(a).
+\end{eqnarray}
+These properties follow straightforwardly from the linearity of integration.
+\item[The Fourier Transform of a Sinusoid with frequency $f_0$ is a pair of delta
+      functions at $\pm f_0$.]
     That is, if $g(t) = \sin(2\pi f_0 t)$, then
     \begin{equation}
-        \hat{g}(f) \propto \delta(f - f_0) - \delta(f + f_0)
+        \hat{g}(f) = \frac{i}{2} \bigg(\delta(f - f_0) - \delta(f + f_0) \bigg)
     \end{equation}
-\item[The Fourier Transform is a Linear Operation.]
-    This means that for functions $a$ and $b$ and scalar $A$,
-    \begin{eqnarray}
-        \mathcal{F}(a + b) &=& \mathcal{F}(a) + \mathcal{F}(b) \\
-        \mathcal{F}(A \cdot a) &=& A\cdot\mathcal{F}(a).
-    \end{eqnarray}
-    These properties follow straightforwardly from the linearity of integration.
+    This can be shown straightforwardly using Euler's formula and the integral
+    definition of the Dirac delta function.
 \item[The Fourier Transform of a time-shifted function is unchanged up to a phase.]
     That is, if $g_\tau(t) = g(t - \tau)$, then
     \begin{equation}
-        \hat{g}_\tau(f) = e^{-2\pi i f \tau}\hat{g}(f)
+        \hat{g}_\tau(f) = \phi(\tau)\hat{g}(f)
     \end{equation}
+    where $\phi$ is a phase that depends on the time-shift $\tau$.
     This can be confirmed via a change of variables in \eq{FT-def}.
 \end{description}
-
-Taken together, what this tells us is that if we define the spectral density
+These properties are central to the well-known ability of the Fourier transform
+to measure frequency information from a continuous signal: a signal
+with a periodic component at frequency $f_0$ will have a Fourier transform
+reflecting that frequency. Moreover, we can remove the effect of the phase by
+taking the squared magnitude of the Fourier transform; this is the power
+spectral density:
 \begin{equation}
     \mathcal{P}(g) \equiv \left|\mathcal{F}(g)\right|^2
 \end{equation}
-we have a quantity that is {\it insensitive to time-shifts} and consists of a
-{\it delta function for each sinusoidal frequency within the data}. In other
-words, the spectral density {\it P} measures ...
+Because this operation removes the phase, we now have a quantity that is
+{\it insensitive to time-shifts} and consists of a
+{\it delta function for each sinusoidal frequency within the data}.
+If we want to detect periodic components in a continuous signal,
+this will be a very useful quantity.
 
-Because of the first two properties, we see that the Fourier transform can essentially
-extract sinusoidal components within a signal:
-
+\subsection{Other Identities}
 
 \begin{description}
-
 \item[Convolution Theorem.]
     The convolution theorem states that the
     Fourier transform of a convolution is a product of the Fourier transforms:
@@ -209,7 +387,6 @@ extract sinusoidal components within a signal:
     \end{equation}
     This can be confirmed via the linearity of integration and the integral
     definition of the Dirac delta function.
-
 \item[The Fourier Transform of a Gaussian is a Gaussian.]
     The Gaussian function is defined as
     \begin{equation}
@@ -222,39 +399,6 @@ extract sinusoidal components within a signal:
     where $\sigma_f = (2\pi\sigma)^{-1}$. This can be shown by completing the
     square within the integrand.
 \end{description}
-
-\subsubsection{The Convolution Theorem}
-
-The Fourier transform is central to an identity known as {\it the convolution theorem}.
-The convolution of two functions $g(t)$ and $h(t)$ is itself a function of $t$, denoted $\{g \ast h\}(t)$, and is defined as
-
-
-The convolution theorem states that the Fourier transform of a convolution is equal to the product of Fourier transforms; that is,
-
-
-This property can also be shown (relatively) straightforwardly from the convolution and Fourier transform definitions.
-
-\subsubsection{$\mathcal{F}$ of a Gaussian is a Gaussian}
-One of the special functions under a Fourier transform is the Gaussian distribution:
-
-\begin{equation}
-    g(t; \mu, \sigma) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left[\frac{- (x - \mu)^2}{2\sigma^2}\right]
-\end{equation}, which is proportional to
-
-
-\subsubsection{$\mathcal{F}$ of a Periodic Function is a Delta Function}
-
-A particularly special function in the complex exponential, $e^{2\pi i\nu_0 t} \equiv \cos(2\pi \nu_0 t) + i\sin(2\pi\nu_0 t)$, which has the Fourier transform $\mathcal{F}\{e^{2\pi i\nu_0 t}\} = \delta(\nu - \nu_0)$, which follows directly from the definition of the Dirac delta function:
-
-\begin{equation}
-  \delta(\nu) \equiv \int_{-\infty}^\infty e^{-2\pi i\nu t}dt
-\end{equation}
-
-Similarly, if we have a signal composed of a sum of complex exponentials, the linearity of the Fourier transform assures that the transform is simply a sum of delta functions:
-\begin{equation}
-  \mathcal{F}\left\{ \sum_{n=1}^N e^{-2\pi i \nu_n t} \right\} = \sum_{n=1}^N \delta(\nu - \nu_n)
-\end{equation}
-This result shows the sense in which a Fourier transform is an ideal measure of periodicity: the Fourier transform pulls-out and identifies the individual periodic components of any input.
 
 \subsection{Fourier Power}
 
@@ -280,7 +424,10 @@ Because the modulus of a phase is equal to unity, the resulting measure is uncha
 \subsection{Effect of Window Functions}
 
 \begin{itemize}
-\item convolution function and windowing
+\item convolution theorem and windowing
+\item infinite, regularly-sampled observations
+\item finite, regularly-sampled observations
+\item finite, irregularly-sampled observations
 \end{itemize}
 
 \section{From Idealistic to Realistic}
@@ -317,13 +464,17 @@ Discrete samples can
 \section{Reporting errors in Frequency: Uncertainty vs. Precision}
 
 \begin{itemize}
-\item Talk about peak width and False Alarm Probability; recommend bootstrap (show example of when analytic FAP fails?)
+\item Peak width
+\item False Alarm Probability and why it fails
+\item Baluev method and why it's not enough
+\item Boostrap
 \end{itemize}
 
 \section{Algorithmic Considerations}
 
 \begin{itemize}
 \item Talk about Press \& Rybicki method; show some benchmarks.
+\item NFFT method
 \end{itemize}
 
 \section{Generalizations \& Challenges}
