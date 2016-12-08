@@ -35,6 +35,10 @@
 %\SetWatermarkLightness{0.9}
 %\SetWatermarkScale{4}
 
+\usepackage{amsmath}
+\DeclareMathOperator{\sinc}{sinc}
+\DeclareMathOperator{\III}{III}
+
 % Some macros
 \newcommand{\todo}[1]{{\color{red} [TODO: #1]}}
 \newcommand{\foreign}[1]{{\it #1}}
@@ -189,57 +193,87 @@ The continuous Fourier transform has a number of useful properties that we will 
      In other words, a sinusoidal signal with frequency $f_0$ has a Fourier transform consisting of a weighted sum of delta functions at $\pm f_0$.
 
    \item[A time-shift imparts a phase in the Fourier transform.]
-     That is for any function $g(t)$,
+     In other words, for any well-behaved function $g(t)$ we can write
      \begin{equation}
-       \mathcal{F}\{g(t - t_0)\} = e^{-2\pi i ft_0}\mathcal{F}\{g(t)\}
+       \mathcal{F}\{g(t - t_0)\} = \mathcal{F}\{g(t)\} e^{-2\pi i ft_0}
      \end{equation}
      The key observation here is that the time-shift does not change the
-     amplitude of the result, but only the phase.
+     amplitude of the resulting transform, but only the phase.
 \end{description}
 
-There are a couple useful consequences of these properties.
+These properties taken together make the Fourier transform quite useful for the study of periodic signals.
+The linearity of the transform means that any signal made up of a sum of periodic components will have a Fourier transform consisting of a sum of delta functions at those frequencies: that is, the Fourier transform is a {\it direct} measure of the periodic content of a function.
 
-...
+Further, if we compute the squared amplitude of the resulting transform, we can both do away with complex components and remove the phase imparted by any time offsets; this squared amplitude is usually known as the {\it Power Spectrum}:
+\begin{equation}
+  \mathcal{P}\{g\} \equiv \left|\mathcal{F}\{g\}\right|^2
+\end{equation}
+The power spectrum of a function is a positive real-valued function of $f$ that quantifies the contribution of each frequency $f$ to the total signal.
 
 \subsection{Some Useful Fourier Pairs}
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=\textwidth]{fig03_Fourier_pairs}
-\caption{Visualization of important Fourier pairs.}
+\caption{Visualization of important Fourier pairs.\figlabel{fourier_pairs}}
 \end{figure}
 
-Dirac comb
-\begin{equation}
-    C(t, \Delta t) = \sum_{k=-\infty}^\infty \delta(t - k\Delta t)
-\end{equation}
-Fourier transform is
-\begin{equation}
-    \mathcal{F}\{C(t, \Delta t)\} = \frac{1}{\Delta t} C(f, 1/\Delta t)
-\end{equation}
+We have already discussed that the Fourier transform of a complex exponential is a single delta function.
+This is just one of many ``Fourier Pairs'' to keep in mind as we progress to understanding the Lomb-Scargle Periodogram.
+We list a few more important pairs here (see \Fig{fourier_pairs} for a visual representation of the following pairs):
 
 
-Tophat and Sinc
-\begin{equation}
-  tophat(t; T) \equiv \left\{
-  \begin{array}{ll}
-    1 / T & {\rm if}\ |t| < T / 2 \\
-    0     & {\rm otherwise}
-  \end{array}
-  \right.
-\end{equation}
-Fourier transform is
-\begin{equation}
-  sinc(t) \equiv \frac{\sin(\pi t)}{\pi t}
-\end{equation}
+\begin{description}
+  \item[The Fourier transform of a sinusoid is a pair of Delta functions.]
+    \begin{equation}
+      \mathcal{F}\{\cos(2\pi f_0 t)\} = \frac{1}{2}\left[\delta(f-f_0) + \delta(f+f_0)\right]
+    \end{equation}
+    We saw this above, but repeat it here for completeness.
 
-Gaussian
+   \item[The Fourier transform of a Gaussian is a Gaussian.]
+     \begin{equation}
+       \mathcal{F}\{{\rm N}(t; \sigma)\} = \frac{1}{\sqrt{2\pi\sigma^2}}{\rm N}\left(f;\frac{1}{2\pi\sigma}\right)
+     \end{equation}
+     The Gaussian function ${\rm N}(t, \sigma)$ is given by
+     \begin{equation}
+       {\rm N}(t; \sigma) \equiv \frac{1}{\sqrt{2\pi\sigma^2}}e^{-t^2 / (2\sigma^2)}
+     \end{equation}
 
+  \item[The Fourier transform of a tophat function is a sinc function.]
+    \begin{equation}
+      \mathcal{F}\{\Pi_T(t)\} = \sinc(f T)
+    \end{equation}
+    The tophat function, $\Pi_T(t)$ is a normalized symmetric function that
+    is uniform within a range given by $T$, and zero elsewhere:
+    \begin{equation}
+      \Pi_T(t)  \equiv \left\{
+      \begin{array}{ll}
+        1 / T, & |t| \le T / 2 \\
+        0,     & |t| > T / 2
+      \end{array}
+      \right.
+    \end{equation}
+    The sinc function is given by the standard definition:
+    \begin{equation}
+      \sinc(x) \equiv \frac{\sin(\pi x)}{\pi x}
+    \end{equation}
 
+  \item[The Fourier transform of a Dirac comb is a Dirac comb.]
+    \begin{equation}
+      \mathcal{F}\{\III_T(t)\} = \frac{1}{T}\III_{1/T}(f)
+    \end{equation}
+    The Dirac comb $\III_T(t)$ is an infinite sequence of Dirac delta functions
+    placed at even intervals of size $T$:
+    \begin{equation}
+      \III_T(t) \equiv \sum_{k=-\infty}^\infty \delta(t - kT)
+    \end{equation}
+\end{description}
 
-\begin{itemize}
-  \item Chart of Fourier pairs
-\end{itemize}
+The key observation in each of these is the reciprocity of scales across the
+Fourier transform: a function with a characteristic scale $T$ will generally
+have a Fourier transform with characteristic scale proportional to $1/T$.
+This feature will turn out to be very important as we push further in
+understanding the Lomb-Scargle Periodogram.
 
 \subsection{Windowing and Convolution}
 
