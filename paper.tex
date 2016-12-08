@@ -78,7 +78,9 @@
 
 
 \begin{abstract}
-An introduction to practical aspects of the use of Lomb-Scargle-type algorithms for periodic analysis.
+This paper gives an introduction to the practical aspects of the use of Lomb-Scargle periodograms and related algorithms to detect periodic signals.
+Rather than a rigorous mathematical treatment, the goal of this paper is to build intuition about what assumptions are baked into any periodogram computation.
+We discuss... and ... and ...
 \end{abstract}
 
 \keywords{
@@ -102,9 +104,9 @@ An introduction to practical aspects of the use of Lomb-Scargle-type algorithms 
 \centering
 \includegraphics[width=\textwidth]{fig02_LINEAR_PSD}
 \caption{{\it Left panel:} the Lomb-Scargle periodogram computed from the data
-    shown in \fig{LINEAR_data}, with an inset detailing the interesting region.
+    shown in \fig{LINEAR_data}, with an inset detailing the region near the peak.
     {\it Right panel:} the input data in \fig{LINEAR_data}, folded over the
-    2.58-hour period to show the coherent periodic variability.
+    detected 2.58-hour period to show the coherent periodic variability.
     \figlabel{LINEAR_power}
 }
 \end{figure}
@@ -114,20 +116,20 @@ is a well-known algorithm for detecting periodicity
 in unevenly-sampled time-series, particularly within the astronomy community.
 For example, consider the data shown in \fig{LINEAR_data}.
 This is an irregularly-sampled timeseries showing a single object from the
-LINEAR survey, with magnitude measured 280 times over the course of five and
+LINEAR survey \citep{LINEAR}, with magnitude measured 280 times over the course of five and
 a half years.
 
 By eye, it is clear that the brightness of the object varies in time with a range spanning approximately 0.8 magnitudes, but what is not immediately clear is that this variation is periodic in time.
 The Lomb-Scargle periodogram is a method that allows efficient computation of a Fourier-like power spectrum from such unevenly-sampled data, resulting in an intuitive means of determining the period of oscillation.
 
-The left panel of \fig{LINEAR_power} shows the Lomb-Scargle periodogram computed for the data in \fig{LINEAR_data}
+The left panel of \fig{LINEAR_power} shows the Lomb-Scargle periodogram computed for the data in \fig{LINEAR_data}.
 Computing the Lomb-Scargle periodogram for the data gives us a measure of the
 power as a function of period of oscillation (\fig{LINEAR_power}, left), from
 which we can determine the period of oscillation of approximately 2.58 hours.
 The right panel of \fig{LINEAR_power} shows a folded visualization of
 the same data as \fig{LINEAR_data} -- i.e.{} plotted as a function of phase
 rather than time.\footnote{
-    The periodogram in \fig{LINEAR_power}was computed using
+    The periodogram in \fig{LINEAR_power} was computed using
     {\tt astropy.stats.LombScargle}
     from the AstroPy project \citep{Astropy2013};
     Python code to reproduce this figure is available at
@@ -185,22 +187,22 @@ The continuous Fourier transform has a number of useful properties that we will 
        \eqlabel{Euler_formula}
      \end{equation}
      Using the linearity of the Fourier transform, we can take these identites
-     and derive the following:
+     and derive the following identities:
      \begin{eqnarray}
-       \mathcal{F}\{\cos(2\pi f_0 t)\} &=& \frac{1}{2}\left[\delta(f - f_0) + \delta(f + f_0)\right]\\
+       \mathcal{F}\{\cos(2\pi f_0 t)\} &=& \frac{1}{2}\left[\delta(f - f_0) + \delta(f + f_0)\right]\nonumber\\
        \mathcal{F}\{\sin(2\pi f_0 t)\} &=& \frac{1}{2i}\left[\delta(f - f_0) - \delta(f + f_0)\right].
      \end{eqnarray}
      In other words, a sinusoidal signal with frequency $f_0$ has a Fourier transform consisting of a weighted sum of delta functions at $\pm f_0$.
 
    \item[A time-shift imparts a phase in the Fourier transform.]
-     In other words, for any well-behaved function $g(t)$ we can write
+     Given a well-behaved function $g(t)$ we can use a transformation of
+     variables to derive the following identity:
      \begin{equation}
        \mathcal{F}\{g(t - t_0)\} = \mathcal{F}\{g(t)\} e^{-2\pi i ft_0}
      \end{equation}
      The key observation here is that the time-shift does not change the
      amplitude of the resulting transform, but only the phase.
 \end{description}
-
 These properties taken together make the Fourier transform quite useful for the study of periodic signals.
 The linearity of the transform means that any signal made up of a sum of periodic components will have a Fourier transform consisting of a sum of delta functions at those frequencies: that is, the Fourier transform is a {\it direct} measure of the periodic content of a function.
 
@@ -225,21 +227,24 @@ We list a few more important pairs here (see \Fig{fourier_pairs} for a visual re
 
 \begin{description}
   \item[The Fourier transform of a sinusoid is a pair of Delta functions.]
+    (See \fig{fourier_pairs}{\it a})
     \begin{equation}
       \mathcal{F}\{\cos(2\pi f_0 t)\} = \frac{1}{2}\left[\delta(f-f_0) + \delta(f+f_0)\right]
     \end{equation}
     We saw this above, but repeat it here for completeness.
 
    \item[The Fourier transform of a Gaussian is a Gaussian.]
+    (See \fig{fourier_pairs}{\it b})
      \begin{equation}
        \mathcal{F}\{{\rm N}(t; \sigma)\} = \frac{1}{\sqrt{2\pi\sigma^2}}{\rm N}\left(f;\frac{1}{2\pi\sigma}\right)
      \end{equation}
      The Gaussian function ${\rm N}(t, \sigma)$ is given by
      \begin{equation}
-       {\rm N}(t; \sigma) \equiv \frac{1}{\sqrt{2\pi\sigma^2}}e^{-t^2 / (2\sigma^2)}
+       {\rm N}(t; \sigma) \equiv \frac{1}{\sqrt{2\pi\sigma^2}}e^{-t^2/(2\sigma^2)}
      \end{equation}
 
   \item[The Fourier transform of a tophat function is a sinc function.]
+    (See \fig{fourier_pairs}{\it c})
     \begin{equation}
       \mathcal{F}\{\Pi_T(t)\} = \sinc(f T)
     \end{equation}
@@ -259,6 +264,7 @@ We list a few more important pairs here (see \Fig{fourier_pairs} for a visual re
     \end{equation}
 
   \item[The Fourier transform of a Dirac comb is a Dirac comb.]
+    (See \fig{fourier_pairs}{\it d})
     \begin{equation}
       \mathcal{F}\{\III_T(t)\} = \frac{1}{T}\III_{1/T}(f)
     \end{equation}
@@ -297,15 +303,15 @@ understanding the Lomb-Scargle Periodogram.
 
 \begin{itemize}
   \item nonuniform signal as sum-of-deltas window function
-  \item Nyquist limit does not exist!
-  \item 
+  \item Nyquist limit is meaningless!
+  \item Some use notions of ``average Nyquist limit'', but this can be misleading (reference LINEAR data in \fig{LINEAR_data})
 \end{itemize}
 
 
 \section{The Lomb-Scargle Periodogram}
 
 \begin{itemize}
-  \item Show relation to Schuster periodogram
+  \item Show relation to Shuster periodogram
   \item Show relation to least squares fitting of sinusoid
   \item Key: LS measures {\it windowed} power spectrum
   \item Show effects of truely random sampling; of Kepler-like sampling; of ground-based nightly sampling
@@ -315,18 +321,19 @@ understanding the Lomb-Scargle Periodogram.
 \section{Using Lomb-Scargle Effectively}
 
 \begin{itemize}
-  \item Frequency grid
-  \item Peak width
+  \item Expected peak width
+  \item How to choose the frequency grid
+  \item Normalization and interpretation
 \end{itemize}
 
 
 \subsection{Uncertainties in Periods}
 
 \begin{itemize}
-  \item Peak Width
+  \item Peak Width and why it's a poor proxy
   \item False Alarm Probability and why it fails
   \item Baluev method and why it's not enough
-  \item Boostrap
+  \item Motivation of Bootstrap
 
 \end{itemize}
 
@@ -353,58 +360,7 @@ understanding the Lomb-Scargle Periodogram.
 
 \newpage
 
-\section{Draft stuff below...}
-
-\begin{itemize}
-    \item transform and inverse
-    \item properties (delta function $\to$ sinusoid, time shift $\to$ phase, convolution theorem)
-    \item motivating the power spectrum
-    \item some important Fourier pairs (sinusoid$\to$delta, dirac comb$\to$dirac comb, Gaussian$\to$gaussian, top-hat$\to$sinc)
-\end{itemize}
-
-\subsection{Motivating the Power Spectral Density}
-
-If you explore the properties of the Fourier transform, you will discover
-a couple important properties:
-
-\begin{description}
-\item[The Fourier Transform is a Linear Operation.]
-This means that for functions $a$ and $b$ and scalar $A$,
-\begin{eqnarray}
-    \mathcal{F}(a + b) &=& \mathcal{F}(a) + \mathcal{F}(b) \\
-    \mathcal{F}(A \cdot a) &=& A\cdot\mathcal{F}(a).
-\end{eqnarray}
-These properties follow straightforwardly from the linearity of integration.
-\item[The Fourier Transform of a Sinusoid with frequency $f_0$ is a pair of delta
-      functions at $\pm f_0$.]
-    That is, if $g(t) = \sin(2\pi f_0 t)$, then
-    \begin{equation}
-        \hat{g}(f) = \frac{i}{2} \bigg(\delta(f - f_0) - \delta(f + f_0) \bigg)
-    \end{equation}
-    This can be shown straightforwardly using Euler's formula and the integral
-    definition of the Dirac delta function.
-\item[The Fourier Transform of a time-shifted function is unchanged up to a phase.]
-    That is, if $g_\tau(t) = g(t - \tau)$, then
-    \begin{equation}
-        \hat{g}_\tau(f) = \phi(\tau)\hat{g}(f)
-    \end{equation}
-    where $\phi$ is a phase that depends on the time-shift $\tau$.
-    This can be confirmed via a change of variables in \eq{FT-def}.
-\end{description}
-These properties are central to the well-known ability of the Fourier transform
-to measure frequency information from a continuous signal: a signal
-with a periodic component at frequency $f_0$ will have a Fourier transform
-reflecting that frequency. Moreover, we can remove the effect of the phase by
-taking the squared magnitude of the Fourier transform; this is the power
-spectral density:
-\begin{equation}
-    \mathcal{P}(g) \equiv \left|\mathcal{F}(g)\right|^2
-\end{equation}
-Because this operation removes the phase, we now have a quantity that is
-{\it insensitive to time-shifts} and consists of a
-{\it delta function for each sinusoidal frequency within the data}.
-If we want to detect periodic components in a continuous signal,
-this will be a very useful quantity.
+\section{Draft Stuff}
 
 \subsection{Other Identities}
 
@@ -516,8 +472,6 @@ Discrete samples can
 \begin{itemize}
 \item Multiterm makes the true period fit better, but also bumps the background noise.
 \end{itemize}
-
-\citet{VanderPlas2015}
 
 \bibliographystyle{apj}
 \bibliography{paper}
