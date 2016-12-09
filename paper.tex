@@ -248,7 +248,7 @@ We list a few more important pairs here (see \Fig{fourier_pairs} for a visual re
     \begin{equation}
       \mathcal{F}\{\Pi_T(t)\} = \sinc(f T)
     \end{equation}
-    The tophat function, $\Pi_T(t)$ is a normalized symmetric function that
+    The tophat function, $\Pi_T(t)$, is a normalized symmetric function that
     is uniform within a range given by $T$, and zero elsewhere:
     \begin{equation}
       \Pi_T(t)  \equiv \left\{
@@ -268,25 +268,30 @@ We list a few more important pairs here (see \Fig{fourier_pairs} for a visual re
     \begin{equation}
       \mathcal{F}\{\III_T(t)\} = \frac{1}{T}\III_{1/T}(f)
     \end{equation}
-    The Dirac comb $\III_T(t)$ is an infinite sequence of Dirac delta functions
-    placed at even intervals of size $T$:
+    The Dirac comb, $\III_T(t)$, is an infinite sequence of Dirac delta functions placed at even intervals of size $T$:
     \begin{equation}
-      \III_T(t) \equiv \sum_{k=-\infty}^\infty \delta(t - kT)
+      \III_T(t) \equiv \sum_{n=-\infty}^\infty \delta(t - nT)
     \end{equation}
 \end{description}
-
-The key observation in each of these is the reciprocity of scales across the
-Fourier transform: a function with a characteristic scale $T$ will generally
-have a Fourier transform with characteristic scale proportional to $1/T$.
+The key observation in each of these Fourier pairs is the reciprocity
+of scales between a function and its Fourier transform:
+that is, a function with a characteristic scale $T$ will in general
+have a Fourier transform with characteristic scale of $1/T$.
 This feature will turn out to be very important as we push further in
 understanding the Lomb-Scargle Periodogram.
 
 \subsection{Windowing and Convolution}
 
 \begin{itemize}
-  \item mention convolution theorem; show how it leads to windowing
-  \item figure: show how windowing works
+  \item Convolution theorem; \fig{convolution}
+  \item Windowing: Convolution theorem in reverse (fig?)
 \end{itemize}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig04_Convolution_Diagram}
+  \caption{Visualization of the Convolution Theorem\figlabel{convolution}}
+\end{figure}
 
 
 \section{From Continuous to Discrete Signals}
