@@ -280,18 +280,55 @@ have a Fourier transform with characteristic scale of $1/T$.
 This feature will turn out to be very important as we push further in
 understanding the Lomb-Scargle Periodogram.
 
+
 \subsection{Windowing and Convolution}
 
-\begin{itemize}
-  \item Convolution theorem; \fig{convolution}
-  \item Windowing: Convolution theorem in reverse (fig?)
-\end{itemize}
+A final property of the Fourier transform that we will discuss here is its
+ability to convert convolutions into point-wise products.
+A convolution of two functions, usually denoted with a $\ast$, is defined
+as follows:
+\begin{equation}
+  [f \ast g](t) = \int_{-\infty}^\infty f(\tau)g(t - \tau) d\tau
+  \eqlabel{convolution_definition}
+\end{equation}
+From the definition, it is clear that a convolution amounts to ``sliding'' one
+function past the other.
+Such an operation is commonly used, for example, in smoothing a function,
+as visualized in \Fig{convolution} for a tophat-shaped smoothing window.
 
 \begin{figure}[ht]
   \centering
   \includegraphics[width=\textwidth]{fig04_Convolution_Diagram}
-  \caption{Visualization of the Convolution Theorem\figlabel{convolution}}
+  \caption{Visualization of a convolution as often used for kernel smoothing.
+    The normalized tophat-shaped window function slides across the domain (upper panel),
+    such that at each point the mean of the values within the window are
+    used to compute the smoothed function (lower panel).
+    \figlabel{convolution}}
 \end{figure}
+
+Given this definition of a convolution, it can be shown that the Fourier transform of a convolution is the point-wise product of the Fourier transforms:
+\begin{equation}
+  \mathcal{F}\{f \ast g\} = \mathcal{F}\{f\} \cdot \mathcal{F}\{g\}
+  \eqlabel{convolution_theorem}
+\end{equation}
+In practice, this is a much more efficient means of computing the convolution
+than to directly solve at each time $t$ the integral over $\tau$ that appears
+in \eq{convolution_definition}.
+This result in \eq{convolution_theorem} is known as the
+{\it convolution theorem}, and is illustrated in \fig{convolution_theorem}.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig05_Convolution_Theorem}
+  \caption{Visualization of a convolution used for kernel smoothing
+    \figlabel{convolution_theorem}}
+\end{figure}
+
+Likewise, the Fourier transform of a product is a convolution of the transforms:
+\begin{equation}
+  \mathcal{F}\{f \cdot g\} = \mathcal{F}\{f\} \ast \mathcal{F}\{g\}
+\end{equation}
+This becomes
 
 
 \section{From Continuous to Discrete Signals}
