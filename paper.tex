@@ -299,12 +299,13 @@ as visualized in \Fig{convolution} for a tophat-shaped smoothing window.
 \begin{figure}[ht]
   \centering
   \includegraphics[width=\textwidth]{fig04_Convolution_Diagram}
-  \caption{Visualization of a convolution as often used for kernel smoothing.
+  \caption{Visualization of a convolution between a continuous signal and a tophat smoothing kernel.
     The normalized tophat-shaped window function slides across the domain (upper panel),
     such that at each point the mean of the values within the window are
     used to compute the smoothed function (lower panel).
     \figlabel{convolution}}
 \end{figure}
+
 
 Given this definition of a convolution, it can be shown that the Fourier transform of a convolution is the point-wise product of the Fourier transforms:
 \begin{equation}
@@ -320,7 +321,9 @@ This result in \eq{convolution_theorem} is known as the
 \begin{figure}[ht]
   \centering
   \includegraphics[width=\textwidth]{fig05_Convolution_Theorem}
-  \caption{Visualization of a convolution used for kernel smoothing
+  \caption{Visualization of the Convolution theorem as used to compute the
+    result in \fig{convolution}. The key is that the Fourier transform of
+    a convolution is the pointwise product of the two Fourier transforms.
     \figlabel{convolution_theorem}}
 \end{figure}
 
