@@ -387,7 +387,7 @@ Because of the inverse relationship between the width of the window and the widt
     \figlabel{tophat_window}}
 \end{figure}
 
-\subsection{Effect of a Dirac Comb}
+\subsection{The Dirac Comb and the Nyquist Limit}
 Another window function that commonly arises is when a continuous signal is
 sampled instantaneously at regular intervals.
 Such an observation is, in effect, a point-wise product between the true
@@ -408,12 +408,26 @@ of the observations; this is illustrated in \fig{comb_window_1}.
 Interestingly, because the Fourier transform of a Dirac comb is another Dirac
 comb, the effect of such an observing window is to create a long sequence
 of aliases with a spacing of $1/T$.
-With this in mind, we can be assured that evaluating the transform in the
-range $[-(2T)^{-1}, (2T)^{-1}]$ is sufficient to capture all the relevant
-frequency information: everything else will simply be an alias of what appears
-within that range.
+With this in mind, we can be assured in this case that evaluating the
+transform in the range $-(2T)^{-1} \le f < (2T)^{-1}$ is sufficient to capture
+all the relevant frequency information: the signal outside that range is a
+string of duplicates of what lies in that range.
 
+The example in \fig{comb_window_1} is somewhat of a best-case scenario, because
+the true Fourier transform lies entirely in the range noted above.
+If we change the sampling rate so that this is no longer the case, we will
+have a situation similar to that in \fig{comb_window_2}.
+With a lower sampling rate, the signal transform no longer fits within the
+frequency window, and the true Fourier transform {\it cannot be recovered}
+from the observed transform.
 
+This implies that if we have a regularly-sampled function with a sampling
+rate of of $f_0 = 1/T$, we can only fully recover the freuqency information
+if the signal is {\it band-limited} between frequencies $\pm f_0/2$.
+This is one way to motivate the famous Nyquist sampling limit, which says
+that to fully represent the frequency content of a ``band-limited signal''
+with all Fourier power in the range $\pm B$, we must sample the data with a
+rate of at least $2B$.
 
 
 \begin{figure}[ht]
