@@ -388,6 +388,11 @@ Because of the inverse relationship between the width of the window and the widt
 \end{figure}
 
 \subsection{Effect of a Dirac Comb}
+Another window function that commonly arises is when a continuous signal is
+sampled instantaneously at regular intervals.
+Such an observation is, in effect, a point-wise product between the true
+underlying signal and a Dirac comb with the $T$ parameter matching the spacing
+of the observations; this is illustrated in \fig{comb_window_1}.
 
 \begin{figure}[ht]
   \centering
@@ -397,10 +402,31 @@ Because of the inverse relationship between the width of the window and the widt
     discrete observations). The observed Fourier
     transform is a convolution of the true transform (here a localized
     Gaussian) and the window transform (here another Dirac comb).
-    \figlabel{comb_window}}
+    \figlabel{comb_window_1}}
 \end{figure}
 
-\subsection{Understanding the Nyquist Frequency}
+Interestingly, because the Fourier transform of a Dirac comb is another Dirac
+comb, the effect of such an observing window is to create a long sequence
+of aliases with a spacing of $1/T$.
+With this in mind, we can be assured that evaluating the transform in the
+range $[-(2T)^{-1}, (2T)^{-1}]$ is sufficient to capture all the relevant
+frequency information: everything else will simply be an alias of what appears
+within that range.
+
+
+
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig08_comb_window_2}
+  \caption{Visualization of the effect on the Fourier transform of a
+    Dirac Comb observing window (i.e., a long string of evenly-spaced
+    discrete observations). The observed Fourier
+    transform is a convolution of the true transform (here a localized
+    Gaussian) and the window transform (here another Dirac comb).
+    \figlabel{comb_window_2}}
+\end{figure}
+
 
 \begin{itemize}
   \item discrete signal as a Dirac comb window
@@ -438,7 +464,7 @@ Because of the inverse relationship between the width of the window and the widt
 \end{itemize}
 
 
-\subsection{Uncertainties in Periods}
+\section{Uncertainties in Periods}
 
 \begin{itemize}
   \item Peak Width and why it's a poor proxy
@@ -466,123 +492,6 @@ Because of the inverse relationship between the width of the window and the widt
 \item Multiterm makes the true period fit better, but also bumps the background noise.
 \end{itemize}
 
-
-
-
-\newpage
-
-\section{Draft Stuff}
-
-\subsection{Other Identities}
-
-\begin{description}
-\item[Convolution Theorem.]
-    The convolution theorem states that the
-    Fourier transform of a convolution is a product of the Fourier transforms:
-    \begin{equation}
-      \mathcal{F}\{g \ast h\} = \mathcal{F}\{g\}\mathcal{F}\{h\}
-    \end{equation}
-    where the convlution operator $\ast$ is defined by
-    \begin{equation}
-      \{g \ast h\}(t) \equiv \int_{-\infty}^\infty g(t - \tau) h(\tau) d\tau.
-    \end{equation}
-    This can be confirmed via the linearity of integration and the integral
-    definition of the Dirac delta function.
-\item[The Fourier Transform of a Gaussian is a Gaussian.]
-    The Gaussian function is defined as
-    \begin{equation}
-    G(t;\sigma) \propto \exp\left[\frac{-t^2}{2\sigma^2}\right].
-    \end{equation}
-    The Fourier transform of a Gaussian is another Gaussian:
-    \begin{equation}
-    \mathcal{F}\{G(t;\sigma)\} \propto G(f; \sigma_f)
-    \end{equation}
-    where $\sigma_f = (2\pi\sigma)^{-1}$. This can be shown by completing the
-    square within the integrand.
-\end{description}
-
-\subsection{Fourier Power}
-
-Using the above definitions, it is straightforward to show that a time-offset in a function leads to a multiplicative phase in the Fourier transform; that is, if
-\begin{equation}
-  g_\tau(t) \equiv g(t - \tau)
-\end{equation}
-then
-\begin{equation}
-  \mathcal{F}\{g_\tau\} = e^{-2\pi i \nu \tau}\mathcal{F}\{g\}
-\end{equation}
-Because the phase merely represents the chosen coordinate system, we'd like to remove it for spectral analysis.
-One way to do this is to compute the power spectral density, which is proportional to \todo{const of proportionality?} the squared modulus of the Fourier Transform:
-\begin{equation}
-  P\{g\} \propto \left| \mathcal{F}\{g\} \right|^2.
-\end{equation}
-Because the modulus of a phase is equal to unity, the resulting measure is unchanged under time-translations in $g(t)$, and $P\{g\} = P\{g_\tau\}$ for any time-shift $\tau$.
-
-\begin{itemize}
-\item Some examples of functions, their transforms, and their power.
-\end{itemize}
-
-\subsection{Effect of Window Functions}
-
-\begin{itemize}
-\item convolution theorem and windowing
-\item infinite, regularly-sampled observations
-\item finite, regularly-sampled observations
-\item finite, irregularly-sampled observations
-\end{itemize}
-
-\section{From Idealistic to Realistic}
-
-All of the above theory is beautiful and elegant, but when the theory meets the real world things get a bit more messy.
-In particular, we rarely (if ever) are able to measure continuous functions like $g(t)$, but instead measure discrete realizations of the underlying function at a finite number of particular times $t_n$.
-These discrete observations are effectively a window function over our data, and as we saw above, the presence of such a window function will propagate through our computation of the Fourier power!
-The quantitative result of this windowning depends on the exact nature of the observation pattern; we will first consider the somewhat simpler case of evenly-spaced discrete data.
-
-\subsection{Evenly-Spaced Discrete Data: the Schuster Periodogram}
-
-Let's first consider the case of a large series of evenly-spaced observations.
-Discrete samples can
-
-
-\begin{itemize}
-\item Evenly-spaced delta functions $\to$ evenly-spaced delta in frequency, separated by nyquist
-\end{itemize}
-
-\subsection{Unevenly-Spaced Discrete Data: the Lomb-Scargle Periodogram}
-
-
-\begin{itemize}
-\item Unevenly-spaced delta functions: no cancelations, and so window is generally {\it infinitely} wide.
-\item Least-squares equivalence of Lomb-Scargle
-\end{itemize}
-
-\section{What Frequency Grid to Use?}
-
-\begin{itemize}
-\item Follow discussion from gatspy documentation
-\end{itemize}
-
-\section{Reporting errors in Frequency: Uncertainty vs. Precision}
-
-\begin{itemize}
-\item Peak width
-\item False Alarm Probability and why it fails
-\item Baluev method and why it's not enough
-\item Boostrap
-\end{itemize}
-
-\section{Algorithmic Considerations}
-
-\begin{itemize}
-\item Talk about Press \& Rybicki method; show some benchmarks.
-\item NFFT method
-\end{itemize}
-
-\section{Generalizations \& Challenges}
-
-\begin{itemize}
-\item Multiterm makes the true period fit better, but also bumps the background noise.
-\end{itemize}
 
 \section{Acknowledgements}
 
