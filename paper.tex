@@ -116,7 +116,7 @@ is a well-known algorithm for detecting periodicity
 in unevenly-sampled time-series, particularly within the astronomy community.
 For example, consider the data shown in \fig{LINEAR_data}.
 This is an irregularly-sampled timeseries showing a single object from the
-LINEAR survey \citep{LINEAR}, with magnitude measured 280 times over the
+LINEAR survey \citep{LINEAR1, LINEAR3}, with magnitude measured 280 times over the
 course of five and a half years\footnote{
   Python code to reproduce \fig{LINEAR_data}, as well as all other figures
   in this manuscript, is available at 
@@ -188,7 +188,7 @@ The continuous Fourier transform has a number of useful properties that we will 
      That is, for any constant $A$ and any functions $f$ and $g$, we can write
      \begin{eqnarray}
        \mathcal{F}\{f(t) + g(t)\} &=& \mathcal{F}\{f(t)\} + \mathcal{F}\{g(t)\}\nonumber\\
-       \mathcal{F}\{A f(t)\} &=& A\mathcal{F}\{f(t)\},
+       \mathcal{F}\{A f(t)\} &=& A\mathcal{F}\{f(t)\}
      \end{eqnarray}
      which follows from the linearity of the Fourier integral.
 
@@ -289,6 +289,7 @@ We list a few more important pairs here (see \Fig{fourier_pairs} for a visual re
     The Dirac comb, $\III_T(t)$, is an infinite sequence of Dirac delta functions placed at even intervals of size $T$:
     \begin{equation}
       \III_T(t) \equiv \sum_{n=-\infty}^\infty \delta(t - nT)
+      \eqlabel{dirac_comb}
     \end{equation}
 \end{description}
 The key observation in each of these Fourier pairs is the reciprocity
@@ -413,6 +414,8 @@ transform in the range $-(2T)^{-1} \le f < (2T)^{-1}$ is sufficient to capture
 all the relevant frequency information: the signal outside that range is a
 string of duplicates of what lies in that range.
 
+\subsubsection{The Nyquist Limit}
+
 The example in \fig{comb_window_1} is somewhat of a best-case scenario, because
 the true Fourier transform lies entirely in the range noted above.
 If we change the sampling rate so that this is no longer the case, we will
@@ -429,25 +432,70 @@ that to fully represent the frequency content of a ``band-limited signal''
 with all Fourier power in the range $\pm B$, we must sample the data with a
 rate of at least $2B$.
 
-
 \begin{figure}[ht]
   \centering
   \includegraphics[width=\textwidth]{fig08_comb_window_2}
-  \caption{Visualization of the effect on the Fourier transform of a
-    Dirac Comb observing window (i.e., a long string of evenly-spaced
-    discrete observations). The observed Fourier
-    transform is a convolution of the true transform (here a localized
-    Gaussian) and the window transform (here another Dirac comb).
+  \caption{Repeating the visualization from \fig{comb_window_1}, but here with
+    a lower sampling rate. The result is that the Fourier transform of the
+    window function (lower left) has spacing narrower than the Fourier transform
+    of the signal (middle left), meaning the observed Fourier transform has
+    aliasing of signals, such that not all frequency information can be
+    recovered.
     \figlabel{comb_window_2}}
 \end{figure}
 
+\subsubsection{The Discrete Fourier Transform}
+For regularly-spaced observations defined by a Dirac comb, the delta functions
+serve to collapse the Fourier integral into a sum over periodic components.
+if $g^{(T)}(t) \equiv g(t) \III_T(t)$, then its Fourier transform is
+\begin{equation}
+  \hat{g}^{(T)}(f) = \sum_{n=-\infty}^\infty g(nT) e^{-2\pi i f n T},
+\end{equation}
+which follows directly from \eq{FT-def} and \eq{dirac_comb}.
+In the real world, we will not have an infinite number of samples, but rather
+a finite number of samples $N$, and we can choose the coordinate system
+appropriately and define $g(nT) \equiv g_n$ to write
+\begin{equation}
+  \hat{g}^{(N,T)}(f) = \sum_{n=0}^N g_n e^{-2\pi i f n T}
+\end{equation}
+From the arguments around Nyquist aliasing, we know that the only relevant
+frequency range is from $0 \le f \le 1/T$, and so we can define $N$
+evenly-spaced frequencies with $\Delta f = 1 / (NT)$ covering this range.
+Denoting the sampled transform as
+$\hat{g}_k \equiv \hat{g}^{(N, T)}(k\Delta f)$, we can write
+\begin{equation}
+  \hat{g}_k = \sum_{n=0}^N g_n e^{-2\pi i k n / N}
+\end{equation}
+which you may recognize as the standard discrete Fourier transform.
 
-\begin{itemize}
-  \item discrete signal as a Dirac comb window
-  \item derive the Nyquist limit from the Dirac comb FT
-  \item derive the Schuster periodogram
-  \item mention the FFT
-\end{itemize}
+But you may have noticed we glossed over something: the effect of switching
+from an infinite number of samples to a finite number of samples.
+In moving from $\hat{g}^{(T)}$ to $\hat{g}^{(N,T)}$, we have effectively applied
+to our data a rectangular window function of width $NT$.
+From the discussion accompanying \fig{tophat_window}, we know what this does:
+it gives us a Fourier transform convolved with a sinc function of width
+$1 / (NT)$, resulting in the ``smearing'' of the Fourier transform signal
+with this width.
+Roughly speaking, then, any two Fourier transform values at frequencies within
+$1/(NT)$ of each other will not be independent, and so we should space our
+evaluations of the frequency with $\Delta f \ge 1/(NT)$.
+Comparing to above, we see that this is {\it exactly the frequency spacing}
+we arrived at from Nyquist-frequency arguments.
+
+What this indicates is that the frequency spacing of the discrete Fourier
+transform is optimal in terms of both the Nyquist sampling limit
+{\it and} the effect of the finite observing window!
+Now, this argument has admittedly been a bit hand-wavy, but there do exist more
+mathematically rigorous approaches to showing these
+properties of the discrete Fourier transform
+\citep[see, e.g.][]{FoundationsOfSignalProcessing}.
+Nevertheless, I find this to be a helpful approach
+in developing intuition regarding the relationship between the
+continuous and discrete Fourier transforms.
+
+\subsubsection{The Schuster Periodogram}
+
+...
 
 
 \section{Non-uniform Sampling Windows}
