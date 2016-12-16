@@ -528,39 +528,111 @@ all of the relevant frequency information present in the data.
 
 In the real world, particularly in fields like Astronomy where observations are
 subject to interruptions from weather and diurnal cycles, the sampling rate
-is generally far from uniform. 
+is generally far from uniform.
+Using the same approach as we used to explore uniform sampling in the previous
+section, we can now explore non-uniform sampling here.
+
+In the general non-uniform case, we measure some signal at a set of $N$ times
+which we will denote $\{t_n\}$.
+Our observing window function in this case is still a sum of delta functions,
+but at non-uniform locations.
+Mathematically, the observing window will look like this:
+
+\begin{equation}
+W(t; \{t_n\}) = \sum_{n=1}^{N} \delta(t - t_n)
+\end{equation}
+
+Applying this window to our true underlying signal $g(t)$, we find an observed
+signal of the form:
+
+\begin{eqnarray}
+  g_{obs}(t) &=& g(t) W(t; \{t_n\}) \nonumber\\
+             &=& \sum_{n=1}^{N} g(t_n)\delta(t - t_n)
+\end{eqnarray}
+
+Just as in the uniform case, the observed signal is a convolution of the true
+signal transform and the window transform; unlike in the uniform case, the
+window transform will generally {\it not} be a nice clean function.
+\Fig{random_window} shows the effect on the Fourier transform of a
+non-uniform observing cadence with a sampling rate identical to that
+in \fig{comb_window_1}.
+
+A few things stand-out in this figure. In particular, the Fourier transform of
+the non-uniformly spaced delta functions looks like random noise, and in some
+senses it is: the Fourier space representation reflects the frequency of
+observations, and so non-structured spacing of observations will lead to
+a non-structured Fourier representation of the window function.
+This non-structured window transform, when convolved with the Fourier transform
+of the true signal, results in an observed Fourier transform with the same
+lack of useful structure.
+Unlike the uniform result in \Fig{comb_window_1}, there is no direct aliasing
+of the true signal, and no way to exactly recover any portion of the true
+Fourier transform of this data.
 
 
 \begin{figure}[ht]
   \centering
   \includegraphics[width=\textwidth]{fig10_random_window}
-  \caption{
+  \caption{The effect of non-uniform sampling on the observed Fourier transform.
+    These samples have the same average spacing as those in \fig{comb_window_1},
+    but the lack of structure in observing window translates to a lack of
+    structure in its transform, causing the observed transform to be ``noisy''.
     \figlabel{random_window}}
 \end{figure}
+
+One might hope that sampling the signal more densely might limit these problems,
+and it does, but only to a degree.
+\Fig{random_window_2} increases the density of observations by a factor of 10,
+such that there are 200 total observations over the length-10 observing window.
+The observed Fourier transform in this case is much more reflective of the
+underlying signal, but still contains a degree of ``noise'' rooted in the
+unstructured nature of the spacing between observations.
 
 
 \begin{figure}[ht]
   \centering
   \includegraphics[width=\textwidth]{fig11_random_window_2}
-  \caption{
+  \caption{The effect of non-uniform sampling on the observed Fourier transform,
+    with a factor of 10 more samples than \fig{random_window}.
+    Even with very dense sampling of the function, the Fourier transform
+    cannot be exactly recovered due to the 
+    These samples have the same average spacing as those in \fig{comb_window_1},
+    but the lack of structure in observing window translates to a lack of
+    structure in its transform, causing the observed transform to be a
+    ``noisy'' representation of the true transform
     \figlabel{random_window_2}}
 \end{figure}
 
+Since the observed transform is a well-defined convolution of the (unknown) true
+transform and the (known) window transform, you might hope that we could
+perform some sort of deconvolution operation to recover the result, but this
+turns out not to be straightforward, as deconvolution (particularly in this
+case where delta functions are involved) is an ill-posed problem without a
+unique solution.
+
+\subsection{Non-Uniform Periodogram}
+
+\subsection{A Non-uniform Nyquist Limit?}
+
+NO!!!
+
+\todo{Reference LINEAR data avg frequency vs computed period}
+
+
+\subsection{Semi-structured Observing Windows}
 
 \begin{itemize}
-  \item nonuniform signal as sum-of-deltas window function
-  \item Nyquist limit is meaningless!
-  \item Some use notions of ``average Nyquist limit'', but this can be misleading (reference LINEAR data in \fig{LINEAR_data})
+  \item Nightly (e.g. ground-based imaging)
+  \item Uniform, but with missing data (e.g. Kepler)
 \end{itemize}
 
 
 \section{The Lomb-Scargle Periodogram}
 
 \begin{itemize}
-  \item Show relation to Shuster periodogram
-  \item Show relation to least squares fitting of sinusoid
-  \item Key: LS measures {\it windowed} power spectrum
-  \item Show effects of truely random sampling; of Kepler-like sampling; of ground-based nightly sampling
+  \item ... is like a Schuster periodogram.
+  \item ... is also like a least-squares sinusoid fit.
+  \item ... reminder that it is a {\it windowed} power spectrum
 \end{itemize}
 
 
