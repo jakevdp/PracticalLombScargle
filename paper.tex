@@ -94,8 +94,9 @@ We discuss... and ... and ...
 \begin{figure}[ht]
 \centering
 \includegraphics[width=\textwidth]{fig01_LINEAR_data}
-\caption{Observed light curve from LINEAR object ID 11375941
-    \figlabel{LINEAR_data}.
+\caption{Observed light curve from LINEAR object ID 11375941. Uncertainties
+  are indicated by the gray errorbars on each point.
+  \figlabel{LINEAR_data}.
 }
 \end{figure}
 
@@ -227,6 +228,7 @@ The linearity of the transform means that any signal made up of a sum of periodi
 Further, if we compute the squared amplitude of the resulting transform, we can both do away with complex components and remove the phase imparted by any time offsets; this squared amplitude is usually known as the {\it Power Spectrum}:
 \begin{equation}
   \mathcal{P}\{g\} \equiv \left|\mathcal{F}\{g\}\right|^2
+  \eqlabel{power-spectrum}
 \end{equation}
 The power spectrum of a function is a positive real-valued function of $f$ that quantifies the contribution of each frequency $f$ to the total signal.
 
@@ -353,7 +355,7 @@ An important corrollary is that the Fourier transform of a product is a convolut
 \end{equation}
 We will explore the impact of this in the next section.
 
-\section{Window Functions: From Continuous to Discrete Signals}
+\section{Window Functions: From Idealized to Real-world signals}
 In a typical observational setting, we will be observing some small part of
 a larger time-varying signal.
 For example, if you have a very long signal that you measure for a finite
@@ -388,7 +390,7 @@ Because of the inverse relationship between the width of the window and the widt
     \figlabel{tophat_window}}
 \end{figure}
 
-\subsection{The Dirac Comb and the Nyquist Limit}
+\subsection{The Dirac Comb and the Discrete Fourier Transform}
 Another window function that commonly arises is when a continuous signal is
 sampled instantaneously at regular intervals.
 Such an observation is, in effect, a point-wise product between the true
@@ -410,14 +412,18 @@ Interestingly, because the Fourier transform of a Dirac comb is another Dirac
 comb, the effect of such an observing window is to create a long sequence
 of aliases with a spacing of $1/T$.
 With this in mind, we can be assured in this case that evaluating the
-transform in the range $-(2T)^{-1} \le f < (2T)^{-1}$ is sufficient to capture
-all the relevant frequency information: the signal outside that range is a
-string of duplicates of what lies in that range.
+transform in the range $(2T)^{-1} \le f < (2T)^{-1}$ is sufficient to capture
+all the available frequency information:
+the signal outside that range is a sequence of identical aliases of
+what lies in that range.
+In fact, due to the nature of the aliasing, it is in fact sufficient to
+compute the transform in {\it any} range of width $1/T$, and it is often
+convenient to instead use the range $0 \le f < 1/T$.
 
 \subsubsection{The Nyquist Limit}
 
 The example in \fig{comb_window_1} is somewhat of a best-case scenario, because
-the true Fourier transform lies entirely in the range noted above.
+the true Fourier transform values lie entirely in a range of width $1/T$.
 If we change the sampling rate so that this is no longer the case, we will
 have a situation similar to that in \fig{comb_window_2}.
 With a lower sampling rate, the signal transform no longer fits within the
@@ -447,28 +453,35 @@ rate of at least $2B$.
 \subsubsection{The Discrete Fourier Transform}
 For regularly-spaced observations defined by a Dirac comb, the delta functions
 serve to collapse the Fourier integral into a sum over periodic components.
-if $g^{(T)}(t) \equiv g(t) \III_T(t)$, then its Fourier transform is
+Suppose we have a true (infinitely long and continuous) signal $g(t)$, but
+we observe it only at a regular grid with spacing $T$. In this case, our
+observed signal is $g_{obs} = g(t) \III_T(t)$ and its Fourier transform is
 \begin{equation}
-  \hat{g}^{(T)}(f) = \sum_{n=-\infty}^\infty g(nT) e^{-2\pi i f n T},
+  \hat{g}_{obs}(f) = \sum_{n=-\infty}^\infty g(nT) e^{-2\pi i f n T},
 \end{equation}
 which follows directly from \eq{FT-def} and \eq{dirac_comb}.
-In the real world, we will not have an infinite number of samples, but rather
-a finite number of samples $N$, and we can choose the coordinate system
-appropriately and define $g(nT) \equiv g_n$ to write
+
+In the real world, however, we will not have an infinite number of observations,
+but rather a finite number of samples $N$.
+We can choose the coordinate system appropriately and define
+$g_n \equiv g(nT)$ to write
 \begin{equation}
-  \hat{g}^{(N,T)}(f) = \sum_{n=0}^N g_n e^{-2\pi i f n T}
+  \hat{g}_{obs}(f) = \sum_{n=0}^N g_n e^{-2\pi i f n T}
+  \eqlabel{DFT_f}
 \end{equation}
 From the arguments around Nyquist aliasing, we know that the only relevant
 frequency range is from $0 \le f \le 1/T$, and so we can define $N$
 evenly-spaced frequencies with $\Delta f = 1 / (NT)$ covering this range.
 Denoting the sampled transform as
-$\hat{g}_k \equiv \hat{g}^{(N, T)}(k\Delta f)$, we can write
+$\hat{g}_k \equiv \hat{g}_{obs}(k\Delta f)$, we can write
 \begin{equation}
   \hat{g}_k = \sum_{n=0}^N g_n e^{-2\pi i k n / N}
+  \eqlabel{DFT}
 \end{equation}
-which you may recognize as the standard discrete Fourier transform.
+which you might recognize as the standard form of the discrete Fourier
+transform.
 
-But you may have noticed we glossed over something: the effect of switching
+You may have noticed we glossed over something here: the effect of switching
 from an infinite number of samples to a finite number of samples.
 In moving from $\hat{g}^{(T)}$ to $\hat{g}^{(N,T)}$, we have effectively applied
 to our data a rectangular window function of width $NT$.
@@ -485,20 +498,54 @@ we arrived at from Nyquist-frequency arguments.
 What this indicates is that the frequency spacing of the discrete Fourier
 transform is optimal in terms of both the Nyquist sampling limit
 {\it and} the effect of the finite observing window!
-Now, this argument has admittedly been a bit hand-wavy, but there do exist more
-mathematically rigorous approaches to showing these
-properties of the discrete Fourier transform
+Now, this argument has admittedly been a bit hand-wavy, but there do exist
+mathematically rigorous approaches to proving that the discrete Fourier
+transform in \eq{DFT} captures all of the available frequency information
+for a uniformly-sampled function $g_n$
 \citep[see, e.g.][]{FoundationsOfSignalProcessing}.
-Nevertheless, I find this to be a helpful approach
+Despite the semi-qualitative nature of our discussion,
+I find it to be a helpful approach
 in developing intuition regarding the relationship between the
 continuous and discrete Fourier transforms.
 
 \subsubsection{The Schuster Periodogram}
 
-...
+With the discrete Fourier transform defined in \eqs{DFT_f}{DFT}, we can
+apply the definition of the Fourier power spectrum from \eq{power-spectrum}
+to compute the {\it Schuster Periodogram}, first proposed by \citet{Schuster98}:
+\begin{equation}
+  P_S(f) = \frac{1}{N}\left|\sum_{n=1}^N g_n e^{-2\pi i f t_n}\right|^2
+\end{equation}
+Apart from the $1/N$ scaling, this is precisely the Fourier power defined
+in \eq{power-spectrum} for the expression in \eq{DFT_f}, and it follows that
+for a uniformly-sampled function $g_n$, the Schuster periodogram captures
+all of the relevant frequency information present in the data.
+
+\todo{Add simulated RR Lyrae data and show the Shuster periodogram}
 
 
 \section{Non-uniform Sampling Windows}
+
+In the real world, particularly in fields like Astronomy where observations are
+subject to interruptions from weather and diurnal cycles, the sampling rate
+is generally far from uniform. 
+
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig10_random_window}
+  \caption{
+    \figlabel{random_window}}
+\end{figure}
+
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig11_random_window_2}
+  \caption{
+    \figlabel{random_window_2}}
+\end{figure}
+
 
 \begin{itemize}
   \item nonuniform signal as sum-of-deltas window function
