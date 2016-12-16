@@ -10,7 +10,7 @@ SUFF        = pdf
 
 CHECK_RERUN = grep Rerun $*.log
 
-NAME    = paper
+NAME    = PracticalLombScargle
 DOC_OUT = ${NAME}.${SUFF}
 
 default: ${DOC_OUT}
