@@ -69,7 +69,7 @@
 
 \begin{document}
 
-\title{Practical Considerations for Lomb-Scargle Periodic Analysis}
+\title{Understanding the Lomb-Scargle Periodogram}
 
 \newcommand{\escience}{*}
 \newcommand{\uwastro}{+}
@@ -96,7 +96,7 @@ We discuss... and ... and ...
 \includegraphics[width=\textwidth]{fig01_LINEAR_data}
 \caption{Observed light curve from LINEAR object ID 11375941. Uncertainties
   are indicated by the gray errorbars on each point.
-  \figlabel{LINEAR_data}.
+  \figlabel{LINEAR_data}
 }
 \end{figure}
 
@@ -340,9 +340,11 @@ This result in \eq{convolution_theorem} is known as the
 \begin{figure}[ht]
   \centering
   \includegraphics[width=\textwidth]{fig05_Convolution_Theorem}
-  \caption{Visualization of the Convolution theorem (\eq{convolution_theorem}).
+  \caption{Visualization of the convolution theorem (\eq{convolution_theorem}).
     The key is that the Fourier transform of
     a convolution is the pointwise product of the two Fourier transforms.
+    In the right panels, the black and gray lines represent the real and
+    imaginary part of the transform, respectively.
     \figlabel{convolution_theorem}}
 \end{figure}
 When thinking about frequency components of time-domain measurements, this
@@ -515,6 +517,7 @@ apply the definition of the Fourier power spectrum from \eq{power-spectrum}
 to compute the {\it Schuster Periodogram}, first proposed by \citet{Schuster98}:
 \begin{equation}
   P_S(f) = \frac{1}{N}\left|\sum_{n=1}^N g_n e^{-2\pi i f t_n}\right|^2
+  \eqlabel{schuster-periodogram}
 \end{equation}
 Apart from the $1/N$ scaling, this is precisely the Fourier power defined
 in \eq{power-spectrum} for the expression in \eq{DFT_f}, and it follows that
@@ -548,6 +551,7 @@ signal of the form:
 \begin{eqnarray}
   g_{obs}(t) &=& g(t) W(t; \{t_n\}) \nonumber\\
              &=& \sum_{n=1}^{N} g(t_n)\delta(t - t_n)
+  \eqlabel{g-nonuniform}
 \end{eqnarray}
 
 Just as in the uniform case, the observed signal is a convolution of the true
@@ -612,11 +616,72 @@ unique solution.
 
 \subsection{Non-Uniform Periodogram}
 
+From this non-uniform Fourier transform, it is straightforward to extend the
+definition of the Schuster periodogram to the non-uniform case.
+Plugging \eq{g-nonuniform} into the Fourier transform of \eq{FT-def}, in analogy to \eq{schuster-periodogram}, gives the following form of the power spectrum:
+\begin{equation}
+  P(f) = \frac{1}{N}\left|\sum_{n=1}^N g(t_n)e^{-2\pi i t_n} \right|^2
+\end{equation}
+Becuase it is derived from the Fourier transform of a non-uniformly sampled
+function, this periodogram is subject to all the caveats mentioned here: in
+particular, the periodogram measures the periodic content of the
+{\it windowed signal} and thus reflects a convolution of the true signal
+with a non-structured window function.
+The resulting periodogram, then, can only be used as a qualitative approximation
+of the true periodogram, and will only approach the true periodogram as the
+number of observed samples gets very large.
+
+
 \subsection{A Non-uniform Nyquist Limit?}
 
 NO!!!
 
-\todo{Reference LINEAR data avg frequency vs computed period}
+Examples: average \citep{NumRec, Horne86}, minimum \citep{Scargle82, Roberts87}, average of inverse time intervals \citep{Debosscher07}.
+
+time interval of measurement \citep{ICVG2014}, common multiple of observing time \citep{Eyer99}
+
+\todo{Reference Figure 1 LINEAR data avg frequency vs computed period}
+
+
+\citet{Scargle82}: ``...''
+
+\citet{NumRec}: ``...''
+
+\citet{Roberts87}: ``for arbitrary $\{t_r\}$,
+the sampling theorem tells us nothing.
+If the data samples are otherwise equally spaced but with missing
+points, the theorem says thatthe data completely determine
+a function whose FT is zero for $|v| > 1/(2\Delta_{max})$, where $\Delta_{max}$
+is the {\it largest completely sampled} data spacing. However,
+there are smaller spacings, and these certainly carry information
+about frequencies greater than $1/(2\Delta_{max} )$; some information
+is available about frequencies as high as
+$1/(2\Delta_{min} )$, where $\Delta_{min}$ is the smallest spacing between data
+points. Furthermore, if the $\{t_r\}$ are more or less randomly
+distributed, so that a wide range ofspacings are present and
+there is little redundancy in the spacing between various
+points, tests have shown (Paper II) that significant information
+is available on frequencies greater than $l/(2\Delta_{min})$.
+
+``Nonetheless, in the present paper we will restrict ourselves
+to frequencies obeying
+$\nu < \nu_{max} = 1/(2\Delta_{min})$.''
+
+\citet{Horne86}: ``The largest frequency we calculated was $\pi N-)/T$ which
+is the traditional Nyquist frequency for evenly-spaced data. The Nyquist
+frequency is not well defined for unevenly spaced signals, but it can serve as
+a reasonable upper limit for the calculation.''
+
+\citet{Debosscher07}: ``For the
+highest frequency, we used the average of the inverse time intervals
+between the measurements: $f_N = 0.5(1/\Delta T)$ as a pseudo
+Nyquist frequency. Note that $f_N$ is equal to the Nyquist frequency
+in the case of equidistant sampling. For particular cases,
+an even higher upper limit can be used \citep[see][]{Eyer99}.
+Our upper limit should be seen as a compromise between
+the required resolution to allow a good fitting, and computation
+time.''
+
 
 
 \subsection{Semi-structured Observing Windows}
@@ -669,7 +734,7 @@ NO!!!
 \section{Generalizations \& Challenges}
 
 \begin{itemize}
-\item Bayesian view doesn't make sense
+\item Bayesian view is (almost always) not useful
 \item Multiterm makes the true period fit better, but also bumps the background noise.
 \end{itemize}
 
