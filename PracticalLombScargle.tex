@@ -636,21 +636,37 @@ number of observed samples gets very large.
 
 NO!!!
 
-Examples: average \citep{NumRec, Horne86}, minimum \citep{Scargle82, Roberts87}, average of inverse time intervals \citep{Debosscher07}.
-
+Examples: average \citep{NumRec, Horne86, Scargle82}, minimum \citep{Roberts87, Press89}, average of inverse time intervals \citep{Debosscher07},
 time interval of measurement \citep{ICVG2014}, common multiple of observing time \citep{Eyer99}
 
 \todo{Reference Figure 1 LINEAR data avg frequency vs computed period}
 
 
-\citet{Scargle82}: ``...''
+\citet{Scargle82} (citing the following: Beutler 1966, 1970; Masry \& Lui 1975; Higgins 1976; Wiley 1978; Gaster \& Roberts 1975, 1977; Kar, Hornkohl \& Farmer 1981; Ludeman 1981):
+\begin{quote}
+Error-free recovery of a band-limited signal [i.e.~reproduction of the entire function $X(t)$ from the samples $X(t_i)$] can be achieved with irregular sampling as long as the mean sampling rate exceeds the Nyquist rate (i.e. the average number of samples per unit time must exceed twice the highest frequency component in the signal).
+\end{quote}
 
-\citet{NumRec}: ``...''
 
-\citet{Roberts87}: ``for arbitrary $\{t_r\}$,
-the sampling theorem tells us nothing.
+\citet{NumRec}: 
+\begin{quote}
+One guide to choosing $f_{hi}$ is to compare it with the Nyquist frequency $f_c$ which would obtain if the $N$ data points were evenly spaced over the same span $T$, that is $f_c = N/(2T)$. The accompanying program includes an input parameter {\tt hifac}, defined as $f_{hi}/f_{c}$.
+\end{quote}
+
+\citet{Press89}:
+\begin{quote}
+It is often meaningful to examine frequencies significantly higher than the
+Nyquist frequency that would obtain if the same number of data points were
+evenly spaced in the same total length of time. Some spectral information is
+obtainable for frequencies all the way up to something like half the inverse
+spacing of the {\it closest} spaced points.
+\end{quote}
+
+\citet{Roberts87}:
+\begin{quote}
+...for arbitrary $\{t_r\}$, the sampling theorem tells us nothing.
 If the data samples are otherwise equally spaced but with missing
-points, the theorem says thatthe data completely determine
+points, the theorem says that the data completely determine
 a function whose FT is zero for $|v| > 1/(2\Delta_{max})$, where $\Delta_{max}$
 is the {\it largest completely sampled} data spacing. However,
 there are smaller spacings, and these certainly carry information
@@ -663,25 +679,33 @@ there is little redundancy in the spacing between various
 points, tests have shown (Paper II) that significant information
 is available on frequencies greater than $l/(2\Delta_{min})$.
 
-``Nonetheless, in the present paper we will restrict ourselves
+Nonetheless, in the present paper we will restrict ourselves
 to frequencies obeying
-$\nu < \nu_{max} = 1/(2\Delta_{min})$.''
+$\nu < \nu_{max} = 1/(2\Delta_{min})$.
+\end{quote}
 
-\citet{Horne86}: ``The largest frequency we calculated was $\pi N-)/T$ which
+\citet{Horne86}:
+\begin{quote}
+The largest frequency we calculated was $\pi N-)/T$ which
 is the traditional Nyquist frequency for evenly-spaced data. The Nyquist
 frequency is not well defined for unevenly spaced signals, but it can serve as
-a reasonable upper limit for the calculation.''
+a reasonable upper limit for the calculation.
+\end{quote}
 
-\citet{Debosscher07}: ``For the
-highest frequency, we used the average of the inverse time intervals
+\citet{Debosscher07}:
+\begin{quote}
+For the highest frequency, we used the average of the inverse time intervals
 between the measurements: $f_N = 0.5(1/\Delta T)$ as a pseudo
 Nyquist frequency. Note that $f_N$ is equal to the Nyquist frequency
 in the case of equidistant sampling. For particular cases,
 an even higher upper limit can be used \citep[see][]{Eyer99}.
 Our upper limit should be seen as a compromise between
 the required resolution to allow a good fitting, and computation
-time.''
+time.
+\end{quote}
 
+
+\todo{Demonstrate recovery of a signal well beyond these limits (Is LINEAR sufficient?}
 
 
 \subsection{Semi-structured Observing Windows}
