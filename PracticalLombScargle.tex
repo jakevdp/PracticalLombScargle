@@ -634,17 +634,29 @@ number of observed samples gets very large.
 
 \subsection{A Non-uniform Nyquist Limit?}
 
-NO!!!
+From \citet{Eyer99}: let $p$ be the largest value such that each $t_i$ can be written $t_i = t_0 + n_i p$, for integers $n_i$. The Nyquist Frequency then is:
+\begin{equation}
+  \nu_{Ny} = 1 / (2p)
+\end{equation}
 
-Examples: average \citep{NumRec, Horne86, Scargle82}, minimum \citep{Roberts87, Press89}, average of inverse time intervals \citep{Debosscher07},
+Examples of wrong approaches: average \citep{NumRec, Horne86, Scargle82}, minimum \citep{Roberts87, Press89}, average of inverse time intervals \citep{Debosscher07},
 time interval of measurement \citep{ICVG2014}, common multiple of observing time \citep{Eyer99}
 
 \todo{Reference Figure 1 LINEAR data avg frequency vs computed period}
 
 
+
 \citet{Scargle82} (citing the following: Beutler 1966, 1970; Masry \& Lui 1975; Higgins 1976; Wiley 1978; Gaster \& Roberts 1975, 1977; Kar, Hornkohl \& Farmer 1981; Ludeman 1981):
 \begin{quote}
 Error-free recovery of a band-limited signal [i.e.~reproduction of the entire function $X(t)$ from the samples $X(t_i)$] can be achieved with irregular sampling as long as the mean sampling rate exceeds the Nyquist rate (i.e. the average number of samples per unit time must exceed twice the highest frequency component in the signal).
+\end{quote}
+
+
+\citet{Percy86}:
+\begin{quote}
+... the Nyquist frequency is not well defined for input data obtained at unequally spaced time intervals, the usual case in astronomy \citep{Scargle82}.
+Theoretically such a data set contains informatin on the periodicities down to
+$\Delta t = \min(t_i - t{i-1})$. In practice, however, a pseudo-Nyquist frequency may be defined by averaging $\Delta t = (t_i - t_{i-1})$, where large, uncharacteristic temporal gaps are avoided. Alternatively, the harmonic mean of all $\Delta t$ may be used. The result is that a useful pseudo-Nyquist frequency may be defined by $\nu_{Ny} = (2 \langle\Delta t \rangle)^{-1}$.
 \end{quote}
 
 
@@ -702,6 +714,17 @@ an even higher upper limit can be used \citep[see][]{Eyer99}.
 Our upper limit should be seen as a compromise between
 the required resolution to allow a good fitting, and computation
 time.
+\end{quote}
+
+\citet{ICVG2014}:
+\begin{quote}
+As a good choice for the maximum search frequency, a pseudo-Nyquist frequency $\omega_{max} = \pi/\Delta t$, where $1/\Delta t$ is the median of the inverse time interval between data points, was proposed by \citet{Debosscher07} (in the case of even sampling, $\omega_{max}$ is equal to the Nyquist frequency). In practice, this choice may be a gross underestimate because unevenly sampled data can detect periodicity with frequencies even higher than $2\pi / \Delta t_{min}$ \citep[see][]{Eyer99}. An appropriate choice of $\omega_{max}$ thus depends on sampling (the phase coverage at a given frequency is the relevant quantity) and needs to be carefully chosen: a hard limit on maximum detectable frequency is of course given by the time interval over which individual measurements are performed, such as imaging exposure time.
+\end{quote}
+
+\citet{Hilditch01}:
+\begin{quote}
+The highest frequency, for equally spaced data, is formally given by the {\it Nyquist frequency}, $f_N = 1/(2\Delta t)$, where $\Delta t$ is the {\it sampling interval} in the data string.
+For unequally spaced data, it is common practice to estimate a pseudo-Nyquist frequency from the minimum value of $\Delta t$.
 \end{quote}
 
 
