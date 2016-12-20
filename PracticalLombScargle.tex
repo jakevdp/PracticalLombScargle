@@ -633,6 +633,7 @@ number of observed samples gets very large.
 
 
 \subsection{A Non-uniform Nyquist Limit?}
+\sectlabel{pseudo-nyquist}
 
 From \citet{Eyer99}: let $p$ be the largest value such that each $t_i$ can be written $t_i = t_0 + n_i p$, for integers $n_i$. The Nyquist Frequency then is:
 \begin{equation}
@@ -642,90 +643,28 @@ From \citet{Eyer99}: let $p$ be the largest value such that each $t_i$ can be wr
 Examples of wrong approaches: average \citep{NumRec, Horne86, Scargle82}, minimum \citep{Roberts87, Press89}, average of inverse time intervals \citep{Debosscher07},
 time interval of measurement \citep{ICVG2014}, common multiple of observing time \citep{Eyer99}
 
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig12_pseudo_nyquist}
+  \caption{An example of data for which the various poorly-motivated
+    ``pseudo-Nyquist'' approaches outlined in \sect{pseudo-nyquist} fail
+    spectacularly. The upper panels show the data, a noisy sinusoid with
+    a frequency of 100 (i.e. a period of 0.01).
+    The lower left panel shows a histogram of spacings between observations:
+    the minimum spacing is 2.5, meaning that the signal has
+    {\it over 250 full cycles} between the minimum spacing.
+    Nevertheless, the periodogram (lower right) clearly identifies the correct
+    period, though it's orders of magnitude larger than Nyquist estimates based
+    on average or minimum sampling rate.
+    \figlabel{pseudo_nyquist}}
+\end{figure}
+
 \todo{Reference Figure 1 LINEAR data avg frequency vs computed period}
 
 
 
-\citet{Scargle82} (citing the following: Beutler 1966, 1970; Masry \& Lui 1975; Higgins 1976; Wiley 1978; Gaster \& Roberts 1975, 1977; Kar, Hornkohl \& Farmer 1981; Ludeman 1981):
-\begin{quote}
-Error-free recovery of a band-limited signal [i.e.~reproduction of the entire function $X(t)$ from the samples $X(t_i)$] can be achieved with irregular sampling as long as the mean sampling rate exceeds the Nyquist rate (i.e. the average number of samples per unit time must exceed twice the highest frequency component in the signal).
-\end{quote}
 
-
-\citet{Percy86}:
-\begin{quote}
-... the Nyquist frequency is not well defined for input data obtained at unequally spaced time intervals, the usual case in astronomy \citep{Scargle82}.
-Theoretically such a data set contains informatin on the periodicities down to
-$\Delta t = \min(t_i - t{i-1})$. In practice, however, a pseudo-Nyquist frequency may be defined by averaging $\Delta t = (t_i - t_{i-1})$, where large, uncharacteristic temporal gaps are avoided. Alternatively, the harmonic mean of all $\Delta t$ may be used. The result is that a useful pseudo-Nyquist frequency may be defined by $\nu_{Ny} = (2 \langle\Delta t \rangle)^{-1}$.
-\end{quote}
-
-
-\citet{NumRec}: 
-\begin{quote}
-One guide to choosing $f_{hi}$ is to compare it with the Nyquist frequency $f_c$ which would obtain if the $N$ data points were evenly spaced over the same span $T$, that is $f_c = N/(2T)$. The accompanying program includes an input parameter {\tt hifac}, defined as $f_{hi}/f_{c}$.
-\end{quote}
-
-\citet{Press89}:
-\begin{quote}
-It is often meaningful to examine frequencies significantly higher than the
-Nyquist frequency that would obtain if the same number of data points were
-evenly spaced in the same total length of time. Some spectral information is
-obtainable for frequencies all the way up to something like half the inverse
-spacing of the {\it closest} spaced points.
-\end{quote}
-
-\citet{Roberts87}:
-\begin{quote}
-...for arbitrary $\{t_r\}$, the sampling theorem tells us nothing.
-If the data samples are otherwise equally spaced but with missing
-points, the theorem says that the data completely determine
-a function whose FT is zero for $|v| > 1/(2\Delta_{max})$, where $\Delta_{max}$
-is the {\it largest completely sampled} data spacing. However,
-there are smaller spacings, and these certainly carry information
-about frequencies greater than $1/(2\Delta_{max} )$; some information
-is available about frequencies as high as
-$1/(2\Delta_{min} )$, where $\Delta_{min}$ is the smallest spacing between data
-points. Furthermore, if the $\{t_r\}$ are more or less randomly
-distributed, so that a wide range ofspacings are present and
-there is little redundancy in the spacing between various
-points, tests have shown (Paper II) that significant information
-is available on frequencies greater than $l/(2\Delta_{min})$.
-
-Nonetheless, in the present paper we will restrict ourselves
-to frequencies obeying
-$\nu < \nu_{max} = 1/(2\Delta_{min})$.
-\end{quote}
-
-\citet{Horne86}:
-\begin{quote}
-The largest frequency we calculated was $\pi N-)/T$ which
-is the traditional Nyquist frequency for evenly-spaced data. The Nyquist
-frequency is not well defined for unevenly spaced signals, but it can serve as
-a reasonable upper limit for the calculation.
-\end{quote}
-
-\citet{Debosscher07}:
-\begin{quote}
-For the highest frequency, we used the average of the inverse time intervals
-between the measurements: $f_N = 0.5(1/\Delta T)$ as a pseudo
-Nyquist frequency. Note that $f_N$ is equal to the Nyquist frequency
-in the case of equidistant sampling. For particular cases,
-an even higher upper limit can be used \citep[see][]{Eyer99}.
-Our upper limit should be seen as a compromise between
-the required resolution to allow a good fitting, and computation
-time.
-\end{quote}
-
-\citet{ICVG2014}:
-\begin{quote}
-As a good choice for the maximum search frequency, a pseudo-Nyquist frequency $\omega_{max} = \pi/\Delta t$, where $1/\Delta t$ is the median of the inverse time interval between data points, was proposed by \citet{Debosscher07} (in the case of even sampling, $\omega_{max}$ is equal to the Nyquist frequency). In practice, this choice may be a gross underestimate because unevenly sampled data can detect periodicity with frequencies even higher than $2\pi / \Delta t_{min}$ \citep[see][]{Eyer99}. An appropriate choice of $\omega_{max}$ thus depends on sampling (the phase coverage at a given frequency is the relevant quantity) and needs to be carefully chosen: a hard limit on maximum detectable frequency is of course given by the time interval over which individual measurements are performed, such as imaging exposure time.
-\end{quote}
-
-\citet{Hilditch01}:
-\begin{quote}
-The highest frequency, for equally spaced data, is formally given by the {\it Nyquist frequency}, $f_N = 1/(2\Delta t)$, where $\Delta t$ is the {\it sampling interval} in the data string.
-For unequally spaced data, it is common practice to estimate a pseudo-Nyquist frequency from the minimum value of $\Delta t$.
-\end{quote}
 
 
 \todo{Demonstrate recovery of a signal well beyond these limits (Is LINEAR sufficient?}
@@ -792,5 +731,104 @@ For unequally spaced data, it is common practice to estimate a pseudo-Nyquist fr
 
 \bibliographystyle{apj}
 \bibliography{PracticalLombScargle}
+
+\appendix
+
+\section{Non-uniform Nyquist}
+A selection of quotations showing approaches to a non-uniform Nyquist limit:
+
+\begin{description}
+
+\item[Average Sampling Rate]
+
+\citet{Scargle82} (citing the following: Beutler 1966, 1970; Masry \& Lui 1975; Higgins 1976; Wiley 1978; Gaster \& Roberts 1975, 1977; Kar, Hornkohl \& Farmer 1981; Ludeman 1981):
+\begin{quote}
+Error-free recovery of a band-limited signal [i.e.~reproduction of the entire function $X(t)$ from the samples $X(t_i)$] can be achieved with irregular sampling as long as the mean sampling rate exceeds the Nyquist rate (i.e. the average number of samples per unit time must exceed twice the highest frequency component in the signal).
+\end{quote}
+
+\citet{NumRec}: 
+\begin{quote}
+One guide to choosing $f_{hi}$ is to compare it with the Nyquist frequency $f_c$ which would obtain if the $N$ data points were evenly spaced over the same span $T$, that is $f_c = N/(2T)$. The accompanying program includes an input parameter {\tt hifac}, defined as $f_{hi}/f_{c}$.
+\end{quote}
+
+\citet{Horne86}:
+\begin{quote}
+The largest frequency we calculated was $\pi N/T$ which
+is the traditional Nyquist frequency for evenly-spaced data. The Nyquist
+frequency is not well defined for unevenly spaced signals, but it can serve as
+a reasonable upper limit for the calculation.
+\end{quote}
+
+\item[Harmonic Average of Sampling Rate]
+
+\citet{Debosscher07}:
+\begin{quote}
+For the highest frequency, we used the average of the inverse time intervals
+between the measurements: $f_N = 0.5(1/\Delta T)$ as a pseudo
+Nyquist frequency. Note that $f_N$ is equal to the Nyquist frequency
+in the case of equidistant sampling. For particular cases,
+an even higher upper limit can be used \citep[see][]{Eyer99}.
+Our upper limit should be seen as a compromise between
+the required resolution to allow a good fitting, and computation
+time.
+\end{quote}
+
+
+\item[Minimum Sample Spacing]
+
+\citet{Percy86}:
+\begin{quote}
+... the Nyquist frequency is not well defined for input data obtained at unequally spaced time intervals, the usual case in astronomy \citep{Scargle82}.
+Theoretically such a data set contains informatin on the periodicities down to
+$\Delta t = \min(t_i - t{i-1})$. In practice, however, a pseudo-Nyquist frequency may be defined by averaging $\Delta t = (t_i - t_{i-1})$, where large, uncharacteristic temporal gaps are avoided. Alternatively, the harmonic mean of all $\Delta t$ may be used. The result is that a useful pseudo-Nyquist frequency may be defined by $\nu_{Ny} = (2 \langle\Delta t \rangle)^{-1}$.
+\end{quote}
+
+\citet{Press89}:
+\begin{quote}
+It is often meaningful to examine frequencies significantly higher than the
+Nyquist frequency that would obtain if the same number of data points were
+evenly spaced in the same total length of time. Some spectral information is
+obtainable for frequencies all the way up to something like half the inverse
+spacing of the {\it closest} spaced points.
+\end{quote}
+
+\citet{Roberts87}:
+\begin{quote}
+...for arbitrary $\{t_r\}$, the sampling theorem tells us nothing.
+If the data samples are otherwise equally spaced but with missing
+points, the theorem says that the data completely determine
+a function whose FT is zero for $|v| > 1/(2\Delta_{max})$, where $\Delta_{max}$
+is the {\it largest completely sampled} data spacing. However,
+there are smaller spacings, and these certainly carry information
+about frequencies greater than $1/(2\Delta_{max} )$; some information
+is available about frequencies as high as
+$1/(2\Delta_{min} )$, where $\Delta_{min}$ is the smallest spacing between data
+points. Furthermore, if the $\{t_r\}$ are more or less randomly
+distributed, so that a wide range ofspacings are present and
+there is little redundancy in the spacing between various
+points, tests have shown (Paper II) that significant information
+is available on frequencies greater than $l/(2\Delta_{min})$.
+
+Nonetheless, in the present paper we will restrict ourselves
+to frequencies obeying
+$\nu < \nu_{max} = 1/(2\Delta_{min})$.
+\end{quote}
+
+\citet{Hilditch01}:
+\begin{quote}
+The highest frequency, for equally spaced data, is formally given by the {\it Nyquist frequency}, $f_N = 1/(2\Delta t)$, where $\Delta t$ is the {\it sampling interval} in the data string.
+For unequally spaced data, it is common practice to estimate a pseudo-Nyquist frequency from the minimum value of $\Delta t$.
+\end{quote}
+
+\item[Getting it Right]
+
+\citet{ICVG2014}:
+\begin{quote}
+As a good choice for the maximum search frequency, a pseudo-Nyquist frequency $\omega_{max} = \pi/\Delta t$, where $1/\Delta t$ is the median of the inverse time interval between data points, was proposed by \citet{Debosscher07} (in the case of even sampling, $\omega_{max}$ is equal to the Nyquist frequency). In practice, this choice may be a gross underestimate because unevenly sampled data can detect periodicity with frequencies even higher than $2\pi / \Delta t_{min}$ \citep[see][]{Eyer99}. An appropriate choice of $\omega_{max}$ thus depends on sampling (the phase coverage at a given frequency is the relevant quantity) and needs to be carefully chosen: a hard limit on maximum detectable frequency is of course given by the time interval over which individual measurements are performed, such as imaging exposure time.
+\end{quote}
+
+\citet{Eyer99}
+
+\end{description}
 
 \end{document}
