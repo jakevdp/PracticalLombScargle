@@ -423,6 +423,7 @@ compute the transform in {\it any} range of width $1/T$, and it is often
 convenient to instead use the range $0 \le f < 1/T$.
 
 \subsubsection{The Nyquist Limit}
+\sectlabel{nyquist}
 
 The example in \fig{comb_window_1} is somewhat of a best-case scenario, because
 the true Fourier transform values lie entirely in a range of width $1/T$.
@@ -635,14 +636,42 @@ number of observed samples gets very large.
 \subsection{A Non-uniform Nyquist Limit?}
 \sectlabel{pseudo-nyquist}
 
-From \citet{Eyer99}: let $p$ be the largest value such that each $t_i$ can be written $t_i = t_0 + n_i p$, for integers $n_i$. The Nyquist Frequency then is:
-\begin{equation}
-  \nu_{Ny} = 1 / (2p)
-\end{equation}
+As we have seen in \sect{nyquist}, the Nyquist limit is a direct consequence
+of the window function created by evenly-sampled data,
+and uneven sampling destroys the symmetry that underlies its definition.
+Nevertheless, the idea of the ``Nyquist frequency'' seems to have taken hold
+in the scientific psyche to the extent that it's often mis-applied in areas
+where it is utterly irrelevant.
+For unevenly-sampled data, the ``Nyquist limit'' might or might not exist,
+and even in cases where it does exist it tends to be far less relevant than
+in the evenly-sampled case.
 
-Examples of wrong approaches: average \citep{NumRec, Horne86, Scargle82}, minimum \citep{Roberts87, Press89}, average of inverse time intervals \citep{Debosscher07},
-time interval of measurement \citep{ICVG2014}, common multiple of observing time \citep{Eyer99}
+\subsubsection{Incorrect Limits in the Literature}
 
+In the scientific literature, there are countless examples of attempts to
+define a ``pseudo-Nyquist'' frequency to apply in the uneven sampling case.
+A few common approaches include the mean of the sampling intervals
+\citep[e.g.][]{Scargle82, Horne86, NumRec},
+the harmonic mean of the sampling intervals \citep[e.g.][]{Debosscher07},
+or the minimum sample spacing \citep[e.g.][]{Percy86, Roberts87, Press89, Hilditch01}.
+All of these are tempting criteria in that they recover the classical Nyquist 
+frequency in the limit of evenly-spaced data, but this does not make up for the
+fact that they are wrong.
+Several of these cases do parenthetically note that signals at frequencies
+beyond the proposed limit are observable in principle, but they nevertheless
+proceed under the apparent impression that such pseudo-Nyquist reasoning
+is relevant.
+
+As a simple example of where such logic fails,
+consider the data from \fig{LINEAR_data}: though the mean sample
+spacing is one observation every seven days, in \fig{LINEAR_power}
+we were nevertheless able to quite clearly identify a period of 2.58 hours---
+an order of magnitude shorter than the mean-based pseudo-Nyquist limit
+would indicate as possible.
+For the data in \fig{LINEAR_data}, the minimum sample spacing is just under 10
+seconds, but it it irresponsible to pretend that this single pair of
+observations itself defines some limit beyond which frequency information is
+unattainable.
 
 \begin{figure}[ht]
   \centering
@@ -652,23 +681,92 @@ time interval of measurement \citep{ICVG2014}, common multiple of observing time
     spectacularly. The upper panels show the data, a noisy sinusoid with
     a frequency of 100 (i.e. a period of 0.01).
     The lower left panel shows a histogram of spacings between observations:
-    the minimum spacing is 2.5, meaning that the signal has
-    {\it over 250 full cycles} between the minimum spacing.
+    the minimum spacing is 2.55, meaning that the signal has
+    {\it over 250 full cycles} between the closest pair of observations.
     Nevertheless, the periodogram (lower right) clearly identifies the correct
-    period, though it's orders of magnitude larger than Nyquist estimates based
-    on average or minimum sampling rate.
+    period, though it's orders of magnitude larger than pseudo-Nyquist
+    estimates based on average or minimum sampling rate.
     \figlabel{pseudo_nyquist}}
 \end{figure}
 
-\todo{Reference Figure 1 LINEAR data avg frequency vs computed period}
+As a more extreme example, consider the data shown in \fig{pseudo_nyquist}.
+This consists of noisy samples from a sinusoid with a period of 0.01 units,
+with sample spacings ranging between 2 and 18 units: needless to say, any
+pseudo-Nyquist definition based on an average or minimum sample spacings
+will be {\it far} smaller than the true frequency of 100; still, the
+the Lomb-Scargle periodogram in the lower right panel shows quite cleanly
+the true frequency.
 
+\subsubsection{The Correct Non-uniform Nyquist Limit}
 
+While Nyquist arguments based on average or minimum sampling fail spectacularly,
+there is a sense in which the Nyquist limit can be applied to unevenly-spaced
+data. \citet{Eyer99} explores this issue in some detail, and in particular
+proves the following:
+\begin{quote}
+Let $p$ be the largest value such that each $t_i$ can be written $t_i = t_0 + n_i p$, for integers $n_i$. The Nyquist Frequency then is $f_{Ny} = 1 / (2p)$.
+\end{quote}
+In other words, computing the Nyquist rate for unevenly-spaced data requires
+finding some common factor, such that each spacing $\Delta t_i$ is {\it exactly}
+an integer multiple of this factor.
+This can be proven formally, but can be understood by thinking of such data as
+a windowed version of uniformly sampled data with spacing $p$.
+Such uniform data has a classical Nyquist limit of $1/(2p)$, and a window function applied to that data cannot change that fact.
 
+\Fig{nyquist_eyer99} shows an example of such a Nyquist frequency.
+The data are non-uniformly sampled at times $t_i = n_i * p$, with $p=0.01$.
+This results in a Nyquist frequency $f_{Ny} = 50$, and we see the expected
+behavior beyond this frequency: the signal at $f > f_{Ny}$ consists of repeated
+aliases of the signal at $f < f_{Ny}$.
 
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig13_nyquist_eyer99}
+  \caption{A visualization of the \citep{Eyer99} definition of the Nyquist
+    frequency. Data are non-uniformly sampled at times $t_i = n_i p$, for
+    integer $n_i$ and $p=0.01$.
+    This results in a Nyquist frequency of $f_{Ny}= (2p)^{-1} = 50$:
+    the periodogram outside the range $0 \le f < f_{Ny}$ is a series of
+    repetitions of the signal within that range.
+    \figlabel{nyquist_eyer99}}
+\end{figure}
 
+We should keep in mind one consequence of this Nyquist definition:
+if you have any pair of observation spacings
+whose ratio is irrational, {\it the Nyquist limit does not exist!}.
+To realize this situation in practice, however, 
+requires infinitely precise measurements of the
+times $t_i$; more often in the real-world, the Nyquist frequency will be
+defined by the precision of the time measurements.
+That is, if times are recorded to $D$ decimal places, the Nyquist frequency
+will be (at most) $f_{Ny} = \frac{1}{2} 10^D$, as in \fig{nyquist_eyer99}.
+In other words, the Nyquist frequency for irregularly-sampled data is most
+typically defined by {\it the precision of the time measurements}.
 
-\todo{Demonstrate recovery of a signal well beyond these limits (Is LINEAR sufficient?}
+\subsubsection{Limit due to Windowing}
 
+In contexts where observations are not instantaneous, but rather consist of
+short-duration integrations of a continuous signal, a qualitatively different
+kind of frequency limit exists.
+This is typical in, e.g., optical astronomy, where observations take place over
+a finite duration $\delta t$.
+As noted by \citet{ICVG2014}, this time-scale of integration represents another
+kind of limiting frequency for irregularly-sampled data.
+Such a situation means that the measurement is effectively a convolution of
+the underlying signal with a rectangular window function of width $\delta t$,
+in a manner analogous to \fig{convolution_theorem}.
+By the convolution theorem, the observed transform will be a point-wise
+product between the true transform and the transform of the window, which
+will generally have a width proportional to $1/\delta t$.
+This means that---absent other more constraining window effects---the
+frequency limit is $f_{max} \propto 1/(2\delta t)$, with the constant of
+proportionality dependent on the shape of the effective window describing
+individual observations.
+
+Keep in mind that the windowing limit $f_{max}$ is quite different than a
+Nyquist limit: the Nyquist limit is the frequency beyond which all signal
+is aliased into the Nyquist range; the windowing limit is the frequency
+beyond which all signal is zero.
 
 \subsection{Semi-structured Observing Windows}
 
@@ -741,7 +839,7 @@ A selection of quotations showing approaches to a non-uniform Nyquist limit:
 
 \item[Average Sampling Rate]
 
-\citet{Scargle82} (citing the following: Beutler 1966, 1970; Masry \& Lui 1975; Higgins 1976; Wiley 1978; Gaster \& Roberts 1975, 1977; Kar, Hornkohl \& Farmer 1981; Ludeman 1981):
+\citet{Scargle82} (citing the following: Beutler 1966, 1970; Masry \& Lui 1975; Higgins 1976; Wiley 1978; Gaster \& Roberts 1975, 1977; Kar, Hornkohl \& Farmer 1981; Ludeman 1981 \todo{read and summarize these!}):
 \begin{quote}
 Error-free recovery of a band-limited signal [i.e.~reproduction of the entire function $X(t)$ from the samples $X(t_i)$] can be achieved with irregular sampling as long as the mean sampling rate exceeds the Nyquist rate (i.e. the average number of samples per unit time must exceed twice the highest frequency component in the signal).
 \end{quote}
@@ -826,8 +924,6 @@ For unequally spaced data, it is common practice to estimate a pseudo-Nyquist fr
 \begin{quote}
 As a good choice for the maximum search frequency, a pseudo-Nyquist frequency $\omega_{max} = \pi/\Delta t$, where $1/\Delta t$ is the median of the inverse time interval between data points, was proposed by \citet{Debosscher07} (in the case of even sampling, $\omega_{max}$ is equal to the Nyquist frequency). In practice, this choice may be a gross underestimate because unevenly sampled data can detect periodicity with frequencies even higher than $2\pi / \Delta t_{min}$ \citep[see][]{Eyer99}. An appropriate choice of $\omega_{max}$ thus depends on sampling (the phase coverage at a given frequency is the relevant quantity) and needs to be carefully chosen: a hard limit on maximum detectable frequency is of course given by the time interval over which individual measurements are performed, such as imaging exposure time.
 \end{quote}
-
-\citet{Eyer99}
 
 \end{description}
 
