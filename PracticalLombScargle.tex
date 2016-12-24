@@ -770,8 +770,77 @@ beyond which all signal is zero.
 
 \subsection{Semi-structured Observing Windows}
 
+We have seen that for uniform data, the perfect aliasing beyond the Nyquist
+frequency is a direct consequence of the symmetry of the Dirac-comb window
+function.
+For non-uniform observations, such symmetry does not exist, but {\it structure}
+in the observing window can lead to partial aliasing of signals in the
+data.
+
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig14_LINEAR_window}
+  \caption{The power spectrum of the observing window for the data shown
+    in \fig{LINEAR_data}. Notice the strong spike in power at a period of
+    1 day, and related aliases at $1/n$ days for integer $n$.
+    There is also a strong spike at $365$ days, and a noticeable spike at
+    $\sim 14$ days. Each of these indicate time intervals that appear often
+    in the data.
+    \figlabel{LINEAR_window}}
+\end{figure}
+
+Let's again consider the data shown in \fig{LINEAR_data}. The window power
+spectrum for this in \fig{LINEAR_window} shows some quite distinct features,
+and these features have an intuitive interpretation.
+Namely, if the window power shows a spike at a period of $p$ days, this means
+that an observation at time $t_0$ is likely to be followed by another
+observation near a time $t_0 + np$ for integer $n$.
+
+Thus the strong spike at a period of 1 day indicate that observations are
+taken near the same time of day: this is typical of a ground-based survey
+which observes only at night.
+The additional spikes at periods of $1/n$ days (for integer $n$) are aliases
+of this same effect.
+
+This window also shows a strong spike at a period of 1 year, indicating that
+there was a strong seasonal pattern in the observations.
+Finally, there is a noticeable spike at approximately 14 days that is likely
+related to patterns in scheduling of observing runs.
+
+Recall that a Fourier spectrum observed through a particular window will reflect
+a convolution of the true spectrum and the window spectrum
+(cf.\ \fig{random_window}), and so we would expect this structure to be
+imprinted on the power spectrum measured from the data.
+
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig15_LINEAR_window_effect}
+  \caption{The effect of the window function in \fig{LINEAR_window} on the
+    power spectrum in \fig{LINEAR_power}.
+    The top panel shows the window power spectrum, and the bottom panel shows
+    the observed signal power spectrum.
+    Both are plotted as a function of frequency (we earlier saw both of these
+    as a function of period; see \fig{LINEAR_window} and \fig{LINEAR_power},
+    respectively).
+    Viewing these as a function of frequency makes it clear that the structure
+    in the window function is imprinted on the observed spectrum: both the
+    diurnal structure in the main panel, and the annual structure in the inset
+    are apparent in the observed spectrum.
+    \figlabel{LINEAR_window_effect}}
+\end{figure}
+
+This behavior is illustrated in \fig{LINEAR_window_effect}.
+The upper panel shows the window power spectrum as a function of frequency, while lower panel shows the observed signal power spectrum as a function of frequency.
+As noted in the discussion of \fig{LINEAR_window}, the window function shows a strong signal at frequencies corresponding to 1 day and 1 year; the latter can be seen in the inset plot.
+The power at both these scales is clearly imprinted on the observed power spectrum, as shown in the lower panel and its inset.
+This imperfect aliasing is similar to the perfect aliasing seen in regularly-sampled data at the Nyquist frequency; however, in this case the aliasing is
+imperfect and the effect fades as you move further from the frequency driving
+the signal.
+
+
 \begin{itemize}
-  \item Nightly (e.g. ground-based imaging)
   \item Uniform, but with missing data (e.g. Kepler)
 \end{itemize}
 
@@ -801,7 +870,6 @@ beyond which all signal is zero.
   \item False Alarm Probability and why it fails
   \item Baluev method and why it's not enough
   \item Motivation of Bootstrap
-
 \end{itemize}
 
 
