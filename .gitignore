@@ -23,3 +23,7 @@ PracticalLombScargle.pdf
 
 # Jupyter/IPython
 .ipynb_checkpoints
+
+
+# data
+*.fits

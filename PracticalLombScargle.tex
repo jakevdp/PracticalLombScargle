@@ -790,6 +790,8 @@ data.
     \figlabel{LINEAR_window}}
 \end{figure}
 
+\subsubsection{A Ground-based Observing Window: LINEAR}
+
 Let's again consider the data shown in \fig{LINEAR_data}. The window power
 spectrum for this in \fig{LINEAR_window} shows some quite distinct features,
 and these features have an intuitive interpretation.
@@ -835,17 +837,31 @@ This behavior is illustrated in \fig{LINEAR_window_effect}.
 The upper panel shows the window power spectrum as a function of frequency, while lower panel shows the observed signal power spectrum as a function of frequency.
 As noted in the discussion of \fig{LINEAR_window}, the window function shows a strong signal at frequencies corresponding to 1 day and 1 year; the latter can be seen in the inset plot.
 The power at both these scales is clearly imprinted on the observed power spectrum, as shown in the lower panel and its inset.
-This imperfect aliasing is similar to the perfect aliasing seen in regularly-sampled data at the Nyquist frequency; however, in this case the aliasing is
-imperfect and the effect fades as you move further from the frequency driving
-the signal.
+This imperfect aliasing is similar to the perfect aliasing seen in regularly-sampled data at the Nyquist frequency; however, in this case the magnitude of the
+aliased signal fades further from the frequency driving the signal.
+
+\subsubsection{A Space-based Observing Window: Kepler}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig16_kepler_data}
+  \caption{An RR Lyrae variable observed by the Kepler project \citep[see][]{Kolenberg2010}.
+    {\it upper left:} the 4083 observed fluxes over roughly three months.
+    {\it upper right:} the window power spectrum, which is quite close to that of regularly-spaced data with a cadence of 29.4 minutes.
+    {\it lower left:} the time between observations. other than missing measurements, the spacing between observations is nearly uniform. the lower panel gives a closer look at the majority of the spacings, which are not exactly the same but rather span a range of $\pm 50$ms around the mean.
+    {\it lower right:} the data power spectrum, showing approximate aliasing and clearly indicating a peak near a period of 13.6 hours, along with higher-order components at multiples of this value.
+    \figlabel{kepler-data}}
+\end{figure}
+
+Space-based missions often have quite different observing windows.
+For example, \fig{kepler-data} shows observations of an RR-Lyrae variable star
+from the Kepler survey \citep[For discussion of this object, see][]{Kolenberg2010}.
+
+blah blah blah...
 
 
-\begin{itemize}
-  \item Uniform, but with missing data (e.g. Kepler)
-\end{itemize}
 
-
-\section{The Lomb-Scargle Periodogram}
+\section{From Schuster to Lomb-Scargle}
 
 \begin{itemize}
   \item ... is like a Schuster periodogram.
