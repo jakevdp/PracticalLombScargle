@@ -49,7 +49,8 @@
 \newcommand{\etc}{\foreign{etc.}}
 
 \newcommand{\Fig}[1]{Figure~\ref{fig:#1}}
-\newcommand{\fig}[1]{\Fig{#1}}
+\newcommand{\fig}[1]{Figure~\ref{fig:#1}}
+\newcommand{\figs}[2]{Figures~\ref{fig:#1}-\ref{fig:#2}}
 \newcommand{\figlabel}[1]{\label{fig:#1}}
 \newcommand{\Eq}[1]{Equation~(\ref{eq:#1})}
 \newcommand{\eq}[1]{\Eq{#1}}
@@ -108,6 +109,7 @@ We discuss... and ... and ...
     shown in \fig{LINEAR_data}, with an inset detailing the region near the peak.
     {\it Right panel:} the input data in \fig{LINEAR_data}, folded over the
     detected 2.58-hour period to show the coherent periodic variability.
+    For more discussion of this data, see \citep{LINEAR3}.
     \figlabel{LINEAR_power}
 }
 \end{figure}
@@ -117,8 +119,8 @@ is a well-known algorithm for detecting periodicity
 in unevenly-sampled time-series, particularly within the astronomy community.
 For example, consider the data shown in \fig{LINEAR_data}.
 This is an irregularly-sampled timeseries showing a single object from the
-LINEAR survey \citep{LINEAR1, LINEAR3}, with magnitude measured 280 times over the
-course of five and a half years\footnote{
+LINEAR survey \citep{LINEAR1, LINEAR3}, with magnitude measured 280 times over
+the course of five and a half years\footnote{
   Python code to reproduce \fig{LINEAR_data}, as well as all other figures
   in this manuscript, is available at 
   \url{http://github.com/jakevdp/PracticalLombScargle/}}.
@@ -854,10 +856,36 @@ aliased signal fades further from the frequency driving the signal.
 \end{figure}
 
 Space-based missions often have quite different observing windows.
-For example, \fig{kepler-data} shows observations of an RR-Lyrae variable star
-from the Kepler survey \citep[For discussion of this object, see][]{Kolenberg2010}.
+For example, the upper-left panel of \fig{kepler-data}
+shows observations of an RR-Lyrae variable star from the Kepler survey,
+measured over 4000 times over a period of three months,
+with an irregular observing cadence of just under 30 minutes
+ \citep[For deeper discussion of these observations, see][]{Kolenberg2010}.
+The Kepler observations are very nearly uniformly-spaced, and this is reflected
+in the window power spectrum, shown in the upper-right panel of
+\fig{kepler-data}.
+The window function is a series of very narrow evenly-spaced spikes,
+reminiscent of the Dirac comb shown in \figs{comb_window_1}{comb_window_2},
+which we used to motivate the idea of the Nyquist limit.
+Thus, in this case we can treat $f_{Ny} = 0.5/29.4$ minutes$^{-1}$ as the
+effective Nyquist limit for the data, though aliasing is imperfect due to
+the uneven spacing of samples, shown in the lower-left panels of
+\fig{kepler-data}.
 
-blah blah blah...
+The lower-right panel of \fig{kepler-data} shows the power spectrum of the
+observations, with gray shading indicating the ``Aliased'' region of the
+spectrum.
+The period of 13.6 hours is strongly apparent, along with smaller spikes at
+integer multiples of this frequency that indicate higher-order periodic
+components in the signal.
+
+The window functions for ground-based and space-based observations, reflected
+by LINEAR data in \fig{LINEAR_window_effect} and Kepler data in
+\fig{kepler-data}, are quite different, but in both cases essential features
+of the observed power spectra can be understood by recognizing it reflects
+not the power spectrum of the underlying signal, but a power specrtrum from
+the convolution of the true signal transform and the Fourier transform of
+the window function.
 
 
 
