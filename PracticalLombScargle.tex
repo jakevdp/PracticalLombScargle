@@ -729,7 +729,7 @@ aliases of the signal at $f < f_{Ny}$.
     integer $n_i$ and $p=0.01$.
     This results in a Nyquist frequency of $f_{Ny}= (2p)^{-1} = 50$:
     the periodogram outside the range $0 \le f < f_{Ny}$ is a series of
-    repetitions of the signal within that range.
+    perfect aliases of the signal within that range.
     \figlabel{nyquist-eyer99}}
 \end{figure}
 
@@ -913,28 +913,65 @@ we mean that when it is applied to data with straightforward, uncorrelated
 noise, the result is a periodogram estimate in which the noise is also
 straightforward and uncorrelated.
 
-\citet{Scargle82} shows that the classical periodogram of
-\eq{classical-periodogram} has such desireable statistical properties in the
-case of uniform sampling, but not in the case of non-uniform sampling.
-Such desireable properties can be recovered in the non-uniform case by
-applying a slight modification to the standard periodogram:
+\citet{Scargle82} showed that while the classical periodogram of
+\eq{classical-periodogram} has these desireable statistical properties
+in the case of uniform sampling, this does not hold for
+\eq{classical-periodogram} when the sampling becomes non-uniform.
+To address this, he considered a generalized form of the periodogram,
 \begin{equation}
-  P(f)
-  = \frac{1}{2}\left[
-    \frac{\left[\sum_n g_n \cos(2\pi f [t_n-\tau])\right]^2}
-         {\sum_n g_n \cos^2(2\pi f [t_n-\tau])}
-  + \frac{\left[\sum_n g_n \sin(2\pi f [t_n-\tau])\right]^2}
-         {\sum_n g_n \sin^2(2\pi f [t_n-\tau])}
-  \right]
-  \eqlabel{lomb-scargle-periodogram}
+  P(f) = \frac{A^2}{2}\left(\sum_n g_n \cos(2\pi f t_n)\right)^2
+       + \frac{B^2}{2} \left(\sum_n g_n \sin(2\pi f t_n)\right)^2,
 \end{equation}
-where $\tau$ is given by
+where $A$ and $B$ are arbitrary functions of the frequency $f$ and
+observing times $\{t_i\}$ (but not the values $\{g_n\}$, and showed
+that you can choose one particular form of $A$ and $B$ such that
+\begin{itemize}
+  \item The periodogram reduces to the classical form in the case of equally-spaced data,
+  \item The periodogram has desireable statistical properties, in the sense discussed above,
+  \item The periodogram is insensitive to global time-shifts in the data.
+\end{itemize}
+The values of $A$ and $B$ leading to these properties lead to the following
+modification of the classical expression for the periodogram:
+\begin{eqnarray}
+  P(f) =
+  \frac{1}{2} \Bigg\{ &
+  \bigg(\sum_n g_n \cos(2\pi f [t_n-\tau])\bigg)^2 \bigg/
+  \sum_n \cos^2(2\pi f [t_n-\tau]) &\nonumber\\
+  & + ~ \bigg(\sum_n g_n \sin(2\pi f [t_n-\tau])\bigg)^2 \bigg/
+  \sum_n \sin^2(2\pi f [t_n-\tau]) & \Bigg\}
+  \eqlabel{lomb-scargle-periodogram}
+\end{eqnarray}
+Here $\tau$ is defined for each $f$ to ensure time-shift invariance of $P(f)$:
 \begin{equation}
-  \tan(4\pi f \tau) = \frac{\sum_n 4\pi f \tau}{\sum_n 4\pi f\tau}.
+  \tau = \frac{1}{4\pi f}\tan^{-1}\Bigg(
+  \frac{\sum_n \sin(4\pi f t_n)}{\sum_n \cos(4\pi f t_n)}\Bigg).
   \eqlabel{tau-def}
 \end{equation}
-This form has since become commonly referred to as the ``Lomb-Scargle Periodogram'', after \citet{Lomb76} and \citet{Scargle82} who proposed this alternate
-periodogram and explored its statistical properties.
+A remarkable feature of this result is that it is {\it identical} to the result
+obtained by fitting a simple sinusoid to the data at each frequency $f$, and
+constructing a ``periodogram'' from the $\chi^2$ goodness-of-fit at each
+frequency--an estimator which was considered in some depth by \citet{Lomb76}.
+Partly due to this deep connection between Fourier analysis and least-squares
+analysis, the modified periodogram in \eq{lomb-scargle-periodogram}
+has since become commonly referred to as the ``Lomb-Scargle Periodogram''.
+
+Often, the Lomb-Scargle periodogram only differs slightly from the
+classical/Schuster periodogram; an example of this is seen in
+\fig{ls-comparison}.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig17_ls_comparison}
+  \caption{A comparison of the Classical periodogram
+    (\eq{classical-periodogram}) and the Lomb-Scargle periodogram
+    (\eq{lomb-scargle-periodogram}) for 30 noisy points drawn from a sinusoid.
+    Though the two differ quantitatively, the essential qualitative
+    features---namely the position of significant peaks---generally remains
+    the same.
+    \figlabel{ls-comparison}}
+\end{figure}
+
+\subsection{Properties of the Lomb-Scargle Periodogram}
 
 \todo{properties of the periodogram}
 \begin{itemize}
@@ -980,6 +1017,7 @@ periodogram and explored its statistical properties.
 \section{Generalizations \& Challenges}
 
 \begin{itemize}
+\item Uncertainties in Data
 \item Bayesian view is (almost always) not useful
 \item Multiterm makes the true period fit better, but also bumps the background noise.
 \end{itemize}
