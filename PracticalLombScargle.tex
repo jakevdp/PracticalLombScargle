@@ -925,11 +925,11 @@ To address this, he considered a generalized form of the periodogram,
 where $A$ and $B$ are arbitrary functions of the frequency $f$ and
 observing times $\{t_i\}$ (but not the values $\{g_n\}$, and showed
 that you can choose one particular form of $A$ and $B$ such that
-\begin{itemize}
+\begin{enumerate}
   \item The periodogram reduces to the classical form in the case of equally-spaced data,
   \item The periodogram has desireable statistical properties, in the sense discussed above,
   \item The periodogram is insensitive to global time-shifts in the data.
-\end{itemize}
+\end{enumerate}
 The values of $A$ and $B$ leading to these properties lead to the following
 modification of the classical expression for the periodogram:
 \begin{eqnarray}
@@ -951,39 +951,42 @@ A remarkable feature of this result is that it is {\it identical} to the result
 obtained by fitting a simple sinusoid to the data at each frequency $f$, and
 constructing a ``periodogram'' from the $\chi^2$ goodness-of-fit at each
 frequency--an estimator which was considered in some depth by \citet{Lomb76}.
-Partly due to this deep connection between Fourier analysis and least-squares
-analysis, the modified periodogram in \eq{lomb-scargle-periodogram}
-has since become commonly referred to as the ``Lomb-Scargle Periodogram''.
-
-Often, the Lomb-Scargle periodogram only differs slightly from the
-classical/Schuster periodogram; an example of this is seen in
-\fig{ls-comparison}.
+In this view, the $\tau$ shift defined in \eq{tau-def} serves to orthogonalize
+the normal equations used in the least squares analysis.
 
 \begin{figure}[ht]
   \centering
   \includegraphics[width=\textwidth]{fig17_ls_comparison}
-  \caption{A comparison of the Classical periodogram
+  \caption{{\it upper panel:} A comparison of the Classical periodogram
     (\eq{classical-periodogram}) and the Lomb-Scargle periodogram
     (\eq{lomb-scargle-periodogram}) for 30 noisy points drawn from a sinusoid.
-    Though the two differ quantitatively, the essential qualitative
-    features---namely the position of significant peaks---generally remains
-    the same.
+    Though the two periodogram estimates differ quantitatively, the essential
+    qualitative features---namely the position of significant peaks---generally
+    remain the same.
+    {\it lower panel:} the denominators in \eq{lomb-scargle-periodogram}.
+    The difference between the Lomb-Scargle periodogram and the classical
+    periodogram stems from the difference between these quantities
+    and $N/2 = 15$.
     \figlabel{ls-comparison}}
 \end{figure}
 
-\subsection{Properties of the Lomb-Scargle Periodogram}
+Partly due to this deep connection between Fourier analysis and least-squares
+analysis, the modified periodogram in \eq{lomb-scargle-periodogram}
+has since become commonly referred to as the {\it Lomb-Scargle Periodogram}.
+The Lomb-Scargle periodogram differs from the classical periodogram only to
+the extent that the denominators $\sum_n \sin^2(2\pi f t_n)$ and
+$\sum_n \cos^2(2\pi f t_n)$ differ from $N/2$, which is the expected value of
+each of these quantities in the limit of very dense sampling.
+Thus, in many cases of interest the Lomb-Scargle periodogram only differs
+slightly from the classical/Schuster periodogram; an example of this is seen
+in \fig{ls-comparison}.
 
-\todo{properties of the periodogram}
-\begin{itemize}
-  \item Reduces to standard form for even spacing
-  \item Identical to the $\chi^2$ for a simple sinusoidal fit
-    at each frequency
-  \item Is qualitatively similar to the classical periodogram, meaning all
-    the above discussion is still applicable
-\end{itemize}
-
-\todo{show classical vs. lomb-scargle periodogram for LINEAR data}
-
+Because of this similarity between the classical and Lomb-Scargle periodograms,
+our discussion of windowing effects applies--at least qualitatively--to results
+computed with the Lomb-Scargle periodogram.
+In particular, reasoning about the effect of window functions on the observed
+Lomb-Scargle power spectrum remains useful even if it is true in only a
+qualitative sense.
 
 \section{Using Lomb-Scargle Effectively}
 
