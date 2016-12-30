@@ -1054,14 +1054,16 @@ qualitative sense.
 The choice of frequency grid for a Lomb-Scargle analysis is an important one
 that is too-often glossed-over, probably because the choice is so
 straightforward in the more familiar case of uniformly-sampled data.
-For non-uniform data, there are two important choices to make: the
-{\bf frequency limits} and the {\bf grid spacing}.
+For non-uniform data, it is not so simple, and there are two important
+considerations: the {\bf frequency limits} and the {\bf grid spacing}.
 
-The frequency limit on the low end is relatively easy: for an observing window
-of length $T$, a signal with frequency $1/T$ will just complete a full cycle.
+The frequency limit on the low end is relatively easy: for a set of observations
+spanning a length of time $T$,
+a signal with frequency $1/T$ will complete exactly one oscillation cycle,
+and so this is a suitable minimum frequency.
 Often, it's more convenient just to set this minimum frequency to zero, as it
 doesn't add much of a computational burden and is unlikely to add any
-significant peak to the periodogram.
+significant spurious peak to the periodogram.
 
 The high-frequency limit is more interesting, and goes back to the discussion
 of Nyquist and/or limiting frequencies from \sect{pseudo-nyquist}:
@@ -1084,8 +1086,8 @@ observations.
     \figlabel{LINEAR-coarse-grid}}
 \end{figure}
 
-With the frequency range decided, we now must determine how finely to sample
-the space between the limits.
+With the frequency range decided, we next must determine how finely to sample
+the frequencies between the limits.
 This turns out to be quite important: if you choose too fine a grid, it can
 lead to unnecessarily long computation times that can add up quickly in the
 case of large surveys. If you choose too coarse a grid, you
@@ -1097,23 +1099,22 @@ Because the spacing of the 10,000-point grid is much larger than the width of
 the periodogram peaks, the computation {\it entirely misses} the most
 important peaks in the periodogram!
 
-To choose an appropriate periodogram grid, then, it is essential to take into
-account the expected widths of periodogram peaks, and construct a grid fine
-enough to assure that each peak will be covered by the grid.
+This shows us that it's important to choose grid spacings smaller than the
+expected widths of the periodogram peaks.
 From our discussion of windowing in \sect{window-functions}
 (particularly \fig{rectangular-window}), we know that data observed through a
 rectangular window of length $T$ will have sinc-shaped peaks of width
-$\sim 1/T$.
+${\sim}1/T$.
 To ensure that our grid sufficiently covers each peak, it is prudent to
-over-sample by some factor---say $n_o$ samples per peak---and use a grid of size
-$\Delta f = \frac{1}{n_o T}$. This pushes the total number of required
-periodogram evaluations to
+over-sample by some factor---say $n_{over}$ samples per peak---and
+use a grid of size $\Delta f = \frac{1}{n_{over} T}$.
+This pushes the total number of required periodogram evaluations to
 \begin{equation}
   \eqlabel{n-eval}
   N_{eval} = n_o T f_{max}
 \end{equation}
-The numerical result of this can vary greatly from dataset to dataset.
 
+Depending on the characteristics of the dataset, this number can vary greatly.
 For example, the Kepler data shown in \fig{kepler-data} has a pseudo-Nyquist
 frequency of $48.9\ {\rm days}^{-1}$ and
 an observing window of $T = 90\ {\rm days}$.
@@ -1121,7 +1122,7 @@ To compute five samples per peak thus requires $N_{eval} \approx 22,000$
 evaluations of the periodogram.
 
 On the other hand, the LINEAR data shown in \fig{LINEAR-data} does not have
-any significant structure in its window function.
+any noteable aliasing structure in its window function.
 In this case the maximum detectable frequency is the Nyquist limit defined
 by its temporal resolution, which is 6 digits beyond the decimal point in days.
 From \eq{nonuniform-nyquist}, we can write $f_{Ny} = 500,000\ {\rm days}^{-1}$.
@@ -1136,17 +1137,19 @@ a limiting frequency of $f_{max} = (1\ {\rm hour})^{-1}$ based on typical
 oscillation periods of SX Phe-type stars. This leads to a much more manageable
 $N_{eval} \approx 240,000$ periodogram evaluations.
 
-Data from the upcoming LSST survey \citep{Ivezic08LSST} will fall somewhere
-in-between: for full frequency coverage of
+By comparison, data from the upcoming LSST survey \citep{Ivezic08LSST}
+will fall somewhere in-between: full frequency coverage of
 the 10-year data up to a limiting frequency defined by the 30-second
-integration time for each observation will require on order 2.5 million
+exposure time for each observation will require roughly 2.5 million
 periodogram evaluations per object, which for fast Lomb-Scargle implementations
 (see the next section) can be accomplished in seconds on a single core.
 
 One final note: although it can be more easily interpretable to
 visualize periodograms as a function of period rather than a function of
-frequency, the peak widths are not constant in period, and for this reason
-it is ideal to construct the grid itself in frequency space.
+frequency, the peak widths are not constant in period.
+Thus regular period grids tend to over-sample at large periods and under-sample
+at small periods;
+for this reason it is preferable to use a regular grid in frequency.
 
 \subsection{Algorithmic Considerations}
 \sectlabel{algorithmic-considerations}
@@ -1191,6 +1194,7 @@ code released to accompany \citet{VanderPlas2015}.
 \begin{itemize}
   \item $\chi^2$ normalization
   \item PSD normalization
+  \item Other normalizations \citep{Baluev2008}
 \end{itemize}
 
 
