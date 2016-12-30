@@ -52,9 +52,9 @@
 \newcommand{\fig}[1]{Figure~\ref{fig:#1}}
 \newcommand{\figs}[2]{Figures~\ref{fig:#1}-\ref{fig:#2}}
 \newcommand{\figlabel}[1]{\label{fig:#1}}
-\newcommand{\Eq}[1]{Equation~(\ref{eq:#1})}
+\newcommand{\Eq}[1]{Equation~\ref{eq:#1}}
 \newcommand{\eq}[1]{\Eq{#1}}
-\newcommand{\eqs}[2]{Equations~(\ref{eq:#1})-(\ref{eq:#2})}
+\newcommand{\eqs}[2]{Equations~\ref{eq:#1}-\ref{eq:#2}}
 \newcommand{\eqlabel}[1]{\label{eq:#1}}
 \newcommand{\Sect}[1]{Section~\ref{sect:#1}}
 \newcommand{\sect}[1]{\Sect{#1}}
@@ -81,7 +81,7 @@
 \begin{abstract}
 This paper gives an introduction to the practical aspects of the use of Lomb-Scargle periodograms and related algorithms to detect periodic signals.
 Rather than a rigorous mathematical treatment, the goal of this paper is to build intuition about what assumptions are baked into any periodogram computation.
-We discuss... and ... and ...
+etc. etc....
 \end{abstract}
 
 \keywords{
@@ -145,18 +145,47 @@ In practice, however, there are a number of subtle issues that must be considere
 Here are a few questions in particular that we might wish to ask about the results in \fig{LINEAR-power}:
 \begin{enumerate}
   \item What is the source of the multiple peaks revealed by the Lomb-Scargle Periodogram?
-  \item What is a suitable range of frequencies to search for a given dataset?
-  \item What is the Nyquist frequency for this type of analysis?
+  \item What is the Nyquist frequency for unevenly-sampled data?
   \item How should we choose the spacing of the frequency grid for our periodogram?
-  \item How should we understand the uncertainty of the computed frequency?
   \item What assumptions is the Lomb-Scargle periodogram making about the signal?
+  \item How should we understand the uncertainty of the computed frequency?
 \end{enumerate}
-Questions like these are discussed in various textbooks and review papers, but I have not come across any concise reference that discusses such questions in depth.
-This paper seeks to fill that gap, and provide a practical, semi-technical guide to the effective use of the Lomb-Scargle method of periodic analysis.
+The answers to these sorts of questions are discussed in various textbooks and review papers, but I have not come across any single concise reference that gives a good intuition for how to think about such questions.
+This paper seeks to fill that gap, and provide a practical, just-technical-enough guide to the effective use of the Lomb-Scargle method for periodic analysis.
 This paper does not seek a complete or rigorous treatment of the mathematics involved, but rather seeks to develop the intuition of {\it how} to think about the issues involved.
 
+The paper is organized as follows:
+In \sect{continuous-fourier-transform}, we review the continous Fourier
+transform and some of its useful properties, including defining the notion of
+a power spectrum for measuring periodic content in a signal.
+In \sect{window-functions}, we use these properties to understand how different
+observation patterns (i.e. window functions) transform the power spectrum, and
+discuss a conceptual understanding of the well-known Nyquist limit.
+In \sect{non-uniform-sampling}, we consider non-uniformly sampled signals, and
+show that the Nyquist limit for this case is quite different than what many
+practitioners in the field seem to assume.
+In \sect{schuster-to-lomb-scargle}, we discuss the Lomb-Scargle periodogram, a
+modified version of the classical periodogram for unevenly-sampled data, as
+well as the motivation behind these modifications.
+In \sect{practical-considerations}, we discuss important practical
+considerations for the use of the Lomb-Scargle periodogram, including
+the choice of frequency grid and the various normalizations of the periodogram.
+In \sect{uncertainties}, we discuss how to quantify uncertainties in periods
+derived from the periodogram, including various notions of the
+``False Alarm Probability''.
+In \sect{generalizations}, we consider and critique some generalizations of
+the Lomb-Scargle model, including multiterm periodograms and Bayesian
+approaches.
+
+All figures in this work were produced using Python, and in particular the
+Numpy \citep{numpy},
+Pandas \citep{pandas},
+Astropy \citep{Astropy2013},
+and Matplotlib \citep{matplotlib} packages.
+Code to reproduce these figures is available in IPython notebooks at \url{http://github.com/jakevdp/PracticalLombScargle/}.
 
 \section{Background: the Continuous Fourier Transform}
+\sectlabel{continuous-fourier-transform}
 
 In order to understand how we should interpret the Lomb-Scargle periodogram, we will first briefly step back and review the subject of Fourier analysis of continuous signals.
 Consider a continuously-defined signal $g(t)$.
@@ -360,6 +389,8 @@ An important corrollary is that the Fourier transform of a product is a convolut
 We will explore the impact of this in the next section.
 
 \section{Window Functions: From Idealized to Real-world signals}
+\sectlabel{window-functions}
+
 In a typical observational setting, we will be observing some small part of
 a larger time-varying signal.
 For example, if you have a very long signal that you measure for a finite
@@ -374,6 +405,7 @@ convolved with the transform of the obverving window}.
 This has some interesting consequences, as we shall see.
 
 \subsection{Effect of a Tophat Window}
+
 First, let's consider the case of observing a continuous periodic signal over
 a limited span of time, as illustrated in \Fig{tophat-window}.
 Here we consider a periodic function made up of three frequency components, observed within a 10-unit time window.
@@ -438,10 +470,11 @@ from the observed transform.
 This implies that if we have a regularly-sampled function with a sampling
 rate of of $f_0 = 1/T$, we can only fully recover the freuqency information
 if the signal is {\it band-limited} between frequencies $\pm f_0/2$.
-This is one way to motivate the famous Nyquist sampling limit, which says
+This is one way to motivate the famous Nyquist sampling limit, which
+approaches the question the other way around and says
 that to fully represent the frequency content of a ``band-limited signal''
-with all Fourier power in the range $\pm B$, we must sample the data with a
-rate of at least $2B$.
+whose Fourier transform is zero outside the range $\pm B$,
+we must sample the data with a rate of at least $2B$.
 
 \begin{figure}[ht]
   \centering
@@ -530,7 +563,8 @@ all of the relevant frequency information present in the data.
 \todo{Add simulated RR Lyrae data and show the Shuster periodogram}
 
 
-\section{Non-uniform Sampling Windows}
+\section{Non-uniform Sampling}
+\sectlabel{non-uniform-sampling}
 
 In the real world, particularly in fields like Astronomy where observations are
 subject to interruptions from weather and diurnal cycles, the sampling rate
@@ -619,6 +653,7 @@ unique solution.
 
 \subsection{Non-Uniform Periodogram}
 
+
 From this non-uniform Fourier transform, it is straightforward to extend the
 definition of the Schuster periodogram to the non-uniform case.
 Plugging \eq{g-nonuniform} into the Fourier transform of \eq{FT-def}, in analogy to \eq{schuster-periodogram}, gives the following form of the power spectrum:
@@ -650,28 +685,27 @@ in the evenly-sampled case.
 
 \subsubsection{Incorrect Limits in the Literature}
 
-In the scientific literature, there are countless examples of attempts to
-define a ``pseudo-Nyquist'' frequency to apply in the uneven sampling case.
-A few common approaches include the mean of the sampling intervals
+In the scientific literature it is quite common to come across various proposals
+for a Nyquist-like or pseudo-Nyquist limit in the case of irregular sampling.
+A few typical approaches include using the mean of the sampling intervals
 \citep[e.g.][]{Scargle82, Horne86, NumRec},
 the harmonic mean of the sampling intervals \citep[e.g.][]{Debosscher07},
 or the minimum sample spacing \citep[e.g.][]{Percy86, Roberts87, Press89, Hilditch01}.
 All of these are tempting criteria in that they recover the classical Nyquist 
-frequency in the limit of evenly-spaced data, but this does not make up for the
-fact that they are wrong.
-Several of these cases do parenthetically note that signals at frequencies
-beyond the proposed limit are observable in principle, but they nevertheless
-proceed under the apparent impression that such pseudo-Nyquist reasoning
-is relevant.
+frequency in the limit of evenly-spaced data.
+Unfortunately, none of these approaches is correct: in general,
+unevenly-sampled data can probe frequencies far larger than any of these
+supposed limits (a fact that some of these citations do hint at
+parenthetically).
 
 As a simple example of where such logic fails,
 consider the data from \fig{LINEAR-data}: though the mean sample
 spacing is one observation every seven days, in \fig{LINEAR-power}
 we were nevertheless able to quite clearly identify a period of 2.58 hours---
-an order of magnitude shorter than the mean-based pseudo-Nyquist limit
+an order of magnitude shorter than the average-based pseudo-Nyquist limit
 would indicate as possible.
 For the data in \fig{LINEAR-data}, the minimum sample spacing is just under 10
-seconds, but it it irresponsible to pretend that this single pair of
+seconds, but it would be irresponsible to claim that this single pair of
 observations itself defines some limit beyond which frequency information is
 unattainable.
 
@@ -699,7 +733,7 @@ will be {\it far} smaller than the true frequency of 100; still, the
 the Lomb-Scargle periodogram in the lower right panel shows quite cleanly
 the true frequency.
 
-\subsubsection{The Correct Non-uniform Nyquist Limit}
+\subsubsection{The Non-uniform Nyquist Limit}
 
 While Nyquist arguments based on average or minimum sampling fail spectacularly,
 there is a sense in which the Nyquist limit can be applied to unevenly-spaced
@@ -713,7 +747,7 @@ finding some common factor, such that each spacing $\Delta t_i$ is {\it exactly}
 an integer multiple of this factor.
 This can be proven formally, but can be understood by thinking of such data as
 a windowed version of uniformly sampled data with spacing $p$.
-Such uniform data has a classical Nyquist limit of $1/(2p)$, and a window function applied to that data cannot change that fact.
+Such uniform data has a classical Nyquist limit of $1/(2p)$, and a window function applied to that data does not change that fact.
 
 \Fig{nyquist-eyer99} shows an example of such a Nyquist frequency.
 The data are non-uniformly sampled at times $t_i = n_i * p$, with $p=0.01$.
@@ -741,17 +775,22 @@ requires infinitely precise measurements of the
 times $t_i$; more often in the real-world, the Nyquist frequency will be
 defined by the precision of the time measurements.
 That is, if times are recorded to $D$ decimal places, the Nyquist frequency
-will be (at most) $f_{Ny} = \frac{1}{2} 10^D$, as in \fig{nyquist-eyer99}.
-In other words, the Nyquist frequency for irregularly-sampled data is most
-typically defined by {\it the precision of the time measurements}.
+will be, at most
+\begin{equation}
+  f_{Ny} = \frac{1}{2} 10^D,
+  \eqlabel{nonuniform-nyquist}
+\end{equation}
+as in \fig{nyquist-eyer99}.
+In other words, absent other relevant patterns in the observations,
+the Nyquist frequency for irregularly-sampled data is most
+typically set by {\it the precision of the time measurements}.
 
 \subsubsection{Limit due to Windowing}
 
 In contexts where observations are not instantaneous, but rather consist of
 short-duration integrations of a continuous signal, a qualitatively different
 kind of frequency limit exists.
-This is typical in, e.g., optical astronomy, where observations take place over
-a finite duration $\delta t$.
+This is typical in, e.g., optical astronomy, where a single observation typically consists of an integration of observed flux over a finite duration $\delta t$.
 As noted by \citet{ICVG2014}, this time-scale of integration represents another
 kind of limiting frequency for irregularly-sampled data.
 Such a situation means that the measurement is effectively a convolution of
@@ -850,7 +889,7 @@ aliased signal fades further from the frequency driving the signal.
   \caption{An RR Lyrae variable observed by the Kepler project \citep[see][]{Kolenberg2010}.
     {\it upper left:} the 4083 observed fluxes over roughly three months.
     {\it upper right:} the window power spectrum, which is quite close to that of regularly-spaced data with a cadence of 29.4 minutes.
-    {\it lower left:} the time between observations. other than missing measurements, the spacing between observations is nearly uniform. the lower panel gives a closer look at the majority of the spacings, which are not exactly the same but rather span a range of $\pm 50$ms around the mean.
+    {\it lower left:} the time between observations. other than missing measurements, the spacing between observations is nearly uniform. the lower panel gives a closer look at the majority of the spacings, which are not exactly the same but rather span a range of $\pm 50$ms around the main period observed in the window function.
     {\it lower right:} the data power spectrum, showing approximate aliasing and clearly indicating a peak near a period of 13.6 hours, along with higher-order components at multiples of this value.
     \figlabel{kepler-data}}
 \end{figure}
@@ -891,6 +930,7 @@ For another example of this type of observing window analysis, see
 
 
 \section{From Schuster to Lomb-Scargle}
+\sectlabel{schuster-to-lomb-scargle}
 
 Up until now, we've been mainly discussing the direct extension of the Schuster
 periodogram in \eq{schuster-periodogram} to non-uniform data.
@@ -919,8 +959,8 @@ in the case of uniform sampling, this does not hold for
 \eq{classical-periodogram} when the sampling becomes non-uniform.
 To address this, he considered a generalized form of the periodogram,
 \begin{equation}
-  P(f) = \frac{A^2}{2}\left(\sum_n g_n \cos(2\pi f t_n)\right)^2
-       + \frac{B^2}{2} \left(\sum_n g_n \sin(2\pi f t_n)\right)^2,
+  P(f) = \frac{A^2}{2}\left(\sum_n g_n \cos(2\pi f [t_n-\tau])\right)^2
+       + \frac{B^2}{2} \left(\sum_n g_n \sin(2\pi f [t_n-\tau])\right)^2,
 \end{equation}
 where $A$ and $B$ are arbitrary functions of the frequency $f$ and
 observing times $\{t_i\}$ (but not the values $\{g_n\}$, and showed
@@ -941,13 +981,40 @@ modification of the classical expression for the periodogram:
   \sum_n \sin^2(2\pi f [t_n-\tau]) & \Bigg\}
   \eqlabel{lomb-scargle-periodogram}
 \end{eqnarray}
-Here $\tau$ is defined for each $f$ to ensure time-shift invariance of $P(f)$:
+where $\tau$ is specified for each $f$ to ensure time-shift invariance:
 \begin{equation}
   \tau = \frac{1}{4\pi f}\tan^{-1}\Bigg(
   \frac{\sum_n \sin(4\pi f t_n)}{\sum_n \cos(4\pi f t_n)}\Bigg).
   \eqlabel{tau-def}
 \end{equation}
-A remarkable feature of this result is that it is {\it identical} to the result
+This modified periodogram differs from the classical periodogram only to
+the extent that the denominators $\sum_n \sin^2(2\pi f t_n)$ and
+$\sum_n \cos^2(2\pi f t_n)$ differ from $N/2$, which is the expected value of
+each of these quantities in the limit of complete phase sampling at each
+frequency.
+Thus, in many cases of interest the Lomb-Scargle periodogram only differs
+slightly from the classical/Schuster periodogram; an example of this is seen
+in \fig{ls-comparison}.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig17_ls_comparison}
+  \caption{{\it upper panel:} A comparison of the Classical periodogram
+    (\eq{classical-periodogram}) and the Lomb-Scargle periodogram
+    (\eq{lomb-scargle-periodogram}) for 30 noisy points drawn from a sinusoid.
+    Though the two periodogram estimates differ quantitatively, the essential
+    qualitative features---namely the position of significant peaks---generally
+    remain the same.
+    {\it lower panel:} the values of the denominators in
+    \eq{lomb-scargle-periodogram}.
+    The difference between the Lomb-Scargle periodogram and the classical
+    periodogram stems from the difference between these quantities
+    and $N/2 = 15$ (the dotted line).
+    \figlabel{ls-comparison}}
+\end{figure}
+
+A remarkable feature of Scargle's modified periodogram is that it is
+{\it identical} to the result
 obtained by fitting a simple sinusoid to the data at each frequency $f$, and
 constructing a ``periodogram'' from the $\chi^2$ goodness-of-fit at each
 frequency--an estimator which was considered in some depth by \citet{Lomb76}.
@@ -970,29 +1037,7 @@ the data we had seen in \fig{LINEAR-data}.
 Partly due to the deep connection between Fourier analysis and least-squares
 analysis, the modified periodogram in \eq{lomb-scargle-periodogram}
 has since become commonly referred to as the {\it Lomb-Scargle Periodogram}.
-The Lomb-Scargle periodogram differs from the classical periodogram only to
-the extent that the denominators $\sum_n \sin^2(2\pi f t_n)$ and
-$\sum_n \cos^2(2\pi f t_n)$ differ from $N/2$, which is the expected value of
-each of these quantities in the limit of very dense sampling.
-Thus, in many cases of interest the Lomb-Scargle periodogram only differs
-slightly from the classical/Schuster periodogram; an example of this is seen
-in \fig{ls-comparison}.
-
-\begin{figure}[ht]
-  \centering
-  \includegraphics[width=\textwidth]{fig17_ls_comparison}
-  \caption{{\it upper panel:} A comparison of the Classical periodogram
-    (\eq{classical-periodogram}) and the Lomb-Scargle periodogram
-    (\eq{lomb-scargle-periodogram}) for 30 noisy points drawn from a sinusoid.
-    Though the two periodogram estimates differ quantitatively, the essential
-    qualitative features---namely the position of significant peaks---generally
-    remain the same.
-    {\it lower panel:} the denominators in \eq{lomb-scargle-periodogram}.
-    The difference between the Lomb-Scargle periodogram and the classical
-    periodogram stems from the difference between these quantities
-    and $N/2 = 15$.
-    \figlabel{ls-comparison}}
-\end{figure}
+The Lomb-Scargle periodogram differs from the classical periodogram 
 
 Because of this similarity between the classical and Lomb-Scargle periodograms,
 our discussion of windowing effects applies---at least qualitatively---to
@@ -1003,25 +1048,165 @@ qualitative sense.
 
 
 \section{Practical Considerations when using Lomb-Scargle Periodograms}
+\sectlabel{practical-considerations}
 
 \subsection{Choosing a Frequency Grid}
+The choice of frequency grid for a Lomb-Scargle analysis is an important one
+that is too-often glossed-over, probably because the choice is so
+straightforward in the more familiar case of uniformly-sampled data.
+For non-uniform data, there are two important choices to make: the
+{\bf frequency limits} and the {\bf grid spacing}.
+
+The frequency limit on the low end is relatively easy: for an observing window
+of length $T$, a signal with frequency $1/T$ will just complete a full cycle.
+Often, it's more convenient just to set this minimum frequency to zero, as it
+doesn't add much of a computational burden and is unlikely to add any
+significant peak to the periodogram.
+
+The high-frequency limit is more interesting, and goes back to the discussion
+of Nyquist and/or limiting frequencies from \sect{pseudo-nyquist}:
+in order to not miss relevant information, it is important to compute the
+periodogram up to some well-motivated limiting frequency $f_{max}$. This could
+be a true Nyquist limit based on the \citep{Eyer99} definition, a pseudo-Nyquist
+limit based on careful scrutiny of the window function (cf. \fig{kepler-data}),
+or a limiting frequency based on the integration time of individual
+observations.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig19_LINEAR_coarse_grid}
+  \caption{An example of a poorly-chosen frequency grid for the data in
+    \fig{LINEAR-data}. The dark curve shows a periodogram evaluated on a
+    grid of 10,000 equally-spaced periods; the light curve shows the true
+    periodogram (evaluated at ${\sim}200,000$ equally-spaced frequencies).
+    This demonstrates that using too coarse a grid can lead to a periodogram
+    that entirely misses relevant peaks.
+    \figlabel{LINEAR-coarse-grid}}
+\end{figure}
+
+With the frequency range decided, we now must determine how finely to sample
+the space between the limits.
+This turns out to be quite important: if you choose too fine a grid, it can
+lead to unnecessarily long computation times that can add up quickly in the
+case of large surveys. If you choose too coarse a grid, you
+risk entirely missing narrow peaks that fall between grid points.
+For example, \fig{LINEAR-coarse-grid} shows the true, well-sampled periodogram
+(gray line), along with a periodogram computed for 10,000 equally-spaced
+periods covering the same range (black line).
+Because the spacing of the 10,000-point grid is much larger than the width of
+the periodogram peaks, the computation {\it entirely misses} the most
+important peaks in the periodogram!
+
+To choose an appropriate periodogram grid, then, it is essential to take into
+account the expected widths of periodogram peaks, and construct a grid fine
+enough to assure that each peak will be covered by the grid.
+From our discussion of windowing in \sect{window-functions}
+(particularly \fig{tophat-window}), we know that data observed through a
+rectangular window of length $T$ will have sinc-shaped peaks of width
+$\sim 1/T$.
+To ensure that our grid sufficiently covers each peak, it is prudent to
+over-sample by some factor---say $n_o$ samples per peak---and use a grid of size
+$\Delta f = \frac{1}{n_o T}$. This pushes the total number of required
+periodogram evaluations to
+\begin{equation}
+  \eqlabel{n-eval}
+  N_{eval} = n_o T f_{max}
+\end{equation}
+The numerical result of this can vary greatly from dataset to dataset.
+
+For example, the Kepler data shown in \fig{kepler-data} has a pseudo-Nyquist
+frequency of $48.9\ {\rm days}^{-1}$ and
+an observing window of $T = 90\ {\rm days}$.
+To compute five samples per peak thus requires $N_{eval} \approx 22,000$
+evaluations of the periodogram.
+
+On the other hand, the LINEAR data shown in \fig{LINEAR-data} does not have
+any significant structure in its window function.
+In this case the maximum detectable frequency is the Nyquist limit defined
+by its temporal resolution, which is 6 digits beyond the decimal point in days.
+From \eq{nonuniform-nyquist}, we can write $f_{Ny} = 500,000\ {\rm days}^{-1}$.
+Given the observing window of $T = 1962\ {\rm days}$, we find that five
+evaluations per peak across the entire detectable frequency range
+would require $N_{eval} \approx 4.9 \times 10^9$ evaluations of the periodogram!
+Computing this large a periodogram in most cases is computationally intractable
+(see \sect{algorithmic-considerations}), and so in practice one must choose
+a smaller limiting frequency based on prior information about what kind of
+signals are expected in the data: for example, in \fig{LINEAR-power}, we chose
+a limiting frequency of $f_{max} = (1\ {\rm hour})^{-1}$ based on typical
+oscillation periods of SX Phe-type stars. This leads to a much more manageable
+$N_{eval} \approx 240,000$ periodogram evaluations.
+
+Data from the upcoming LSST survey \citep{Ivezic08LSST} will fall somewhere
+in-between: for full frequency coverage of
+the 10-year data up to a limiting frequency defined by the 30-second
+integration time for each observation will require on order 2.5 million
+periodogram evaluations per object, which for fast Lomb-Scargle implementations
+(see the next section) can be accomplished in seconds on a single core.
+
+One final note: although it can be more easily interpretable to
+visualize periodograms as a function of period rather than a function of
+frequency, the peak widths are not constant in period, and for this reason
+it is ideal to construct the grid itself in frequency space.
+
+\subsection{Algorithmic Considerations}
+\sectlabel{algorithmic-considerations}
+Given the size of the frequency grid required to fully characterize the periods
+from a given dataset, it is vital to have an efficient algorithm for evaluating
+the periodogram. Unfortunately, the periodogram itself is a relatively slow
+operation.
+
+Suppose you have a set of $N$ observations over a time $T$ with an average
+cadence of $\bar{\delta t} = N/T$.
+From \eq{n-eval} we see that the number of frequencies evaluated is
+$N_f \propto T f_{max} = N f_{max} / \bar{\delta t}$.
+Holding constant the average survey cadence $\bar{\delta t}$ and individual
+observation properties (which control $f_{max}$), we find that the number of
+frequencies is simply proportional to the number of data points.
+The computation of the Lomb-scargle periodogram in \eq{lomb-scargle-periodogram}
+requires several sums over $N$ sinusoids at each of the
+$N_f$ frequencies, and thus we see that the
+na{\"i}ve scaling of the algorithm with the size of the dataset is
+$\mathcal{O}(N^2)$, holding observing properties constant.
+Due to the trigonometric functions involved, this turns out to be a rather
+``expensive'' $\mathcal{O}(N^2)$, which makes the straightforward
+implementation impractical for even modestly-sized datasets.
+
+Fortunately, several faster implementations have been proposed to compute the
+periodogram to arbitrary precision in $\mathcal{O}(N\log N)$ time.
+The first of these is discussed in \citet{Press89}, which uses an inverse
+interpolation operation along with a Fast Fourier Transform to compute the
+trigonometric components of \eq{lomb-scargle-periodogram} very efficiently over
+a large number of frequencies.
+A qualitatively similar approach is presented by \citet{Leroy2012},
+and makes use of the Non-equispaced Fast Fourier Transform
+\citep[NFFT, see][]{Keiner2009} to compute the Lomb-Scargle periodogram about
+a factor of 10 faster than the \citet{Press89} approach.
+All periodograms in this paper were computed using the Astropy
+implementation of the \citet{Press89} algorithm, which was adapted from Python
+code released to accompany \citet{VanderPlas2015}.
+
 
 \subsection{Normalization of the Periodogram}
 
-\subsection{Algorithmic Considerations}
+\begin{itemize}
+  \item $\chi^2$ normalization
+  \item PSD normalization
+\end{itemize}
 
 
 \section{Uncertainties in Periods}
+\sectlabel{uncertainties}
 
 \begin{itemize}
   \item Peak Width and why it's a poor proxy
-  \item False Alarm Probability and why it fails
+  \item False Alarm Probability and its pitfalls
   \item Baluev method and why it's not enough
-  \item Motivation of Bootstrap
+  \item Motivation and example of Bootstrap
 \end{itemize}
 
 
 \section{Generalizations \& Challenges}
+\sectlabel{generalizations}
 
 \begin{itemize}
 \item floating-mean
@@ -1031,9 +1216,9 @@ qualitative sense.
 \end{itemize}
 
 
-\section{Acknowledgements}
+\section{Conclusion and Summary}
 
-\citet{Astropy2013}
+(Summarize key recommendations here)
 
 \bibliographystyle{apj}
 \bibliography{PracticalLombScargle}
