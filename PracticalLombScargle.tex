@@ -1034,20 +1034,13 @@ Lomb-Scargle power spectrum remains useful even if it is true in only a
 qualitative sense.
 
 
-\section{Least-Squares Extensions to Lomb-Scargle}
+\section{The Least-Square Periodogram and its Extensions}
 \sectlabel{lomb-scargle-extensions}
 
-\begin{figure}[ht]
-  \centering
-  \includegraphics[width=\textwidth]{fig18_ls_model}
-  \caption{The sinusoidal model implied by the Lomb-Scargle periodogram for
-    the LINEAR data seen in \fig{LINEAR-data}.
-    Although a sinusoid does not perfectly fit the data, it is close enough
-    that it serves to find the correct period without a problem.
-    \figlabel{ls-model}}
-\end{figure}
+The equivalence of the Fourier interpretation and least squares interpretation of the Lomb-Scargle periodogram allows for some interesting and useful
+extensions, which we will explore in this section.
+First, let's look at the Least Squares periodogram itself:
 
-The equivalence of the Fourier interpretation and least squares interpretation of the Lomb-Scargle periodogram allows for some interesting and useful extensions to the periodogram.
 In the least squares interpretation of the periodogram, a sinusoidal model is proposed at each candidate frequency $f$:
 \begin{equation}
   y_{model}(t;f) = A_f \sin(2 \pi f (t - \phi_f))
@@ -1068,19 +1061,30 @@ periodogram from \eq{lomb-scargle-periodogram} can be equivalently written:
   P(f) = \frac{N}{2}\big[\hat{\chi}^2_0 - \hat{\chi}^2(f)\big]
   \eqlabel{lomb-scargle-chi2}
 \end{equation}
-where $\hat{\chi}^2_0$ is the reference model that assumes no variation in the data.
+where $\hat{\chi}^2_0$ is the non-varying reference model.
 The key realization here is that the Lomb-Scargle periodogram essentially
 {\it assumes a sinusoidal model} for the data; this is visualized in
 \fig{ls-model} for the data we had seen in \fig{LINEAR-data}.
 This immediately begs the question: can we compute a ``periodogram'' based
-on more general forms of $y(t;f)$ to more effectively fit the data?
+on more general forms of the above model to more effectively fit the data?
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig18_ls_model}
+  \caption{The sinusoidal model implied by the Lomb-Scargle periodogram for
+    the LINEAR data seen in \fig{LINEAR-data}.
+    Although a sinusoid does not perfectly fit the data, the sinusoidal model
+    is close enough that it serves to locate the correct frequency.
+    \figlabel{ls-model}}
+\end{figure}
 
 
 \subsection{Observational Noise}
 \label{extensions-observational-noise}
-Perhaps the most immediately obvious modification of the periodogram is to
-change not the form of the model $y_{model}$, but the $\chi^2$ statistic itself
-to account for observational errors in the data.
+Perhaps the most important modification of the periodogram is to
+construct a periodogram that correctly handles measurement error in the data.
+This involves changing the expression for the $\chi^2$ statistic in a manner
+analogous to the change for a regression problem.
 If there are Gaussian errors $\sigma_n$ on each observed $y_n$, we can re-write \eq{chi2-simple} in the following (standard) way:
 \begin{equation}
   \chi^2(f) \equiv \sum_n \left(\frac{y_n - y_{model}(t_n;f)}{\sigma_n}\right)^2
@@ -1090,13 +1094,37 @@ The periodogram constructed from this $\chi^2$ definition will more accurately
 reflect the spectral power of noisy observations.
 The effect of this modification on \eq{lomb-scargle-periodogram} is the addition
 of a multiplicative weight $1/\sigma_n$ within each of the summations.
-Early versions of this sort of modification appear in \citet{Gilliland87}
+Early versions of this sort of modification appeared in \citet{Gilliland87}
 and \citet{Irwin89}; \citet{Zechmeister09} showed that such a modification
-does not change the desirable statistical properties of the periodogram.
+does not change the desirable statistical properties of the resulting
+periodogram.
 
 
 \subsection{Data Centering and the Floating Mean Periodogram}
 \sectlabel{centering-data}
+
+Another commonly-applied modification of the periodogram has variously been
+called the {\it Date-compensated Discrete Fourier Transform} \citep{Ferraz-Mello81}, the {\it floating-mean periodogram} \citep{Cumming99}, and the {\it generalized Lomb-Scargle Method} \citep{Zechmeister09}, and involves adding an offset term to the sinusoidal model at each frequency:
+\begin{equation}
+  y_{model}(t;f) = y_{0, f} + A_f \sin(2 \pi f (t - \phi_f))
+  \eqlabel{floating-mean-model}
+\end{equation}
+This is important, because the standard Lomb-Scargle approach assumes that the
+data are pre-centered around the mean value of the signal.
+In the past this was primarily accomplished by pre-centering the data before
+the Lomb-Scargle fit using the mean estimated from the data points themselves.
+
+With full phase coverage of the observed signal, this approach is generally
+robust. However, due to selection effects and survey cadence, full phase
+coverage can not always be guaranteed, which can potentially lead to situations
+where the periodogram entirely misses peaks of interest.
+\Fig{standard-vs-floatingmean} shows a simulated example of this: the data
+consist of noisy observations of a sinusoidal signal in which the faintest
+observations are omitted from the dataset (due to, {e.g.} a detection threshold).
+Applying the standard Lomb-Scargle periodogram to pre-centered data leads to a
+periodogram that misses the true period of 0.3 days (lower right panel).
+Using the floating-mean model of \eq{floating-mean-model} yields a periodogram
+that detects this true period (upper right panel).
 
 \begin{figure}[ht]
   \centering
@@ -1111,37 +1139,46 @@ does not change the desirable statistical properties of the periodogram.
     \figlabel{standard-vs-floatingmean}}
 \end{figure}
 
-We have noted that the periodogram explored in \citep{Lomb76} and
-\citep{Scargle82} is equivalent to computing the $\chi^2$ goodness-of-fit
-of a sinusoid at each frequency.
-Such a fit requires that the data be pre-centered; that is,
+\citet{Zechmeister09} provides a detailed study of this
+generalized/floating-mean periodogram, and shows that the beneficial
+statistical properties of the standard periodogram apply here as well;
+namely, periodogram power is independent and distributed according to a
+simple, known function.
+
+
+\subsection{Higher-order Fourier Models}
+
+A further generalization involves multi-term Fourier models at each frequency:
+rather than fitting just a single sinusoid at each frequency, we might fit a
+partial Fourier series at each frequency:
 \begin{equation}
-  \int_0^P g(t) dt = 0
-\end{equation}fitting a sinusoid to the data at each
-frrrequires the data to be pre-centered; i.e. the signal
-must be modified so that 
+  y_{model}(t;f) = y^{0}_f + \sum_{k=1}^K A_f^{(k)} \sin(2\pi k f (t - \phi_f^{(k)})).
+\end{equation}
+This type of multi-term Lomb-Scargle periodogram was studied in detail by
+\citet{Bretthorst88}.
+
+This kind of multiterm generalization is quite tempting, because it means that
+the periodogram can fit models that are more complicated than 
+
+\todo{Show performance on eclipsing data}
 
 
-will only work correctly if the data is pre-centered so
-that a sinusoid with no offset will fit the data.
-In the past this was primarily accomplished by pre-centering the data using the
-mean estimated from the data points themselves.
-With full phase coverage of the observed signal, this approach is generally
-robust, but due to selection effects and survey cadence, full coverage can
-not always be guaranteed.
-This can potentially lead to situations where the periodogram entirely misses
-peaks of interest; an example of this is shown in \fig{standard-vs-floatingmean}.
-This simulates noisy observations of a sinusoidal signal situation in which the faintest parts of the light curve fall below the detection threshold.
-Using the standard periodogram, where the mean is estimated from the observations, leads to a periodogram that misses the true period of 0.3 days.
-The floating-mean periodogram, on the other hand, fits the mean as part of the model and more accurately characterizes the periodic content of the partially-observed data.
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig21_kepler_multiterm}
+  \caption{Multi-term models (left) and their corresponding periodograms (right)
+    for the kepler data shown in \fig{kepler-data}.
+    \figlabel{kepler-multiterm}}
+\end{figure}
 
-\subsection{Fitting Higher-order Models}
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig22_LINEAR_multiterm}
+  \caption{Multi-term models (left) and their corresponding periodograms (right)
+    for the LINEAR data shown in \fig{LINEAR-data}
+    \figlabel{LINEAR-multiterm}}
+\end{figure}
 
-\citet{Bretthorst88}
-
-\todo{Use a multi-band periodogram on Kepler Data}
-
-\todo{Show poor performance on eclipsing data}
 
 
 \section{Practical Considerations when using Lomb-Scargle Periodograms}
@@ -1287,6 +1324,8 @@ a factor of 10 faster than the \citet{Press89} approach.
 All periodograms in this paper were computed using the Astropy
 implementation of the \citet{Press89} algorithm, which was adapted from Python
 code released to accompany \citet{VanderPlas2015}.
+
+\todo{Reference fast chi-square approach}
 
 
 \subsection{Normalization of the Periodogram}
