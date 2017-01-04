@@ -1015,14 +1015,27 @@ in \fig{ls-comparison}.
 
 A remarkable feature of Scargle's modified periodogram is that it is
 {\it identical} to the result
-obtained by fitting a simple sinusoid to the data at each frequency $f$, and
+obtained by fitting a model consisting of a simple sinusoid to the data at
+each frequency $f$ and
 constructing a ``periodogram'' from the $\chi^2$ goodness-of-fit at each
 frequency--an estimator which was considered in some depth by \citet{Lomb76}.
 In this view, the $\tau$ shift defined in \eq{tau-def} serves to orthogonalize
 the normal equations used in the least squares analysis.
-In other words, the Lomb-Scargle periodogram essentially {\it assumes a
-sinusoidal model} for the data, which is visualized in \fig{ls-model} for
-the data we had seen in \fig{LINEAR-data}.
+
+Partly due to the deep connection between Fourier analysis and least-squares
+analysis, the modified periodogram in \eq{lomb-scargle-periodogram}
+has since become commonly referred to as the {\it Lomb-Scargle Periodogram}.
+
+Because of this similarity between the classical and Lomb-Scargle periodograms,
+our discussion of windowing effects applies---at least qualitatively---to
+results computed with the Lomb-Scargle periodogram.
+In particular, reasoning about the effect of window functions on the observed
+Lomb-Scargle power spectrum remains useful even if it is true in only a
+qualitative sense.
+
+
+\section{Least-Squares Extensions to Lomb-Scargle}
+\sectlabel{lomb-scargle-extensions}
 
 \begin{figure}[ht]
   \centering
@@ -1034,17 +1047,101 @@ the data we had seen in \fig{LINEAR-data}.
     \figlabel{ls-model}}
 \end{figure}
 
-Partly due to the deep connection between Fourier analysis and least-squares
-analysis, the modified periodogram in \eq{lomb-scargle-periodogram}
-has since become commonly referred to as the {\it Lomb-Scargle Periodogram}.
-The Lomb-Scargle periodogram differs from the classical periodogram 
+The equivalence of the Fourier interpretation and least squares interpretation of the Lomb-Scargle periodogram allows for some interesting and useful extensions to the periodogram.
+In the least squares interpretation of the periodogram, a sinusoidal model is proposed at each candidate frequency $f$:
+\begin{equation}
+  y_{model}(t;f) = A_f \sin(2 \pi f (t - \phi_f))
+\end{equation}
+where the amplitude $A_f$ and phase $\phi_f$ can vary as a function of frequency.
+This is fit to the data in the standard least-squares sense, by constructing
+the $\chi^2$ statistic at each frequency:
+\begin{equation}
+  \chi^2(f) \equiv \sum_n \big(y_n - y_{model}(t_n;f)\big)^2
+  \eqlabel{chi2-simple}
+\end{equation}
+We can find the ``best'' model $\hat{y}(t;f)$ by minimizing $\chi^2(f)$ at
+each freuqnecy with respect to $A_f$ and $\phi_f$;
+we will denote this minimum value as $\hat{\chi}^2(f)$.
+\citet{Scargle82} showed that with this setup, the Lomb-Scargle
+periodogram from \eq{lomb-scargle-periodogram} can be equivalently written:
+\begin{equation}
+  P(f) = \frac{N}{2}\big[\hat{\chi}^2_0 - \hat{\chi}^2(f)\big]
+  \eqlabel{lomb-scargle-chi2}
+\end{equation}
+where $\hat{\chi}^2_0$ is the reference model that assumes no variation in the data.
+The key realization here is that the Lomb-Scargle periodogram essentially
+{\it assumes a sinusoidal model} for the data; this is visualized in
+\fig{ls-model} for the data we had seen in \fig{LINEAR-data}.
+This immediately begs the question: can we compute a ``periodogram'' based
+on more general forms of $y(t;f)$ to more effectively fit the data?
 
-Because of this similarity between the classical and Lomb-Scargle periodograms,
-our discussion of windowing effects applies---at least qualitatively---to
-results computed with the Lomb-Scargle periodogram.
-In particular, reasoning about the effect of window functions on the observed
-Lomb-Scargle power spectrum remains useful even if it is true in only a
-qualitative sense.
+
+\subsection{Observational Noise}
+\label{extensions-observational-noise}
+Perhaps the most immediately obvious modification of the periodogram is to
+change not the form of the model $y_{model}$, but the $\chi^2$ statistic itself
+to account for observational errors in the data.
+If there are Gaussian errors $\sigma_n$ on each observed $y_n$, we can re-write \eq{chi2-simple} in the following (standard) way:
+\begin{equation}
+  \chi^2(f) \equiv \sum_n \left(\frac{y_n - y_{model}(t_n;f)}{\sigma_n}\right)^2
+  \eqlabel{chi2-with-errors}
+\end{equation}
+The periodogram constructed from this $\chi^2$ definition will more accurately
+reflect the spectral power of noisy observations.
+The effect of this modification on \eq{lomb-scargle-periodogram} is the addition
+of a multiplicative weight $1/\sigma_n$ within each of the summations.
+Early versions of this sort of modification appear in \citet{Gilliland87}
+and \citet{Irwin89}; \citet{Zechmeister09} showed that such a modification
+does not change the desirable statistical properties of the periodogram.
+
+
+\subsection{Data Centering and the Floating Mean Periodogram}
+\sectlabel{centering-data}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig20_standard_vs_floatingmean}
+  \caption{A comparison of the standard and floating mean periodograms for
+    data with a frequency of 0.3 and a selection effect which removes
+    faint observations.
+    In this case the mean estimated from the observed data is not close to
+    the true mean, which leads to the failure of the standard periodogram to
+    recover the correct frequency. A floating mean model correctly recovers
+    the true frequency of 0.3.
+    \figlabel{standard-vs-floatingmean}}
+\end{figure}
+
+We have noted that the periodogram explored in \citep{Lomb76} and
+\citep{Scargle82} is equivalent to computing the $\chi^2$ goodness-of-fit
+of a sinusoid at each frequency.
+Such a fit requires that the data be pre-centered; that is,
+\begin{equation}
+  \int_0^P g(t) dt = 0
+\end{equation}fitting a sinusoid to the data at each
+frrrequires the data to be pre-centered; i.e. the signal
+must be modified so that 
+
+
+will only work correctly if the data is pre-centered so
+that a sinusoid with no offset will fit the data.
+In the past this was primarily accomplished by pre-centering the data using the
+mean estimated from the data points themselves.
+With full phase coverage of the observed signal, this approach is generally
+robust, but due to selection effects and survey cadence, full coverage can
+not always be guaranteed.
+This can potentially lead to situations where the periodogram entirely misses
+peaks of interest; an example of this is shown in \fig{standard-vs-floatingmean}.
+This simulates noisy observations of a sinusoidal signal situation in which the faintest parts of the light curve fall below the detection threshold.
+Using the standard periodogram, where the mean is estimated from the observations, leads to a periodogram that misses the true period of 0.3 days.
+The floating-mean periodogram, on the other hand, fits the mean as part of the model and more accurately characterizes the periodic content of the partially-observed data.
+
+\subsection{Fitting Higher-order Models}
+
+\citet{Bretthorst88}
+
+\todo{Use a multi-band periodogram on Kepler Data}
+
+\todo{Show poor performance on eclipsing data}
 
 
 \section{Practical Considerations when using Lomb-Scargle Periodograms}
@@ -1151,6 +1248,9 @@ Thus regular period grids tend to over-sample at large periods and under-sample
 at small periods;
 for this reason it is preferable to use a regular grid in frequency.
 
+
+
+
 \subsection{Algorithmic Considerations}
 \sectlabel{algorithmic-considerations}
 Given the size of the frequency grid required to fully characterize the periods
@@ -1158,18 +1258,18 @@ from a given dataset, it is vital to have an efficient algorithm for evaluating
 the periodogram. Unfortunately, the periodogram itself is a relatively slow
 operation.
 
-Suppose you have a set of $N$ observations over a time $T$ with an average
-cadence of $\bar{\delta t} = N/T$.
+Suppose you have a set of $N$ observations over a time-span $T$ for an average
+cadence of $\overline{\delta t} = N/T$.
 From \eq{n-eval} we see that the number of frequencies evaluated is
-$N_f \propto T f_{max} = N f_{max} / \bar{\delta t}$.
-Holding constant the average survey cadence $\bar{\delta t}$ and individual
+$N_f \propto T f_{max} = N f_{max} / \overline{\delta t}$.
+Holding constant the average survey cadence $\overline{\delta t}$ and individual
 observation properties (which control $f_{max}$), we find that the number of
-frequencies is simply proportional to the number of data points.
+frequencies is directly proportional to the number of data points.
 The computation of the Lomb-scargle periodogram in \eq{lomb-scargle-periodogram}
-requires several sums over $N$ sinusoids at each of the
+requires sums over $N$ sinusoids at each of the
 $N_f$ frequencies, and thus we see that the
 na{\"i}ve scaling of the algorithm with the size of the dataset is
-$\mathcal{O}(N^2)$, holding observing properties constant.
+$\mathcal{O}(N^2)$, when survey properties are held constant.
 Due to the trigonometric functions involved, this turns out to be a rather
 ``expensive'' $\mathcal{O}(N^2)$, which makes the straightforward
 implementation impractical for even modestly-sized datasets.
