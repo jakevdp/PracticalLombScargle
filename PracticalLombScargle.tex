@@ -1150,17 +1150,33 @@ simple, known function.
 
 A further generalization involves multi-term Fourier models at each frequency:
 rather than fitting just a single sinusoid at each frequency, we might fit a
-partial Fourier series at each frequency:
+partial Fourier series at each frequency, adding $K$ additional components at
+integer multiples of the fundamental frequency:
 \begin{equation}
   y_{model}(t;f) = y^{0}_f + \sum_{k=1}^K A_f^{(k)} \sin(2\pi k f (t - \phi_f^{(k)})).
 \end{equation}
 This type of multi-term Lomb-Scargle periodogram was studied in detail by
 \citet{Bretthorst88}.
 
-This kind of multiterm generalization is quite tempting, because it means that
-the periodogram can fit models that are more complicated than 
+This kind of Fourier series generalization to the periodogram is quite
+tempting, because it means that the periodogram can be tuned to fit models
+that are more complicated than simple sine waves.
+\citet{Bretthorst88} takes this even further, exploring applications to
+decaying signals and other more complex models.
 
-\todo{Show performance on eclipsing data}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig23_binary_multiterm}
+  \caption{1-term and 6-term Lomb-Scargle models fit to LINEAR object
+    14752041, an eclipsing binary. Notice that the standard periodogram
+    (top panels) finds an alias of the true 17.5-hour frequency,
+    because a simple sinusoidal model cannot closely fit both the primary
+    and secondary eclipse. A six-term Fourier model (bottom panels), on
+    the other hand, does find the true period.
+    \figlabel{binary-multiterm}}
+\end{figure}
+
 
 
 \begin{figure}[ht]
@@ -1345,17 +1361,6 @@ code released to accompany \citet{VanderPlas2015}.
   \item False Alarm Probability and its pitfalls
   \item Baluev method and why it's not enough
   \item Motivation and example of Bootstrap
-\end{itemize}
-
-
-\section{Generalizations \& Challenges}
-\sectlabel{generalizations}
-
-\begin{itemize}
-\item floating-mean
-\item Uncertainties in Data
-\item Bayesian view is (almost always) not useful
-\item Multiterm makes the true period fit better, but also bumps the background noise.
 \end{itemize}
 
 
