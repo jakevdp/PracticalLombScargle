@@ -28,6 +28,31 @@ archivePrefix = "arXiv",
   adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
 
+@Article{matplotlib,
+  Author    = {Hunter, J. D.},
+  Title     = {Matplotlib: A 2D graphics environment},
+  Journal   = {Computing In Science \& Engineering},
+  Volume    = {9},
+  Number    = {3},
+  Pages     = {90--95},
+  abstract  = {Matplotlib is a 2D graphics package used for Python
+  for application development, interactive scripting, and
+  publication-quality image generation across user
+  interfaces and operating systems.},
+  publisher = {IEEE COMPUTER SOC},
+  doi = {10.1109/MCSE.2007.55},
+  year      = 2007
+}
+
+@InProceedings{pandas,
+  author    = { Wes McKinney },
+  title     = { Data Structures for Statistical Computing in Python },
+  booktitle = { Proceedings of the 9th Python in Science Conference },
+  pages     = { 51 - 56 },
+  year      = { 2010 },
+  editor    = { St\'efan van der Walt and Jarrod Millman }
+}
+
 @article{VanderPlas2015,
    author = {{VanderPlas}, J.~T. and {Ivezic}, Z.},
     title = "{Periodograms for Multiband Astronomical Time Series}",
@@ -599,6 +624,45 @@ archivePrefix = "arXiv",
   adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
 
+@ARTICLE{Palmer09,
+   author = {{Palmer}, D.~M.},
+    title = "{A Fast Chi-Squared Technique for Period Search of Irregularly Sampled Data}",
+  journal = {\apj},
+archivePrefix = "arXiv",
+   eprint = {0901.1913},
+ primaryClass = "physics.data-an",
+ keywords = {methods: data analysis, methods: numerical, methods: statistical, stars: oscillations},
+     year = 2009,
+    month = apr,
+   volume = 695,
+    pages = {496-502},
+      doi = {10.1088/0004-637X/695/1/496},
+   adsurl = {http://adsabs.harvard.edu/abs/2009ApJ...695..496P},
+  adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+
+@ARTICLE{Mortier15,
+   author = {{Mortier}, A. and {Faria}, J.~P. and {Correia}, C.~M. and {Santerne}, A. and 
+	{Santos}, N.~C.},
+    title = "{BGLS: A Bayesian formalism for the generalised Lomb-Scargle periodogram}",
+  journal = {\aap},
+archivePrefix = "arXiv",
+   eprint = {1412.0467},
+ primaryClass = "astro-ph.IM",
+ keywords = {methods: data analysis, methods: statistical},
+     year = 2015,
+    month = jan,
+   volume = 573,
+      eid = {A101},
+    pages = {A101},
+      doi = {10.1051/0004-6361/201424908},
+   adsurl = {http://adsabs.harvard.edu/abs/2015A%26A...573A.101M},
+  adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+
+
 @ARTICLE{Gilliland87,
    author = {{Gilliland}, R.~L. and {Baliunas}, S.~L.},
     title = "{Objective characterization of stellar activity cycles. I - Methods and solar cycle analyses}",
@@ -689,6 +753,27 @@ archivePrefix = "arXiv",
   adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
 
+@ARTICLE{Sesar2013,
+   author = {{Sesar}, B. and {Grillmair}, C.~J. and {Cohen}, J.~G. and {Bellm}, E.~C. and 
+	{Bhalerao}, V.~B. and {Levitan}, D. and {Laher}, R.~R. and {Ofek}, E.~O. and 
+	{Surace}, J.~A. and {Tang}, S. and {Waszczak}, A. and {Kulkarni}, S.~R. and 
+	{Prince}, T.~A.},
+    title = "{Tracing the Orphan Stream to 55 kpc with RR Lyrae Stars}",
+  journal = {\apj},
+archivePrefix = "arXiv",
+   eprint = {1308.0857},
+ keywords = {Galaxy: halo, Galaxy: kinematics and dynamics, Galaxy: structure, stars: variables: RR Lyrae},
+     year = 2013,
+    month = oct,
+   volume = 776,
+      eid = {26},
+    pages = {26},
+      doi = {10.1088/0004-637X/776/1/26},
+   adsurl = {http://adsabs.harvard.edu/abs/2013ApJ...776...26S},
+  adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+
 @book{NumRec,
  author = {Press, William H. and Teukolsky, Saul A. and Vetterling, William T. and Flannery, Brian P.},
  title = {Numerical Recipes 3rd Edition: The Art of Scientific Computing},
@@ -730,19 +815,30 @@ archivePrefix = "arXiv",
  keywords = {NumPy, Python, Python, NumPy, scientific programming, numerical computations, programming libraries, numerical computations, programming libraries, scientific programming},
 }
 
+@book{numpybook,
+ author = {Oliphant, Travis E.},
+ title = {Guide to NumPy},
+ year = {2015},
+ isbn = {151730007X, 9781517300074},
+ edition = {2nd},
+ publisher = {CreateSpace Independent Publishing Platform},
+ address = {USA},
+} 
 
-@ARTICLE{Long2014,
-   author = {{Long}, J.~P. and {Chi}, E.~C. and {Baraniuk}, R.~G.},
-    title = "{Estimating a Common Period for a Set of Irregularly Sampled Functions with Applications to Periodic Variable Star Data}",
-  journal = {ArXiv e-prints},
-archivePrefix = "arXiv",
-   eprint = {1412.6520},
- primaryClass = "stat.AP",
- keywords = {Statistics - Applications, Astrophysics - Instrumentation and Methods for Astrophysics},
-     year = 2014,
-    month = dec,
-   adsurl = {http://adsabs.harvard.edu/abs/2014arXiv1412.6520L},
-  adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+
+@article{Long2016,
+  author = "Long, James P. and Chi, Eric C. and Baraniuk, Richard G.",
+  doi = "10.1214/15-AOAS885",
+  fjournal = "The Annals of Applied Statistics",
+  journal = "Ann. Appl. Stat.",
+  month = "03",
+  number = "1",
+  pages = "165--197",
+  publisher = "The Institute of Mathematical Statistics",
+  title = "Estimating a common period for a set of irregularly sampled functions with applications to periodic variable star data",
+  url = "http://dx.doi.org/10.1214/15-AOAS885",
+  volume = "10",
+  year = "2016"
 }
 
 

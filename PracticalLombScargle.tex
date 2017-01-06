@@ -176,7 +176,7 @@ derived from the periodogram, including various notions of the
 
 
 All figures in this work were produced using Python, and in particular the
-Numpy \citep{numpy},
+Numpy \citep{numpy, numpybook},
 Pandas \citep{pandas},
 Astropy \citep{Astropy2013},
 and Matplotlib \citep{matplotlib} packages.
@@ -693,7 +693,7 @@ All of these are tempting criteria in that they recover the classical Nyquist
 frequency in the limit of evenly-spaced data.
 Unfortunately, none of these approaches is correct: in general,
 unevenly-sampled data can probe frequencies far larger than any of these
-supposed limits (a fact that some of these citations do hint at
+supposed limits (a fact that several of these citations do hint at
 parenthetically).
 
 As a simple example of where such logic fails,
@@ -735,7 +735,7 @@ the true frequency.
 
 While Nyquist arguments based on average or minimum sampling fail spectacularly,
 there is a sense in which the Nyquist limit can be applied to unevenly-spaced
-data. \citet{Eyer99} explores this issue in some detail, and in particular
+data. \citet{Eyer99} explore this issue in some detail, and in particular
 proves the following:
 \begin{quote}
 Let $p$ be the largest value such that each $t_i$ can be written $t_i = t_0 + n_i p$, for integers $n_i$. The Nyquist Frequency then is $f_{Ny} = 1 / (2p)$.
@@ -744,12 +744,16 @@ In other words, computing the Nyquist rate for unevenly-spaced data requires
 finding some common factor, such that each spacing $\Delta t_i$ is {\it exactly}
 an integer multiple of this factor.
 This can be proven formally, but can be understood by thinking of such data as
-a windowed version of uniformly sampled data with spacing $p$.
-Such uniform data has a classical Nyquist limit of $1/(2p)$, and a window function applied to that data does not change that fact.
+a windowed version of uniformly sampled data with spacing $p$, where the window
+is zero at some observations.
+Such uniform data has a classical Nyquist limit of $1/(2p)$, and a window
+function applied to that data does not change that fact.
 
 \Fig{nyquist-eyer99} shows an example of such a Nyquist frequency.
-The data are non-uniformly sampled at times $t_i = n_i * p$, with $p=0.01$.
-This results in a Nyquist frequency $f_{Ny} = 50$, and we see the expected
+The data are non-uniformly sampled at times $t_i = n_i * p$, with $p=0.01$
+and $n_i$ drawn randomly from positive integers less than 10,000.
+According to the \citet{Eyer99} definition,
+this results in a Nyquist frequency $f_{Ny} = 50$, and we see the expected
 behavior beyond this frequency: the signal at $f > f_{Ny}$ consists of repeated
 aliases of the signal at $f < f_{Ny}$.
 
@@ -802,10 +806,10 @@ frequency limit is $f_{max} \propto 1/(2\delta t)$, with the constant of
 proportionality dependent on the shape of the effective window describing
 individual observations.
 
-Keep in mind that the windowing limit $f_{max}$ is quite different than a
+Keep in mind that the windowing limit $1/(2\delta t)$ is quite different than a
 Nyquist limit: the Nyquist limit is the frequency beyond which all signal
 is aliased into the Nyquist range; the windowing limit is the frequency
-beyond which all signal is zero.
+beyond which all signal is zero or nearly zero.
 
 \subsection{Semi-structured Observing Windows}
 
@@ -840,7 +844,7 @@ observation near a time $t_0 + np$ for integer $n$.
 
 Thus the strong spike at a period of 1 day indicate that observations are
 taken near the same time of day: this is typical of a ground-based survey
-which observes only at night.
+with observations recorded only at night.
 The additional spikes at periods of $1/n$ days (for integer $n$) are aliases
 of this same effect.
 
@@ -873,10 +877,10 @@ imprinted on the power spectrum measured from the data.
 \end{figure}
 
 This behavior is illustrated in \fig{LINEAR-window-effect}.
-The upper panel shows the window power spectrum as a function of frequency, while lower panel shows the observed signal power spectrum as a function of frequency.
-As noted in the discussion of \fig{LINEAR-window}, the window function shows a strong signal at frequencies corresponding to 1 day and 1 year; the latter can be seen in the inset plot.
-The power at both these scales is clearly imprinted on the observed power spectrum, as shown in the lower panel and its inset.
-This imperfect aliasing is similar to the perfect aliasing seen in regularly-sampled data at the Nyquist frequency; however, in this case the magnitude of the
+The upper panel shows the window power spectrum as a function of frequency (not period, as in \fig{LINEAR-window}), while lower panel shows the observed signal power spectrum as a function of frequency.
+The upper panel and its inset show clearly the 1-day and 1-year features we noted previously.
+The lower panel shows the observed power spectrum of the data: these diurnal and annual peaks in the window function are quite clearly imprinted on the observed power spectrum at relevant scales.
+This approximate aliasing is similar to the exact aliasing seen in regularly-sampled data at the Nyquist frequency; however, in this case the magnitude of the
 aliased signal fades further from the frequency driving the signal.
 
 \subsubsection{A Space-based Observing Window: Kepler}
@@ -887,12 +891,12 @@ aliased signal fades further from the frequency driving the signal.
   \caption{An RR Lyrae variable observed by the Kepler project \citep[see][]{Kolenberg2010}.
     {\it upper left:} the 4083 observed fluxes over roughly three months.
     {\it upper right:} the window power spectrum, which is quite close to that of regularly-spaced data with a cadence of 29.4 minutes.
-    {\it lower left:} the time between observations. other than missing measurements, the spacing between observations is nearly uniform. the lower panel gives a closer look at the majority of the spacings, which are not exactly the same but rather span a range of $\pm 50$ms around the main period observed in the window function.
+    {\it lower left:} the time between observations. Missing measurements aside, the spacing between observations is nearly uniform. the lower panel gives a closer look at the majority of the spacings, which are not exactly the same but rather span a range of $\pm 50$ms around the 29.4-minute period observed in the window function.
     {\it lower right:} the data power spectrum, showing approximate aliasing and clearly indicating a peak near a period of 13.6 hours, along with higher-order components at multiples of this value.
     \figlabel{kepler-data}}
 \end{figure}
 
-Space-based missions often have quite different observing windows.
+Space-based surveys will generally have quite different observing windows.
 For example, the upper-left panel of \fig{kepler-data}
 shows observations of an RR-Lyrae variable star from the Kepler survey,
 measured over 4000 times over a period of three months,
@@ -945,14 +949,17 @@ suggestive way:
 \end{eqnarray}
 Although this form of the non-uniform periodogram can be useful for identifying
 periodic signals, its statistical properties are not as straightforward as in
-the uniform case.
-In this case, when we say an estimator with ``good statistical properties'',
-we mean that when it is applied to data with straightforward, uncorrelated
-noise, the result is a periodogram estimate in which the noise is also
-straightforward and uncorrelated.
+the uniform case: the periodogram has noise properties that are nontrivial
+to quantify, even when applied to ideal data (data with uncorrelated
+Gaussian noise).
+
+For the sake of evaluating the significance of periodogram peaks
+(see \sect{uncertainties}), it would be preferable if the non-equispaced
+periodogram, had uncertainties that were uncorrelated, and could be
+straightforwardly computed from the uncertainties of the data.
 
 \citet{Scargle82} showed that while the classical periodogram of
-\eq{classical-periodogram} has these desireable statistical properties
+\eq{classical-periodogram} has such desireable statistical properties
 in the case of uniform sampling, this does not hold for
 \eq{classical-periodogram} when the sampling becomes non-uniform.
 To address this, he considered a generalized form of the periodogram,
@@ -1099,14 +1106,15 @@ periodogram.
 
 
 \subsection{Data Centering and the Floating Mean Periodogram}
-\sectlabel{centering-data}
+\sectlabel{floating-mean}
 
 Another commonly-applied modification of the periodogram has variously been
-called the {\it Date-compensated Discrete Fourier Transform} \citep{Ferraz-Mello81}, the {\it floating-mean periodogram} \citep{Cumming99}, and the {\it generalized Lomb-Scargle Method} \citep{Zechmeister09}, and involves adding an offset term to the sinusoidal model at each frequency:
+called the {\it Date-compensated Discrete Fourier Transform} \citep{Ferraz-Mello81}, the {\it floating-mean periodogram} \citep{Cumming99}, and the {\it generalized Lomb-Scargle Method} \citep{Zechmeister09}, and involves adding an offset term to the sinusoidal model at each frequency\footnote{We choose to follow \citet{VanderPlas2015} and call this a ``Floating Mean'' model, to avoid confusion surrounding the different meanings of the term ``generalized periodogram'' in, {e.g.} \citet{Bretthorst88} and \citet{Zechmeister09}.}:
 \begin{equation}
   y_{model}(t;f) = y_{0, f} + A_f \sin(2 \pi f (t - \phi_f))
   \eqlabel{floating-mean-model}
 \end{equation}
+
 This is important, because the standard Lomb-Scargle approach assumes that the
 data are pre-centered around the mean value of the signal.
 In the past this was primarily accomplished by pre-centering the data before
@@ -1145,6 +1153,7 @@ simple, known function.
 
 
 \subsection{Higher-order Fourier Models}
+\sectlabel{multiterm}
 
 A further generalization involves multi-term Fourier models at each frequency:
 rather than fitting just a single sinusoid at each frequency, we might fit a
@@ -1201,12 +1210,15 @@ at frequencies of interest!
 
 This background noise can also be understood in terms of aliasing.
 Consider \fig{kepler-multiterm}, which shows several multi-term fits to the
-data from \fig{kepler-data}.
+Kepler data from \fig{kepler-data}.
 Given a standard periodogram peak at $f_0$, a 2-term periodogram will have an
 additional peak at $f_0 / 2$, in which the original peak is the second
 harmonic. Similarly, a 3-term periodogram will add additional peaks both at
 $f_0 / 2$ and $f_0 / 3$, due to the original peak falling in the second and
 third harmonic.
+In general, you can expect an $N$-term periodogram to contain $N$ copies of
+every feature present in the standard periodogram, in addition to any
+new or strengthened features due to the more flexible model.
 
 \begin{figure}[ht]
   \centering
@@ -1216,14 +1228,40 @@ third harmonic.
     \figlabel{LINEAR-multiterm}}
 \end{figure}
 
-In cases where the single-term power spectrum is itself very noisy, these
-additional aliases can quickly wash-out any gains from the more complicated
-model.
-Consider \fig{LINEAR-multiterm}, in which the $n=3$ model leads to very large
-noise at the low-frequency end. In this case, spurious periodogram peaks due
-to coincidences of such aliases may become problematic for even moderately
-noisy models.
+In cases where the single-term power spectrum is itself noisy and/or dominated
+by partial aliasing due to window effects, these additional aliases can
+quickly wash-out any gains from the more complicated model.
+For example, consider the periodogram in \fig{LINEAR-multiterm}: as previously
+discussed, this periodogram contains a number of aliases of the true peak due
+to the dominant 24-hour signal in the window function.
+Adding terms to this model only compounds this problem, increasing the number of
+spurious peaks at the low-frequency end.
+For data with even moderate levels of noise, coincidences of these peaks can
+easily lead to spurious signals dominating the true peak.
 
+\subsection{Additional Extensions}
+When the periodogram is viewed from the least-squares model-fitting perspective,
+there is no need to limit the analysis to sums of sinusoids.
+There have been some very interesting applications extending this type of
+analysis to more arbitrary models.
+For example, \citet{Bretthorst88} studies ``periodograms'' which measure
+decaying signals, non-stationary signals, multiple signals, and other models,
+and shows the effectiveness of such approaches in applications from
+medical imaging and astronomy.
+
+On the astronomy side, several examples of such analyses exist.
+For example, the Supersmoother approach to detecting periodicity
+involves fitting a flexible non-parametric smoothing
+function to the data at each frequency: the flexibility of the model leads
+to fewer issues of aliasing \citep{Reimann94}.
+Another approach is to use empirically-derived templates as a functional fit
+at each frequency; this has been employed effectively in \citet{Sesar2010,
+Sesar2013} and related work.
+Finally, there has been some exploration of extensions to the Lomb-Scargle
+periodogram for use with multi-band observations, using various forms of
+regularization to control model complexity \citep{VanderPlas2015, Long2016}.
+
+\subsection{A Note About ``Bayesian'' Periodograms}
 
 
 \section{Practical Considerations when using Lomb-Scargle Periodograms}
@@ -1362,15 +1400,25 @@ The first of these is discussed in \citet{Press89}, which uses an inverse
 interpolation operation along with a Fast Fourier Transform to compute the
 trigonometric components of \eq{lomb-scargle-periodogram} very efficiently over
 a large number of frequencies.
-A qualitatively similar approach is presented by \citet{Leroy2012},
-and makes use of the Non-equispaced Fast Fourier Transform
+\citet{Zechmeister09} showed how this approach can be easily extended to
+the floating mean periodogram discussed in \sect{floating-mean}.
+
+A qualitatively similar approach to the \citet{Press89} algorithm
+is presented by \citet{Leroy2012}:
+It makes use of the Non-equispaced Fast Fourier Transform
 \citep[NFFT, see][]{Keiner2009} to compute the Lomb-Scargle periodogram about
 a factor of 10 faster than the \citet{Press89} approach.
-All periodograms in this paper were computed using the Astropy
-implementation of the \citet{Press89} algorithm, which was adapted from Python
-code released to accompany \citet{VanderPlas2015}.
+For the multi-term models discussed in \sect{multiterm}, \citet{Palmer09}
+presents an adaptation of the \citet{Press89} method that can compute the
+multi-term result in $\mathcal{O}(NK\log N)$, for $N$ data points and
+$K$ Fourier components.
 
-\todo{Reference fast chi-square approach}
+All periodograms in this paper were computed using the Astropy
+implementation of the \citet{Press89}, \citet{Zechmeister09}, and
+\citet{Palmer09} algorithms, which was adapted from Python code originally
+published by \citet{ICVG2014} and \citet{VanderPlas2015}.
+All code for this paper is available in the form of Jupyter notebooks on the
+author's GitHub repository\footnote{\url{http://github.com/jakevdp/PracticalLombScargle}}
 
 
 \subsection{Normalization of the Periodogram}
