@@ -1260,8 +1260,50 @@ Sesar2013} and related work.
 Finally, there has been some exploration of extensions to the Lomb-Scargle
 periodogram for use with multi-band observations, using various forms of
 regularization to control model complexity \citep{VanderPlas2015, Long2016}.
+With many of these types of extensions, computational complexity quickly
+becomes an issue, because fast $\mathcal{O}(N\log N)$ approaches along the
+lines of \citet{Press89} are not available for more general functional forms
+(see \sect{algorithmic-considerations}).
+
 
 \subsection{A Note About ``Bayesian'' Periodograms}
+\sectlabel{bayesian-periodograms}
+The least squares view of the Lomb-Scargle periodogram creates a natural
+bridge, via maximum likelihood, to Bayesian approaches to periodograms.
+In fact, \citet{Jaynes87} showed that the standard form of the Lomb-Scargle
+periodogram can be derived directly from the principles of Bayesian Probability
+Theory outlined in his comprehensive treatment of the subject \citep{Jaynes03}.
+In the Bayesian view, the Lomb-Scargle periodogram is the optimal statistic
+for detecting a stationary sinusoidal signal in the presence of Gaussian
+noise.
+
+$P(f)$ from \eq{lomb-scargle-periodogram}
+
+\begin{equation}
+  p(f~|~D) \propto e^{-n \chi^2 / 2} \propto e^{P(f)}
+\end{equation}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig24_bayesian_periodogram}
+  \caption{Comparison of the Lomb-Scargle periodogram (upper right) and the
+    Bayesian posterior periodogram (lower right) for simulated data (left)
+    drawn from a simple sinusoid.
+    The Bayesian posterior is equal to the exponentiation of the unnormalized
+    Lomb-Scargle periodogram, and thus tends to suppress all but the largest
+    peak.
+    \figlabel{bayesian-periodogram}}
+\end{figure}
+
+Warnings:
+
+\citep{Mortier15}
+
+What works:
+
+Bayesian models with strong priors \citep{Bretthorst88}
+Flexible Bayesian models \citep{Gregory92, Kelly14}
+Gaussian process models \citep{Angus16}
 
 
 \section{Practical Considerations when using Lomb-Scargle Periodograms}
@@ -1421,7 +1463,8 @@ All code for this paper is available in the form of Jupyter notebooks on the
 author's GitHub repository\footnote{\url{http://github.com/jakevdp/PracticalLombScargle}}
 
 
-\subsection{Normalization of the Periodogram}
+\subsection{Periodogram Normalization and Interpretation}
+\sectlabel{normalizations}
 
 \begin{itemize}
   \item $\chi^2$ normalization
