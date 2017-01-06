@@ -173,9 +173,7 @@ the choice of frequency grid and the various normalizations of the periodogram.
 In \sect{uncertainties}, we discuss how to quantify uncertainties in periods
 derived from the periodogram, including various notions of the
 ``False Alarm Probability''.
-In \sect{generalizations}, we consider and critique some generalizations of
-the Lomb-Scargle model, including multiterm periodograms and Bayesian
-approaches.
+
 
 All figures in this work were produced using Python, and in particular the
 Numpy \citep{numpy},
@@ -1155,15 +1153,9 @@ integer multiples of the fundamental frequency:
 \begin{equation}
   y_{model}(t;f) = y^{0}_f + \sum_{k=1}^K A_f^{(k)} \sin(2\pi k f (t - \phi_f^{(k)})).
 \end{equation}
-This type of multi-term Lomb-Scargle periodogram was studied in detail by
-\citet{Bretthorst88}.
-
-This kind of Fourier series generalization to the periodogram is quite
-tempting, because it means that the periodogram can be tuned to fit models
-that are more complicated than simple sine waves.
-\citet{Bretthorst88} takes this even further, exploring applications to
-decaying signals and other more complex models.
-
+\citet{Bretthorst88} takes a comprehensive look at this type of multi-term
+extension to the periodogram, as well as extensions to decaying signals and
+other more complex models.
 
 \begin{figure}[ht]
   \centering
@@ -1177,15 +1169,44 @@ decaying signals and other more complex models.
     \figlabel{binary-multiterm}}
 \end{figure}
 
+This kind of Fourier series generalization to the periodogram is quite
+tempting, because it means that the periodogram can be tuned to fit models
+that are more complicated than simple sine waves.
+In some cases, this can be very useful; for example, \fig{binary-multiterm}
+shows a Lomb-Scargle analysis of an eclipsing binary star, characterized by
+both a primary and secondary eclipse.
+The standard Lomb-Scargle periodogram (upper panels) is maximized at twice the true rotation
+frequency, because the simple sinusoidal model is unable to closely fit the
+primary and secondary eclipses separately.
+A six-term Fourier model (lower panels) is sufficiently flexible that it can
+detect the true 17.5-hour period, though this comes at the expense of a much
+noisier periodogram.
 
+This background noise is easy to understand: in the least-squares view of the
+periodogram, the periodogram height at any frequency is directly related to
+how well the model fits the data.
+For Linear models, adding additional terms will {\it always} provide an
+equal or better fit to data than the simpler model, and so a periodogram based
+on a more complex model will be higher {\it at all frequencies}, not just
+at frequencies of interest!
 
 \begin{figure}[ht]
   \centering
   \includegraphics[width=\textwidth]{fig21_kepler_multiterm}
   \caption{Multi-term models (left) and their corresponding periodograms (right)
-    for the kepler data shown in \fig{kepler-data}.
+    for the kepler data shown in \fig{kepler-data}
     \figlabel{kepler-multiterm}}
 \end{figure}
+
+
+This background noise can also be understood in terms of aliasing.
+Consider \fig{kepler-multiterm}, which shows several multi-term fits to the
+data from \fig{kepler-data}.
+Given a standard periodogram peak at $f_0$, a 2-term periodogram will have an
+additional peak at $f_0 / 2$, in which the original peak is the second
+harmonic. Similarly, a 3-term periodogram will add additional peaks both at
+$f_0 / 2$ and $f_0 / 3$, due to the original peak falling in the second and
+third harmonic.
 
 \begin{figure}[ht]
   \centering
@@ -1194,6 +1215,14 @@ decaying signals and other more complex models.
     for the LINEAR data shown in \fig{LINEAR-data}
     \figlabel{LINEAR-multiterm}}
 \end{figure}
+
+In cases where the single-term power spectrum is itself very noisy, these
+additional aliases can quickly wash-out any gains from the more complicated
+model.
+Consider \fig{LINEAR-multiterm}, in which the $n=3$ model leads to very large
+noise at the low-frequency end. In this case, spurious periodogram peaks due
+to coincidences of such aliases may become problematic for even moderately
+noisy models.
 
 
 
