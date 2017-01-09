@@ -1277,11 +1277,14 @@ In the Bayesian view, the Lomb-Scargle periodogram is the optimal statistic
 for detecting a stationary sinusoidal signal in the presence of Gaussian
 noise.
 
-$P(f)$ from \eq{lomb-scargle-periodogram}
-
+For the standard model, the Bayesian periodogram is given by
 \begin{equation}
-  p(f~|~D) \propto e^{-n \chi^2 / 2} \propto e^{P(f)}
+  p(f~|~D) \propto e^{-N \chi^2 / 2} \propto e^{P_{LS}(f)}
+  \eqlabel{bayesian-periodogram}
 \end{equation}
+where $P_{LS}(f)$ is the Lomb-Scargle power from \eq{lomb-scargle-periodogram}.
+The effect of this exponentiation, as seen in \fig{bayesian-periodogram},
+is to suppress all peaks in relation to the largest one of the spectrum.
 
 \begin{figure}[ht]
   \centering
@@ -1411,6 +1414,37 @@ at small periods;
 for this reason it is preferable to use a regular grid in frequency.
 
 
+\subsection{Failure Modes}
+\sectlabel{failure-modes}
+
+When using the Lomb-Scargle periodogram in an observational pipeline, it is
+vital to keep in mind the failure modes of the periodogram approach, which
+are rooted in the aliasing and pseudo-aliasing effects discussed in
+\sect{window-functions}.
+Due to the interaction of the signal, the convolution due to the survey window,
+and noise in the data, it is quite common for the largest peak in the
+periodogram to correspond not to the true frequency, but some alias of that
+frequency.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig25_failure_modes}
+  \caption{Comparison of the true period and peak Lomb-Scargle period for
+    1000 simulated periodic light curves.
+    Each has 60 irregular observations over 180 nights,
+    with a cadence typical of ground-based surveys ({i.e.} showing a strong
+    diurnal window pattern similar to \fig{LINEAR-window}).
+    The Lomb-Scargle peak does not always coincide with the true period,
+    and there is noticeable structure among these failures.
+    Panels (a)-(d) show some of the failure modes we can expect due to this
+    window function; see the text for more discussion.
+    \figlabel{failure-modes}}
+\end{figure}
+
+\todo{Detailed discussion of \fig{failure-modes}
+\citep[see, e.g.][]{VanderPlas2015, Long2016}
+
+
 
 
 \subsection{Algorithmic Considerations}
@@ -1456,11 +1490,11 @@ multi-term result in $\mathcal{O}(NK\log N)$, for $N$ data points and
 $K$ Fourier components.
 
 All periodograms in this paper were computed using the Astropy
-implementation of the \citet{Press89}, \citet{Zechmeister09}, and
-\citet{Palmer09} algorithms, which was adapted from Python code originally
+implementations of the \citet{Press89}, \citet{Zechmeister09}, and
+\citet{Palmer09} algorithms, which were adapted from Python code originally
 published by \citet{ICVG2014} and \citet{VanderPlas2015}.
-All code for this paper is available in the form of Jupyter notebooks on the
-author's GitHub repository\footnote{\url{http://github.com/jakevdp/PracticalLombScargle}}
+All code for this paper is available in the form of Jupyter notebooks in the
+paper's GitHub repository\footnote{\url{http://github.com/jakevdp/PracticalLombScargle}}
 
 
 \subsection{Periodogram Normalization and Interpretation}
