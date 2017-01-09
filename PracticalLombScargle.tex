@@ -80,8 +80,9 @@
 
 \begin{abstract}
 This paper gives an introduction to the practical aspects of the use of Lomb-Scargle periodograms and related algorithms to detect periodic signals.
-Rather than a rigorous mathematical treatment, the goal of this paper is to build intuition about what assumptions are baked into any periodogram computation.
-etc. etc....
+Rather than a rigorous mathematical treatment, the goal of this paper is to build intuition about what assumptions are baked into any periodogram computation
+and to help develop the intuition required to interpret the periodogram
+correctly and use it effectively.
 \end{abstract}
 
 \keywords{
@@ -1294,25 +1295,54 @@ is to suppress all peaks in relation to the largest one of the spectrum.
     drawn from a simple sinusoid.
     The Bayesian posterior is equal to the exponentiation of the unnormalized
     Lomb-Scargle periodogram, and thus tends to suppress all but the largest
-    peak.
+    peak. The Bayesian approach can be useful, but is problematic if
+    not used carefully (see text for discussion).
     \figlabel{bayesian-periodogram}}
 \end{figure}
 
-Warnings:
+The benefit of the Bayesian approach is that it allows more principled treatment
+of nuisance parameters related to noise in the data and choices of model,
+and Bayesian periodogram extensions have been used quite effectively in a
+variety of circumstances \citep[see, e.g.][]{Bretthorst88}.
+Additionally, the Bayesian result explicitly returns probability density as
+a function of frequency, and it is tempting to think of this as the
+``natural'' way to interpret the periodogram.
 
-\citep{Mortier15}
+The problem, however, is that the Bayesian periodogram does {\it not} return
+a simple probability of the data showing a particular frequency, but rather
+a probability of each frequency conditioned on a relatively strong assumption:
+that the data are drawn from a sinusoidal model.
+Now, the standard Lomb-Scargle periodogram also assumes a sinusoidal model,
+and is thus subject to the same criticism.
+But unlike the simple Bayesian approach, the standard periodogram affords
+interpretation in light of Fourier transforms, window functions, and the
+like: in most cases of interest, this turns out to be {\it vital} to the
+application and interpretation of the periodogram in most cases of interest
+(see \sect{failure-modes}).
 
-What works:
-
-Bayesian models with strong priors \citep{Bretthorst88}
-Flexible Bayesian models \citep{Gregory92, Kelly14}
-Gaussian process models \citep{Angus16}
+In other words, the Bayesian approach goes ``all-in'' on the least squares
+interpretation of the periodogram, exponentially suppressing the information
+that allows you to reason about the periodogram in light of its connection
+to Fourier analysis.
+In contrived cases with structureless window functions, exponential attenuation
+of side-peaks and side-lobes may seem appealing \citep[see, e.g.][]{Mortier15},
+but that appeal extends to the real world only in special cases.
+That is not to say that all Bayesian approaches to periodic analysis are
+similarly flawed; there have been many interesting studies that go beyond
+the simple sinusoidal model and use more complex and/or flexible models.
+Some examples are models based on Fourier
+extensions with strong priors \citep[e.g.][]{Bretthorst88}, flexible
+non-parametric functions \citep[e.g.][]{Gregory92}, constrained stochastic
+models \citep[e.g.][]{Kelly14}, and Gaussian process models \citep{Angus16}.
+Though these can often be more accurate and powerful than the Lomb-Scargle
+approach, they tend to be far more expensive computationally.
 
 
 \section{Practical Considerations when using Lomb-Scargle Periodograms}
 \sectlabel{practical-considerations}
 
 \subsection{Choosing a Frequency Grid}
+\sectlabel{frequency-grid}
 The choice of frequency grid for a Lomb-Scargle analysis is an important one
 that is too-often glossed-over, probably because the choice is so
 straightforward in the more familiar case of uniformly-sampled data.
@@ -1441,10 +1471,86 @@ frequency.
     \figlabel{failure-modes}}
 \end{figure}
 
-\todo{Detailed discussion of \fig{failure-modes}
-\citep[see, e.g.][]{VanderPlas2015, Long2016}
+\fig{failure-modes} demonstrates this for some simulated data.
+The data consist of 60 noisy observations of each object within a span of
+180 days, with each observation recorded within a few hours of midnight
+each night.
+The left panel shows the results: the peridogram peak coincides with the true
+period in under 50\% of cases, and the modes of failure lead to noticeable
+patterns in the resulting plot.
+Though these are simulated observations, the pattern seen here is typical of
+real observations: see, for example, \citet{VanderPlas2015}
+and \citet{Long2016} which show similar plots for RR Lyrae candidates from
+the Sloan Digital Sky Survey.
 
+These patterns can be understood in terms of the interaction between the
+window function and the underlying spectral power.
+As we discussed in \sect{window-functions},
+a nightly observation pattern---typical of ground-based surveys---leads to
+a window function with a strong diurnal component that causes each frequency
+signature $f_0$ to be partially aliased at $f_0 + n \delta f$, for integers
+$n$ and $\delta f = 1\ {\rm day}^{-1}$
+(Recall \figs{LINEAR-window}{LINEAR-window-effect}).
+This is the source of the failure modes depicted in panel (a) of
+\fig{failure-modes}; the periods shown are
+\begin{equation}
+  P_{obs} = \left(\frac{1}{P_{true}} + n\delta f\right)^{-1}
+\end{equation}
+and for this data, close to 36\% of the objects are mis-characterized this way.
 
+Another mode of failure is when the periodogram for an object with frequency
+$f_0$ isolates a higher harmonic of that fundamental frequency, such as $2f_0$.
+This can occur for signals that are not strictly sinusoidal, and this harmonic
+frequency peak is subject to the same windowing effects as above.
+Thus we can describe the failure modes depicted in panel (b) of \fig{failure-modes} with the following equation, for integers $m > 0$:
+\begin{equation}
+  P_{obs} = \left(\frac{m}{P_{true}} + n\delta f\right)^{-1}
+\end{equation}
+In \fig{failure-modes}, the $m=2$ harmonic and its aliases account for roughly
+15\% of the results.
+
+Panel (c) of \fig{failure-modes} shows the final pattern of failure in
+Lomb-Scarlge results.
+This is closely related to panels (a) and (b), but comes from the fact that
+the Lomb-Scargle periodogram at frequency $f_0$ contains contributions from
+signals at both $+f_0$ and $-f_0$.
+When diurnal aliasing leads to power at negative frequencies, this is reflected
+at the absolute value of that frequency, so it is more accurate to take the
+absolute value of the above formula
+\begin{equation}
+  P_{obs} = \left|\frac{m}{P_{true}} + n\delta f\right|^{-1}
+  \eqlabel{failure-modes}
+\end{equation}
+Panel (c) shows the 5\% of objects that fall along this failure mode for
+$m=1$, $n=-2$.
+After accounting for all these known sources of failure, only roughly
+1\% of points are misclassified in an ``unexplained'' way, as seen in panel (d).
+
+When applying a periodogram in practice, it is vital to take such effects into
+account, rather than blindly relying on the single periodogram peak as your
+best estimate of the period.
+Applying understanding of windowing and aliasing effects can help in detecting
+failures of the periodogram, but is no silver bullet.
+For an observed peak at $f_{peak}$ from a survey whose window has strong power
+at $\delta f$, something like the following should probably be employed:
+\begin{enumerate}
+  \item Check for a peak at $f_{peak}/m$ for at least $m \in \{2, 3\}$.
+    If a significant peak is found, then $f_{peak}$ is probably an order-$m$
+    harmonic of the true frequency.
+  \item Check for peaks at $|f_{peak} \pm n\delta f|$ for at least
+    $n \in \{1, 2\}$. If these aliases exist, then it is likely that you have
+    found a peak on the sequence of expected aliases---though keep in mind that
+    there is no way to know from the periodogram alone whether or not
+    this is the ``true'' peak!
+  \item For each of the top few of these aliases, fit a more complicated model
+    (such as a multi-term Fourier series, template-based fit, etc.) to select
+    among them.
+\end{enumerate}
+For noisy observations, this procedure cannot generally guarantee that you
+have found the correct peak, but it is far preferable than making the mistake
+of blindly trusting the highest peak in the periodogram!
+We will come back to the question of uncertainty in the periodogram result
+in \sect{uncertainties}
 
 
 \subsection{Algorithmic Considerations}
@@ -1494,7 +1600,7 @@ implementations of the \citet{Press89}, \citet{Zechmeister09}, and
 \citet{Palmer09} algorithms, which were adapted from Python code originally
 published by \citet{ICVG2014} and \citet{VanderPlas2015}.
 All code for this paper is available in the form of Jupyter notebooks in the
-paper's GitHub repository\footnote{\url{http://github.com/jakevdp/PracticalLombScargle}}
+paper's GitHub repository\footnote{\url{http://github.com/jakevdp/PracticalLombScargle}}.
 
 
 \subsection{Periodogram Normalization and Interpretation}
