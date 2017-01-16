@@ -1813,7 +1813,7 @@ In this approximation, the number of independent peaks in a range
 $0 \le f \le f_{max}$ is assumed to be $N_{eff} = f_{max} T$.
 There have been various attempts to estimate this value more carefully,
 both analytically and via simulations
-\citep[see, e.g.][]{Horne86,Schwarzenberg-Czerny98,Cumming04,Fresura2008},
+\citep[see, e.g.][]{Horne86,Schwarzenberg-Czerny98,Cumming04,Frescura08},
 but all such approaches are necessarily only approximations.
 
 \subsubsubsection{Baluev (2008) Method}
@@ -1823,23 +1823,23 @@ who derived an analytic result based on the theory of stochastic processes.
 The Baluev result is not an exact measure of the FAP, but rather an upper
 limit that is shown to be quite close to the true FAP even
 with highly structured window functons.
-For the PSD-normalized periodogram, \citet{Baluev08} showed that the following
+For the PSD-normalized periodogram, \citet{Baluev2008} showed that the following
 formula for the FAP provides a close upper-limit even in the case of
 highly structured window functions:
 \begin{equation}
   FAP(z) \approx 1 - P_{single}(z)e^{-\tau(z)}
   \eqlabel{FAP-baluev}
 \end{equation}
-where, for the PSD-normalized periodogram (\eq{lomb-scargle-periodogram}),
+where, for the normalized periodogram (\eq{lomb-scargle-normalized}),
 \begin{equation}
-  \tau(z) = W e^{-z}\sqrt{z}
+  \tau(z) \approx W (1 - z)^{(N - 4)/2}\sqrt{z}
 \end{equation}
 and $W = f_{max} \sqrt{4\pi\ {\rm var}(t)}$ measures the effective width of the
 observing window in units of the maximum frequency chosen for the analysis.
 This result is not an exact measure of the FAP, but rather an approximation
 to the upper limit that is valid for alias-free periodograms, {i.e.} cases
 where the window function has very little structure.
-Nonetheless, \citet{Baluev08} showed that this approximation holds quite well
+Nonetheless, \citet{Baluev2008} showed that this approximation holds quite well
 even in the case of realistic survey windows.
 
 \subsubsubsection{Bootstrap Method}
@@ -1854,54 +1854,104 @@ the same, draw observations randomly with replacement from the observed
 values, and then compute the maximum of the resulting periodogram.
 For enough resamplings, the distribution of these maxima will approximate
 the true distribution for the case with no periodic signal present.
+The bootstrap produces the most robust estimate of the FAP because it makes
+no assumptions about statistical distributions, and fully accounts for survey
+window effects.
+
+Unfortunately, the computational costs of the bootstrap can be quite
+prohibitive: to accurately measure small levels of FAP requires constructing
+a large number of full periodograms.
+If you are probing a false positive rate of $r$ among $N$ bootstrap reseamples,
+you would roughly expect to find $rN \pm \sqrt{rN}$ peaks in your sample.
+More concretely, for 1,000 bootstrap samples, you'll find only $\sim 10\pm 3$
+peaks reflecting a 1\% false positive rate.
+The random fluctuations in that count translate directly to an inability to
+accurately estimate the false positive rate at that level.
+A good rule-of-thumb is that to accurately characterize a FPR $r$ requires
+something like $50 / r$ individual periodograms to be computed---this grows
+computationally intractable quite quickly.
 
 \begin{figure}[ht]
   \centering
   \includegraphics[width=\textwidth]{fig27_FAP_bootstrap}
-  \caption{
+  \caption{Comparison of various approaches to computing the false alarm
+    probability (FAP) for simulated observations with both structured and
+    unstructured survey windows. Note that the approximate $N_{eff}$ method
+    in its most na{\"i}ve form tends to underestimate the bootstrapped FAP,
+    while the \citet{Baluev2008} method tends to overestimate the bootstrapped
+    FAP, particularly for data with a highly-structured survey window.
     \figlabel{FAP-bootstrap}}
 \end{figure}
 
-\fig{FAP-bootstrap} compares 
+\fig{FAP-bootstrap} compares these methods of estimating the false alarm
+probability, for both an unstructured survey window, and a structured window
+which produces the kinds of aliasing we have discussed above.
+The naive approximation in this case under-estimates the FAP at nearly all
+levels---so, for example, it might lead you to think a peak has a FAP of 10\%
+when in fact it is closer to 30\%.
+The Baluev method, by design, over-estimates the FAP, and is quite close to
+the bootstraped distribution in the case of an unstructured window.
+For a highly structured window, the Baluev method does not perform as well,
+but still tends to over-estimate the FAP---so, for example, it might lead you
+to think a peak as a FAP of 10\% when in fact it is closer to 5\%.
 
+Finally, I will note that \citet{Suveges12} has shown the promise of a
+hybrid approach of the bootstrap method and the extreme value statistics
+of \citet{Baluev2008}; this has the ability to compute accurate FAPs
+without the need to compute thousands of full bootstrapped periodograms.
 
-A nice description of the use of the bootstrap to estimate false alarm
-probabilities in a periodogram is gien by \citet{Suveges12}.
+\subsubsubsection{What Does the False Alarm Probability Measure?}
 
+While the False Alarm Probability can be a useful concept, you should be
+careful to keep in mind that it answers a very specific question:
+{\it what is the probability that a signal with no periodic component would
+lead to a peak of this magnitude?}
+In other words, it is a measure of the false positive rate: the rate at which
+we would expect to incorrectly identify a periodic signal where none
+actually exists.
+It tells us nothing about the false negative rate; {i.e.} the rate at which
+we would expect to miss a periodic signal that is, in fact, present.
+It also tells us nothing about the error rate; {i.e.} the rate at which we
+would expect to identify an incorrect alias of a signal present in our data
+(as we saw in \sect{failure-modes}).
+Too often users are tempted to interpret the FAP too broadly, with the hope that
+it would speak to these questions as well.
 
+To the best of my knowledge, there is currently no silver bullet for answering
+these broader questions within the Lomb-Scargle approach.
+Perhaps the most fruitful path toward understanding of such effects for a
+particular survey---with particular noise characteristics and a particular
+observing window---is via simulated data.
+In fact, this type of simulation is a vital component of most current and
+future time-domain surveys that seek to catalog periodic objects
+\citep[see, e.g.][]{opsim1, opsim2, Ivezic08LSST}
+\todo{refs for SDSSII, Kepler, PanSTARRS, Gaia}.
 
-he correlations are the result of the convolution with the su; nonetheless, a common approach has been to assume that the
-distribution can be modeled based on some effective number of independent 
-
-This strong correlation between frequencies means that the simple formul
-There have been various attempts to estimate this effective number of
-frequencies and/or quantify the distribution of the maximum peak,
-both analytically and via simulations
-\citep[see, e.g.][]{Horne86,Schwarzenberg-Czerny98,Cumming04,
-  Fresura2008,Baluev2008,Suveges12}.
-Perhaps the most sophisticated approach is that of \citet{Baluev2008},
-who derived an analytic result based on the theory of stochastic processes.
-The Baluev result is not an exact measure of the FAP, but rather an upper
-limit that is shown to be quite close to the true FAP even
-with highly structured window functons.
-
-
-
-
-
-
-%\begin{itemize}
-%  \item Peak Width and why it's a poor proxy
-%  \item False Alarm Probability and its pitfalls
-%  \item Baluev method and why it's not enough
-%  \item Motivation and example of Bootstrap
-%  \item Is my data periodic?
-%\end{itemize}
 
 
 \section{Conclusion and Summary}
 
-(Summarize key recommendations here)
+\todo{Summarize key recommendations}
+
+\begin{itemize}
+\item always use the floating-mean model---it has many benefits with virtually zero cost
+\item always explore the window power first, so that you know what alias structures to expect
+\item the peak of the periodogram rarely tells the entire story. Always check
+  for aliases that are expected from window structure ($f = f_0 \pm n\delta f$)
+  and from non-sinusoidal signals ($f = f_0 / m$).
+\item avoid Bayesian methods unless you are very comfortable with the
+  assumptions they make about your signal
+\item avoid peak widths as a proxy for uncertainty unless you are quite
+  certain that your analysis has found the correct peak.
+\item avoid false alarm probabilities as a proxy for uncertainty
+  unless you make very clear {\it exactly} what kind of error they measure.
+  Estimate the FAP via bootstrap if computationally feasible, and otherwise
+  keep in mind the failures of available estimates.
+\end{itemize}
+
+\todo{wrap up with some witty \& pithy lines of encouragement.}
+
+\todo{acknowledge folks who helped with this.}
 
 \bibliographystyle{apj}
 \bibliography{PracticalLombScargle}
