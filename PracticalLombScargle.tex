@@ -129,7 +129,7 @@ the course of five and a half years\footnote{
 By eye, it is clear that the brightness of the object varies in time with a range spanning approximately 0.8 magnitudes, but what is not immediately clear is that this variation is periodic in time.
 The Lomb-Scargle periodogram is a method that allows efficient computation of a Fourier-like power spectrum from such unevenly-sampled data, resulting in an intuitive means of determining the period of oscillation.
 
-The left panel of \fig{LINEAR-power} shows the Lomb-Scargle periodogram computed for the data in \fig{LINEAR-data}.
+The left panel of \fig{LINEAR-power} and its inset show the Lomb-Scargle periodogram computed for the data in \fig{LINEAR-data}.
 Computing the Lomb-Scargle periodogram for the data gives us a measure of the
 power as a function of period of oscillation (\fig{LINEAR-power}, left), from
 which we can determine the period of oscillation of approximately 2.58 hours.
@@ -560,8 +560,6 @@ in \eq{power-spectrum} for the expression in \eq{DFT-f}, and it follows that
 for a uniformly-sampled function $g_n$, the Schuster periodogram captures
 all of the relevant frequency information present in the data.
 
-\todo{Add simulated RR Lyrae data and show the Shuster periodogram}
-
 
 \section{Non-uniform Sampling}
 \sectlabel{non-uniform-sampling}
@@ -651,8 +649,33 @@ turns out not to be straightforward, as deconvolution (particularly in this
 case where delta functions are involved) is an ill-posed problem without a
 unique solution.
 
-\subsection{Non-Uniform Periodogram}
+\subsection{A Note on Window Deconvolution}
 
+There have been a few attempts in the literature to use procedural algorithms
+to solve this under-constrained deconvolution problem, perhaps most notably
+by adapting the iterative CLEAN algorithm developed for deconvolution in the
+context of radio astronomy \citep{Roberts87}.
+For cleaning of Lomb-Scargle periodograms, the CLEAN approach is hindered by
+three main deficiencies: first and most importantly, the CLEAN algorithm at each
+iteration assumes that the highest peak is the location of the primary signal;
+this is not always borne out for realistic observations of faint objects where
+the cleaning is most necessary (see the discussion in \sect{failure-modes}).
+Second, the convolution takes place at the level of the Fourier transform
+rather than the PSD; trying to clean a PSD directly ignores important phase
+information. Third, the CLEAN algorithm assumes a Schuster-type FFT analysis:
+while the Lomb-Scargle periodogram is equivalent to Schuster in the limit of
+equally-spaced observations, it is not equivalent in the relevant case of
+unequal observations (see \sect{schuster-to-lomb-scargle}),
+and so any attempt to apply CLEAN to Lomb-Scargle
+analysis directly is fundamentally flawed.
+
+My feeling is that there is room for a more principled approach to the
+unconstrained deconvolution problem for periodograms derived from non-uniform
+fast Fourier transforms (perhaps through some sort of regularization),
+but this does not appear to have been explored anywhere in the astronomy
+literature.
+
+\subsection{Non-Uniform Periodogram}
 
 From this non-uniform Fourier transform, it is straightforward to extend the
 definition of the Schuster periodogram to the non-uniform case.
@@ -1915,17 +1938,18 @@ It also tells us nothing about the error rate; {i.e.} the rate at which we
 would expect to identify an incorrect alias of a signal present in our data
 (as we saw in \sect{failure-modes}).
 Too often users are tempted to interpret the FAP too broadly, with the hope that
-it would speak to these questions as well.
+it would speak to these additional questions as well.
 
 To the best of my knowledge, there is currently no silver bullet for answering
 these broader questions within the Lomb-Scargle approach.
 Perhaps the most fruitful path toward understanding of such effects for a
 particular survey---with particular noise characteristics and a particular
-observing window---is via simulated data.
-In fact, this type of simulation is a vital component of most current and
-future time-domain surveys that seek to catalog periodic objects
-\citep[see, e.g.][]{opsim1, opsim2, Ivezic08LSST}
-\todo{refs for SDSSII, Kepler, PanSTARRS, Gaia}.
+observing window---is via simulated data injected into the detection
+pipeline.
+In fact, this type of simulation is a vital component of most (if not all)
+current and future time-domain surveys that seek to catalog periodic objects,
+regardless of the particular approach used to detect periodicity
+\citep[see, e.g.][]{opsim1, opsim2, Ivezic08LSST, Sesar2010, Oluseyi12, McQuillan2012, Drake2014}
 
 
 
