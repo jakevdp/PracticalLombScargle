@@ -119,19 +119,25 @@ periodogram correctly and use it effectively.
 \end{figure}
 
 The Lomb-Scargle periodogram \citep{Lomb76, Scargle82}
-is a well-known algorithm for detecting periodicity
-in unevenly-sampled time-series, particularly within the astronomy community.
-For example, consider the data shown in \fig{LINEAR-data}:
+is a well-known algorithm for detecting periodicity in unevenly-sampled
+time-series, and has seen particularly wide use within the astronomy community.
+As an example of a typical application of this method,
+consider the data shown in \fig{LINEAR-data}:
 this is an irregularly-sampled timeseries showing a single object from the
 LINEAR survey \citep{LINEAR1, LINEAR3}, with magnitude measured 280 times over
 the course of five and a half years\footnote{
   Python code to reproduce \fig{LINEAR-data}, as well as all other figures
   in this manuscript, is available at 
   \url{http://github.com/jakevdp/PracticalLombScargle/}}.
-By eye, it is clear that the brightness of the object varies in time with a range spanning approximately 0.8 magnitudes, but what is not immediately clear is that this variation is periodic in time.
-The Lomb-Scargle periodogram is a method that allows efficient computation of a Fourier-like power spectrum from such unevenly-sampled data, resulting in an intuitive means of determining the period of oscillation.
+By eye, it is clear that the brightness of the object varies in time with a
+range spanning approximately 0.8 magnitudes, but what is not immediately clear
+is that this variation is periodic in time.
+The Lomb-Scargle periodogram is a method that allows efficient computation of
+a Fourier-like power spectrum from such unevenly-sampled data, resulting in
+an intuitive means of determining the period of oscillation.
 
-The left panel of \fig{LINEAR-power} and its inset show the Lomb-Scargle periodogram computed for the data in \fig{LINEAR-data}.
+The left panel of \fig{LINEAR-power} and its inset show the Lomb-Scargle
+periodogram computed for the data in \fig{LINEAR-data}.
 Computing the Lomb-Scargle periodogram for the data gives us a measure of the
 power as a function of period of oscillation (\fig{LINEAR-power}, left), from
 which we can determine the period of oscillation of approximately 2.58 hours.
@@ -143,19 +149,33 @@ rather than time.\footnote{
     from the AstroPy project; see \url{http://astropy.org/}.
 }
 
-Often this is exactly how the Lomb-Scargle periodogram is presented: as a clean, well-defined procedure to detect the periodic component in an unevenly-sampled dataset.
-In practice, however, there are a number of subtle issues that must be considered when applying a Lomb-Scargle analysis to real-world datasets, and I have found that these are rarely presented together at an introductory level.
-Here are a few questions in particular that we might wish to ask about the results in \fig{LINEAR-power}:
+Often this is exactly how the Lomb-Scargle periodogram is presented: as a
+clean, well-defined procedure to detect the periodic component in an
+unevenly-sampled dataset.
+In practice, however, there are a number of subtle issues that must be
+considered when applying a Lomb-Scargle analysis to real-world datasets.
+Here are a few questions in particular that we might wish to ask about
+the results in \fig{LINEAR-power}:
 \begin{enumerate}
-  \item What is the source of the multiple peaks revealed by the Lomb-Scargle Periodogram?
-  \item What is the largest frequency (i.e. Nyquist-like limit) that such an analysis is sensitive to?
-  \item How should we choose the spacing of the frequency grid for our periodogram?
-  \item What assumptions is the Lomb-Scargle periodogram making about the signal?
-  \item How should we understand the uncertainty of the computed frequency?
+  \item What is the source of the pattern of multiple peaks revealed by the
+    Lomb-Scargle Periodogram?
+  \item What is the largest frequency (i.e. Nyquist-like limit) that such
+    an analysis is sensitive to?
+  \item How should we choose the spacing of the frequency grid for our
+    periodogram?
+  \item What assumptions is the Lomb-Scargle periodogram making about the
+    signal?
+  \item How should we understand the uncertainty of the peak frequency?
 \end{enumerate}
-Quantitative answers to these sorts of questions are discussed in various textbooks and review papers, but I have not come across any single concise reference that gives a good intuition for how to think about such questions.
-This paper seeks to fill that gap, and provide a practical, just-technical-enough guide to the effective use of the Lomb-Scargle method for periodic analysis.
-This paper does not seek a complete or rigorous treatment of the mathematics involved, but rather seeks to develop the intuition of {\it how} to think about the issues involved.
+Quantitative answers to these sorts of questions are discussed in various
+textbooks and review papers, but I have not come across any single concise
+reference that gives a good intuition for how to think about such questions.
+This paper seeks to fill that gap, and provide a practical,
+just-technical-enough guide to the effective use of the Lomb-Scargle method
+for detection and characterization of periodic signals.
+This paper does not seek a complete or rigorous treatment of the mathematics
+involved, but rather seeks to develop the intuition of {\it how} to think
+about these questions.
 
 \subsection{Outline}
 The paper is organized as follows:
@@ -249,7 +269,8 @@ The continuous Fourier transform has a number of useful properties that we will 
        \mathcal{F}\{\cos(2\pi f_0 t)\} &=& \frac{1}{2}\left[\delta(f - f_0) + \delta(f + f_0)\right]\nonumber\\
        \mathcal{F}\{\sin(2\pi f_0 t)\} &=& \frac{1}{2i}\left[\delta(f - f_0) - \delta(f + f_0)\right].
      \end{eqnarray}
-     In other words, a sinusoidal signal with frequency $f_0$ has a Fourier transform consisting of a weighted sum of delta functions at $\pm f_0$.
+     In other words, a sinusoidal signal with frequency $f_0$ has a Fourier
+     transform consisting of a weighted sum of delta functions at $\pm f_0$.
 
    \item[A time-shift imparts a phase in the Fourier transform.]
      Given a well-behaved function $g(t)$ we can use a transformation of
@@ -261,14 +282,25 @@ The continuous Fourier transform has a number of useful properties that we will 
      amplitude of the resulting transform, but only the phase.
 \end{description}
 These properties taken together make the Fourier transform quite useful for the study of periodic signals.
-The linearity of the transform means that any signal made up of a sum of periodic components will have a Fourier transform consisting of a sum of delta functions at those frequencies: that is, the Fourier transform is a {\it direct} measure of the periodic content of a function.
+The linearity of the transform means that any signal made up of a sum of
+sinusoidal components will have a Fourier transform consisting of a sum
+of delta functions marking the frequencies of those sinusoids: that is,
+the Fourier transform is a {\it direct} measure of the periodic
+content of a function.
 
-Further, if we compute the squared amplitude of the resulting transform, we can both do away with complex components and remove the phase imparted by any time offsets; this squared amplitude is usually known as the {\it Power Spectrum}:
+Further, if we compute the squared amplitude of the resulting transform, we
+can both do away with complex components and remove the phase imparted by any
+time offsets; this squared amplitude is usually known as the
+{\it Power Spectrum}:
 \begin{equation}
-  \mathcal{P}\{g\} \equiv \left|\mathcal{F}\{g\}\right|^2
+  \mathcal{P}_g \equiv \left|\mathcal{F}\{g\}\right|^2
   \eqlabel{power-spectrum}
 \end{equation}
-The power spectrum of a function is a positive real-valued function of $f$ that quantifies the contribution of each frequency $f$ to the total signal.
+The power spectrum of a function is a positive real-valued function of the
+frequency $f$ that quantifies the contribution of each frequency $f$ to
+the total signal.
+Note that if $g$ is real-valued, it can be shown that
+$\mathcal{P}_g(f) = \mathcal{P}_g(-f)$.
 
 \subsection{Some Useful Fourier Pairs}
 
@@ -337,10 +369,10 @@ of scales between a function and its Fourier transform:
 a narrow function will have a broad transform, and vice versa.
 More quantitatively, a function with a characteristic scale $T$ will in
 general have a Fourier transform with characteristic scale of $1/T$.
-Such reciprocity comes up in many diverse applications of Fourier analysis,
-from wavelet transforms to music to quantum mechanics.
-For our purposes, this feature will turn out to be quite important as we
-push further in understanding the Lomb-Scargle Periodogram.
+Such reciprocity is central to many diverse applications of Fourier analysis,
+from electrodynamics to music theory to quantum mechanics.
+For our purposes, this property of the transform will turn out to be quite
+important as we push further in understanding the Lomb-Scargle Periodogram.
 
 
 \subsection{The Convolution Theorem}
@@ -368,7 +400,8 @@ as visualized in \Fig{convolution} for a rectangular smoothing window.
     \figlabel{convolution}}
 \end{figure}
 
-Given this definition of a convolution, it can be shown that the Fourier transform of a convolution is the point-wise product of the Fourier transforms:
+Given this definition of a convolution, it can be shown that the Fourier transform of a convolution is the point-wise product of the Fourier transforms of
+the two functions:
 \begin{equation}
   \mathcal{F}\{f \ast g\} = \mathcal{F}\{f\} \cdot \mathcal{F}\{g\}
   \eqlabel{convolution-theorem}
@@ -400,40 +433,64 @@ when thinking about frequency components of time-domain measurements.
 \section{Window Functions: From Idealized to Real-world signals}
 \sectlabel{window-functions}
 
-\todo{discuss data modes}
+Until now we have been discussing Fourier transforms of continuous signals
+which are well-defined for all times $-\infty < t < \infty$.
+Real-world temporal measurements of a signal, however, can only measure some
+finite span of time, at some finite sampling rate.
+In either case, the resulting data can be described by a point-wise product
+of the true underlying continuous signal with a window function describing
+the observation.
+For example, a continuous signal measured over a finite duration is described
+by a rectangular window function spanning the duration of the observation,
+and a signal measured at regular intervals is described by a Dirac comb window
+function marking those measurement times.\footnote{
+  Throughout this paper we are concerned only with the mode of measurement
+  common in optical astronomy; {i.e.} point observation. Other modes of
+  observation, such as time-tag-events, binned event data, or
+  time-to-spill events, are common in high-energy astronomy and other areas.
+  We will not consider such event-driven data modes here, but it should be
+  noted that there have been some interesting explorations of unified
+  statistical treatments of all of the above modes of observation
+  \citep[e.g.][]{Scargle98, Scargle2002}.
+}
 
-In a typical observational setting, we will be observing some small part of
-a larger time-varying signal.
-For example, if you have a very long signal that you measure for a finite
-amount of time, your measurement is a point-wise product between the true
-signal and a suitable rectangular function describing your measurement process.
-If you have a continuous signal that you measure at regular intervals, your
-measurement is a point-wise product between the true signal and an appropriate
-Dirac comb describing your measurement process.
-From what we learned about the convolution theorem in the previous section, it
-is clear that {\it the measured Fourier transform will be the true transform
-convolved with the transform of the obverving window}.
+The Fourier transform we measure in these cases, then, is not the
+transform of the continuous underlying function, but rather a 
+{\it convolution of the true transform with the transform of the observing
+window}.
 Symbolically, if the signal is $g(t)$ and the window is $W(t)$, the observed
 function is
 \begin{equation}
   g_{obs}(t) = g(t)W(t),
 \end{equation}
-and its Fourier transform is a convolution:
+and its Fourier transform is a convolution of two transforms:
 \begin{equation}
   \mathcal{F}\{g_{obs}\} = \mathcal{F}\{g\} \ast \mathcal{F}\{W\}.
 \end{equation}
-This has some interesting consequences, as we shall see.
+In the general case, such a convolution is not an invertible operation, meaning
+that, except in special circumstances, it is not possible to exactly recover
+the transform of the underlying signal.
+This has some interesting consequences for the use and interpretation of
+periodograms, as we shell see.
 
 \subsection{Effect of a Rectangular Window}
 
 First, let's consider the case of observing a continuous periodic signal over
 a limited span of time, as illustrated in \Fig{rectangular-window}.
-Here we consider a periodic function observed only within the window $[-3, 3]$.
-The observed signal in this case can be thought of as a pointwise product of an infinite periodic signal, and a rectangular window function.
+Here we consider a periodic function observed only within the window $-3<t<3$.
+The observed signal in this case can be thought of as a pointwise product of
+the underlying infinite periodic signal, and a rectangular window function.
 Using \eq{convolution-theorem-inverse}, we see that the Fourier transform of
-this function is equivalent to the convolution of the Fourier transforms of each component, which are a set of delta functions and a sinc function, respectively.
-For a purely periodic signal, this convolution has the effect of broadening the delta functions representing the signal, turning each of them into a shifted sinc function.
-Because of the inverse relationship between the width of the window and the width of its transform (see \Fig{fourier-pairs}), it follows that a wider observing window leads to proportionally less spread in the Fourier transform of the observed function.
+this function is equivalent to the convolution of the Fourier transforms of
+each component, which are a set of delta functions and a sinc function,
+respectively.
+For a purely periodic signal, this convolution has the effect of broadening
+the delta functions representing the signal, turning each of them into a
+shifted sinc function.
+Because of the inverse relationship between the width of the window and the
+width of its transform (see \Fig{fourier-pairs}), it follows that a wider
+observing window leads to proportionally less spread in the Fourier
+transform of the observed function.
 
 \begin{figure}[ht]
   \centering
@@ -468,7 +525,7 @@ of the observations; this is illustrated in \fig{comb-window-1}.
 
 Interestingly, because the Fourier transform of a Dirac comb is another Dirac
 comb, the effect of such an observing window is to create a long sequence
-of aliases with a spacing of $1/T$.
+of aliases of the underlying transform with a spacing of $1/T$.
 With this in mind, we can be assured in this case that evaluating the
 transform in the range $(2T)^{-1} \le f < (2T)^{-1}$ is sufficient to capture
 all the available frequency information:
@@ -482,7 +539,7 @@ convenient to instead use the range $0 \le f < 1/T$.
 \sectlabel{nyquist}
 
 The example in \fig{comb-window-1} is somewhat of a best-case scenario, because
-the true Fourier transform values lie entirely in a range of width $1/T$.
+the true Fourier transform values are non-zero only within a range of width $1/T$.
 If we change the sampling rate so that this is no longer the case, we will
 have a situation similar to that in \fig{comb-window-2}.
 A sparser sampling of the signal leads to a narrower sampling in frequency,
@@ -491,7 +548,7 @@ The result is that the true Fourier transform {\it cannot be recovered}
 from the observed transform.
 
 This implies that if we have a regularly-sampled function with a sampling
-rate of $f_0 = 1/T$, we can only fully recover the freuqency information
+rate of $f_0 = 1/T$, we can only fully recover the frequency information
 if the signal is {\it band-limited} between frequencies $\pm f_0/2$.
 This is one way to motivate the famous Nyquist sampling limit, which
 approaches the question the other way around and says
@@ -516,7 +573,9 @@ we must sample the data with a rate of at least $f_{Ny} = 2B$.
 
 \subsubsection{The Discrete Fourier Transform}
 For regularly-spaced observations defined by a Dirac comb, the delta functions
-serve to collapse the Fourier integral into a sum over periodic components.
+serve to collapse the Fourier integral into a sum over periodic components,
+and in this way we can arrive at the common form of the discrete Fourier
+transform.
 Suppose we have a true (infinitely long and continuous) signal $g(t)$, but
 we observe it only at a regular grid with spacing $\Delta t$. In this case, our
 observed signal is $g_{obs} = g(t) \III_T(t)$ and its Fourier transform is
@@ -549,14 +608,14 @@ transform.
 You may have noticed we glossed over something here: the effect of switching
 from an infinite number of samples to a finite number of samples.
 In moving from \eq{DFT-f-inf} to \eq{DFT-f}, we have effectively applied
-to our data a rectangular window function of width $NT$.
-From the discussion accompanying \fig{rectangular-window}, we know what this does:
-it gives us a Fourier transform convolved with a sinc function of width
-$1 / (NT)$, resulting in the ``smearing'' of the Fourier transform signal
+to our data a rectangular window function of width $N\Delta t$.
+From the discussion accompanying \fig{rectangular-window}, we know what this
+does: it gives us a Fourier transform convolved with a sinc function of width
+$1 / (N\Delta t)$, resulting in the ``smearing'' of the Fourier transform signal
 with this width.
 Roughly speaking, then, any two Fourier transform values at frequencies within
-$1/(NT)$ of each other will not be independent, and so we should space our
-evaluations of the frequency with $\Delta f \ge 1/(NT)$.
+$1/(N\Delta t)$ of each other will not be independent, and so we should space
+our evaluations of the frequency with $\Delta f \ge 1/(N\Delta t)$.
 Comparing to above, we see that this is {\it exactly the frequency spacing}
 we arrived at from Nyquist-frequency arguments.
 
@@ -582,9 +641,10 @@ to compute the {\it Schuster Periodogram}, first proposed by \citet{Schuster98}:
   P_S(f) = \frac{1}{N}\left|\sum_{n=1}^N g_n e^{-2\pi i f t_n}\right|^2
   \eqlabel{schuster-periodogram}
 \end{equation}
-Apart from the $1/N$ scaling, this is precisely the Fourier power defined
-in \eq{power-spectrum} for the expression in \eq{DFT-f}, and it follows that
-for a uniformly-sampled function $g_n$, the Schuster periodogram captures
+Apart from the $1/N$ scaling, this sum is precisely the Fourier power
+spectrum in \eq{power-spectrum}, computed for a continuous signal with
+uniform sampling.
+It follows that, in the uniform sampling case the Schuster periodogram captures
 all of the relevant frequency information present in the data.
 
 
