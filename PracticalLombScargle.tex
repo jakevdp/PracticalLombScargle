@@ -653,7 +653,18 @@ all of the relevant frequency information present in the data.
 
 \todo{mention difference between astronomy \& math treatment: astro is definitely {\it not} sampled as a well-defined random process... e.g. new observations made based on implications of previous observations.}
 
-\todo{how to compute empirical window functions}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig10_random_window}
+  \caption{The effect of non-uniform sampling on the observed Fourier transform.
+    These samples have the same average spacing as those in \fig{comb-window-1},
+    but the lack of structure in observing window translates to a lack of
+    structure in its transform, causing the observed transform to be ``noisy''.
+    Here black and gray lines represent the real and imaginary parts of the
+    transform, respectively.
+    \figlabel{random-window}}
+\end{figure}
 
 In the real world, particularly in fields like Astronomy where observations are
 subject to interruptions from weather and diurnal cycles, the sampling rate
@@ -668,7 +679,8 @@ but at non-uniform locations.
 Mathematically, the observing window will look like this:
 
 \begin{equation}
-W(t; \{t_n\}) = \sum_{n=1}^{N} \delta(t - t_n)
+  W(t; \{t_n\}) = \sum_{n=1}^{N} \delta(t - t_n)
+  \eqlabel{nonuniform-window}
 \end{equation}
 
 Applying this window to our true underlying signal $g(t)$, we find an observed
@@ -680,37 +692,42 @@ signal of the form:
   \eqlabel{g-nonuniform}
 \end{eqnarray}
 
-Just as in the uniform case, the observed signal is a convolution of the true
-signal transform and the window transform; unlike in the uniform case, the
-window transform will generally {\it not} be a nice clean function.
-\Fig{random-window} shows the effect on the Fourier transform of a
-non-uniform observing cadence with a sampling rate identical to that
-in \fig{comb-window-1}.
+Just as in the evenly-sampled case, the Fourier transform of the observed
+signal is a convolution of the transforms of the true signal and the window:
+\begin{equation}
+  \mathcal{F}\{g_{obs}\} = \mathcal{F}\{g\} \ast \mathcal{F}\{W\}
+  \eqlabel{g-obs-conv}
+\end{equation}
+Unlike in the uniform case, the window transform $\mathcal{F}\{W\}$ will
+generally {\it not} be a nice clean function; from \eq{FT-def} and
+\eq{nonuniform-window}, we can write
+\begin{equation}
+  \mathcal{F}\{W\}(f) = \sum_{n=1}^{N} e^{-2\pi i f t_n}
+  \eqlabel{nonuniform-window-FT}
+\end{equation}
+For uniformly-spaced observing times $t_n$, the symmetry leads to cancellations
+so that the window transform is a clean Dirac comb.
+For non-uniform observing times, this symmetry is broken and the window
+transform will be much more ``nosiy''.
+This can be seen in \fig{random-window}, which shows the Fourier transform of
+a non-uniform observing window with an average sampling rate identical to
+that in \fig{comb-window-1}, along with its imact on the observed Fourier
+transform.
 
 A few things stand-out in this figure. In particular, the Fourier transform of
 the non-uniformly spaced delta functions looks like random noise, and in some
-senses it is: the Fourier space representation reflects the frequency of
-observations, and so non-structured spacing of observations will lead to
-a non-structured Fourier representation of the window function.
+senses it is: the locations and heights of the Fourier peaks are related to
+the intervals between observations, and so randomization of observation times
+leads to a randomization of Fourier peak locations and heights.
+That is, {\it non-structured spacing of observations will lead to
+a non-structured frequency peaks in the window transform}.
 This non-structured window transform, when convolved with the Fourier transform
 of the true signal, results in an observed Fourier transform with the same
 lack of useful structure.
-Unlike the uniform result in \Fig{comb-window-1}, there is no direct aliasing
-of the true signal, and no way to exactly recover any portion of the true
-Fourier transform of this data.
-
-
-\begin{figure}[ht]
-  \centering
-  \includegraphics[width=\textwidth]{fig10_random_window}
-  \caption{The effect of non-uniform sampling on the observed Fourier transform.
-    These samples have the same average spacing as those in \fig{comb-window-1},
-    but the lack of structure in observing window translates to a lack of
-    structure in its transform, causing the observed transform to be ``noisy''.
-    Here black and gray lines represent the real and imaginary parts of the
-    transform, respectively.
-    \figlabel{random-window}}
-\end{figure}
+Comparing to the uniformly-spaced observations in \fig{comb-window-1}, we
+see that the unstructured nature of the window transform means that there
+is no exact aliasing of the true signal, and thus no way to exactly recover
+any portion of the true Fourier transform of this data.
 
 One might hope that sampling the signal more densely might limit these problems,
 and it does, but only to a degree.
@@ -718,8 +735,7 @@ and it does, but only to a degree.
 such that there are 200 total observations over the length-10 observing window.
 The observed Fourier transform in this case is much more reflective of the
 underlying signal, but still contains a degree of ``noise'' rooted in the
-unstructured nature of the spacing between observations.
-
+randomized frequency peaks due to randomized spacing between observations.
 
 \begin{figure}[ht]
   \centering
@@ -731,41 +747,6 @@ unstructured nature of the spacing between observations.
     the window transform.
     \figlabel{random-window-2}}
 \end{figure}
-
-\subsection{A Note on Window Deconvolution}
-
-Since the observed transform is a well-defined convolution of the (unknown) true
-transform and the (known) window transform, you might hope that we could
-perform some sort of deconvolution operation to recover the result, but this
-turns out not to be straightforward, as deconvolution (particularly in this
-case where delta functions are involved) is an ill-posed problem without a
-unique solution.
-
-\todo{Move this section?}
-
-There have been a few attempts in the literature to use procedural algorithms
-to solve this under-constrained deconvolution problem, perhaps most notably
-by adapting the iterative CLEAN algorithm developed for deconvolution in the
-context of radio astronomy \citep{Roberts87}.
-For cleaning of Lomb-Scargle periodograms, the CLEAN approach is hindered by
-three main deficiencies: first and most importantly, the CLEAN algorithm at each
-iteration assumes that the highest peak is the location of the primary signal;
-this is not always borne out for realistic observations of faint objects where
-the cleaning is most necessary (see the discussion in \sect{failure-modes}).
-Second, the convolution takes place at the level of the Fourier transform
-rather than the PSD; trying to clean a PSD directly ignores important phase
-information. Third, the CLEAN algorithm assumes a Schuster-type FFT analysis:
-while the Lomb-Scargle periodogram is equivalent to Schuster in the limit of
-equally-spaced observations, it is not equivalent in the relevant case of
-unequal observations (see \sect{schuster-to-lomb-scargle}),
-and so any attempt to apply CLEAN to Lomb-Scargle
-analysis directly is fundamentally flawed.
-
-My feeling is that there is room for a more principled approach to the
-unconstrained deconvolution problem for periodograms derived from non-uniform
-fast Fourier transforms (perhaps through some sort of regularization),
-but this does not appear to have been explored anywhere in the astronomy
-literature.
 
 \subsection{Non-Uniform Periodogram}
 
@@ -783,6 +764,8 @@ with a non-structured window function.
 The resulting periodogram, then, can only be used as a qualitative approximation
 of the true periodogram, and will only approach the true periodogram as the
 number of observed samples gets very large.
+For a discussion of nonuniform window functions and attempts to correct
+for their effect on the periodogram, see \sect{windows-and-deconvolution}.
 
 
 \subsection{A Non-uniform Nyquist Limit?}
@@ -1584,13 +1567,6 @@ Thus regular period grids tend to over-sample at large periods and under-sample
 at small periods;
 for this reason it is preferable to use a regular grid in frequency.
 
-\subsection{Computing the Window Power}
-\sectlabel{computing-window-power}
-The discussion of \sect{window-functions} highlighted the importance of
-examining the window function
-
-\todo{outline this}
-
 
 \subsection{Failure Modes}
 \sectlabel{failure-modes}
@@ -1705,6 +1681,77 @@ have found the correct peak, but it is far preferable than making the mistake
 of blindly trusting the highest peak in the periodogram!
 We will come back to the question of uncertainty in the periodogram result
 in \sect{uncertainties}.
+
+
+\subsection{Window Functions and Deconvolution}
+\sectlabel{windows-and-deconvolution}
+
+Our discussion of window functions here and in \sect{window-functions}
+has highlighted the impact of structure in the survey window on the
+resulting observed power spectrum, and the importance of examining that
+window power to understand features of the resulting periodogram.
+The window power spectrum can be computed directly from the
+delta-function representation of the window
+function; recalling \eq{nonuniform-window-FT}, the window power spectrum
+for observation times $\{t_n\}$ is
+\begin{equation}
+  \mathcal{P}_W(f;\{t_n\}) = \left|\sum_{n=1}^{N} e^{-2\pi i f t_n}\right|^2
+  \eqlabel{window-power-analytic}
+\end{equation}
+Comparing this to \eq{schuster-periodogram}, we see that this is essentially
+the Schuster periodogram for data $g_n=1$ at all times $t_n$;
+with that in mind we can compute the Lomb-Scargle window power by computing
+a standard Lomb-Scargle periodogram on a series of unit measurements,
+making sure to {\it not} pre-center the data or use a floating mean model.
+This method is how window power spectra have been computed throughout this
+paper.
+
+Recall from \eq{g-nonuniform} that the observed data is a point-wise product
+of the underlying function and the survey window:
+\begin{equation}
+  g_{obs}(t) = g_{true}(t)W_{\{t_n\}}(t),
+\end{equation}
+and the convolution theorem tells us that the observed Fourier transform is
+a convolution of the true transform and the window transform:
+\begin{equation}
+  \mathcal{F}\{g_{obs}\} = \mathcal{F}\{g_{true}\} \ast \mathcal{F}\{W_{\{t_n\}}\}
+\end{equation}
+Given this direct relationship, we might hope to be able to invert this
+convolution to recover $\mathcal{F}\{g_{true}\}$ directly.
+For example, we could write:
+\begin{eqnarray}
+  \mathcal{F}\{g_{true}\} &=& \mathcal{F}\{g_{obs}/W_{\{t_n\}}\}\nonumber\\
+                   &=& \mathcal{F}\{g_{obs}\} \ast \mathcal{F}\{1/W_{\{t_n\}}\}
+\end{eqnarray}
+Because of the localization of observations, $W_{\{t_n\}}(t)$ is zero for most
+values of $t$ and such an inversion is not well-defined.
+More precisely, it can be shown that deconvolution in this context is an
+ill-posed problem without a unique solution, and so direct deconvolution
+is not an option.
+
+There have been a few attempts in the literature to use procedural algorithms
+to solve this under-constrained deconvolution problem, perhaps most notably
+by adapting the iterative CLEAN algorithm developed for deconvolution in the
+context of radio astronomy \citep{Roberts87}.
+For cleaning of Lomb-Scargle periodograms, the CLEAN approach is hindered by
+three main deficiencies: first and most importantly, the CLEAN algorithm at each
+iteration assumes that the highest peak is the location of the primary signal;
+this is not always borne out for realistic observations of faint objects where
+the cleaning is most necessary (see the discussion in \sect{failure-modes}).
+Second, the convolution takes place at the level of the Fourier transform
+rather than the PSD; trying to clean a PSD directly ignores important phase
+information. Third, the CLEAN algorithm assumes a Schuster-type FFT analysis:
+while the Lomb-Scargle periodogram is equivalent to Schuster in the limit of
+equally-spaced observations, it is not equivalent in the relevant case of
+unequal observations (see \sect{schuster-to-lomb-scargle}),
+and so any attempt to apply CLEAN to Lomb-Scargle
+analysis directly is fundamentally flawed.
+
+My feeling is that there is room for a more principled approach to the
+unconstrained deconvolution problem for periodograms derived from non-uniform
+fast Fourier transforms (perhaps through some sort of regularization),
+but this does not appear to have been explored anywhere in the astronomy
+literature.
 
 
 \subsection{Algorithmic Considerations}
