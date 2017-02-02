@@ -79,12 +79,12 @@
 
 
 \begin{abstract}
-This paper gives an introduction to the practical aspects of the use of
-Lomb-Scargle periodograms and related algorithms to detect and characterize 
-periodicity within a signal.
+This paper presents a conceptual introduction to the Lomb-Scargle periodogram,
+and discusses important practical aspects of its use to detect and characterize
+periodic signals.
 Rather than a rigorous mathematical treatment, the goal of this paper is to
-build intuition about what assumptions are baked into any periodogram
-computation and to help develop the intuition required to interpret the
+build intuition about what assumptions are implicit in the use of the
+periodogram, and to help develop the intuition required to interpret the
 periodogram correctly and use it effectively.
 \end{abstract}
 
@@ -96,11 +96,29 @@ periodogram correctly and use it effectively.
 \section{Introduction}
 \sectlabel{introduction}
 
+The Lomb-Scargle periodogram \citep{Lomb76, Scargle82}
+is a well-known algorithm for detecting periodicity in unevenly-sampled
+time-series, and has seen particularly wide use within the astronomy community.
+As an example of a typical application of this method,
+consider the data shown in \fig{LINEAR-data}:
+this is an irregularly-sampled timeseries showing a single object from the
+LINEAR survey \citep{LINEAR1, LINEAR3}, with magnitude measured 280 times over
+the course of five and a half years.
+By eye, it is clear that the brightness of the object varies in time with a
+range spanning approximately 0.8 magnitudes, but what is not immediately clear
+is that this variation is periodic in time.
+The Lomb-Scargle periodogram is a method that allows efficient computation of
+a Fourier-like power spectrum from such unevenly-sampled data, resulting in
+an intuitive means of determining the period of oscillation.
+
+
 \begin{figure}[ht]
 \centering
 \includegraphics[width=\textwidth]{fig01_LINEAR_data}
 \caption{Observed light curve from LINEAR object ID 11375941. Uncertainties
   are indicated by the gray errorbars on each point.
+  Python code to reproduce this figure, as well as all other figures
+  in this manuscript, is available at {\tt http://github.com/jakevdp/PracticalLombScargle/}
   \figlabel{LINEAR-data}
 }
 \end{figure}
@@ -113,28 +131,10 @@ periodogram correctly and use it effectively.
     shown in \fig{LINEAR-data}, with an inset detailing the region near the peak.
     {\it Right panel:} the input data in \fig{LINEAR-data}, folded over the
     detected 2.58-hour period to show the coherent periodic variability.
-    For more discussion of this data, see \citep{LINEAR3}.
+    For more discussion of this particular object, see \citep{LINEAR3}.
     \figlabel{LINEAR-power}
 }
 \end{figure}
-
-The Lomb-Scargle periodogram \citep{Lomb76, Scargle82}
-is a well-known algorithm for detecting periodicity in unevenly-sampled
-time-series, and has seen particularly wide use within the astronomy community.
-As an example of a typical application of this method,
-consider the data shown in \fig{LINEAR-data}:
-this is an irregularly-sampled timeseries showing a single object from the
-LINEAR survey \citep{LINEAR1, LINEAR3}, with magnitude measured 280 times over
-the course of five and a half years\footnote{
-  Python code to reproduce \fig{LINEAR-data}, as well as all other figures
-  in this manuscript, is available at 
-  \url{http://github.com/jakevdp/PracticalLombScargle/}}.
-By eye, it is clear that the brightness of the object varies in time with a
-range spanning approximately 0.8 magnitudes, but what is not immediately clear
-is that this variation is periodic in time.
-The Lomb-Scargle periodogram is a method that allows efficient computation of
-a Fourier-like power spectrum from such unevenly-sampled data, resulting in
-an intuitive means of determining the period of oscillation.
 
 The left panel of \fig{LINEAR-power} and its inset show the Lomb-Scargle
 periodogram computed for the data in \fig{LINEAR-data}.
@@ -150,8 +150,8 @@ rather than time.\footnote{
 }
 
 Often this is exactly how the Lomb-Scargle periodogram is presented: as a
-clean, well-defined procedure to detect the periodic component in an
-unevenly-sampled dataset.
+clean, well-defined procedure to generate a power spectrum and to
+detect the periodic component in an unevenly-sampled dataset.
 In practice, however, there are a number of subtle issues that must be
 considered when applying a Lomb-Scargle analysis to real-world datasets.
 Here are a few questions in particular that we might wish to ask about
@@ -164,7 +164,7 @@ the results in \fig{LINEAR-power}:
   \item How should we choose the spacing of the frequency grid for our
     periodogram?
   \item What assumptions is the Lomb-Scargle periodogram making about the
-    signal?
+    shape of the unknown signal?
   \item How should we understand the uncertainty of the peak frequency?
 \end{enumerate}
 Quantitative answers to these sorts of questions are discussed in various
@@ -178,36 +178,34 @@ involved, but rather seeks to develop the intuition of {\it how} to think
 about these questions.
 
 \subsection{Outline}
-The paper is organized as follows:
-\begin{description}
-  \item[\sect{introduction}] is this introduction.
-  \item[\sect{continuous-fourier-transform}] presents a review of the 
-    continous Fourier transform and some of its useful properties,
-    including defining the notion of a power spectrum for measuring
-    periodic content in a signal.
-  \item[\sect{window-functions}] builds on these properties to explore how
-    different observation patterns (i.e. window functions) affect the observed
-    power spectrum, and discusses a conceptual understanding of the
-    well-known Nyquist limiting frequency.
-  \item[\sect{non-uniform-sampling}] considers non-uniformly sampled signals as
-    a special case of an observational window, and shows that the Nyquist-like
-    limit for this case is quite different than what many practitioners in 
-    the field often assume.
-  \item[\sect{schuster-to-lomb-scargle}] details the Lomb-Scargle periodogram,
-    a modified version of the classical periodogram for unevenly-sampled data,
-    as well as the motivation behind these modifications.
-  \item[\sect{lomb-scargle-extensions}] discusses a complementary view of the
-    Lomb-Scargle periodogram as the result of least-squares model fitting,
-    as well as some extensions enabled by that viewpoint
-    (including various ``Bayesian'' periodograms).
-  \item[\sect{practical-considerations}] utilizes the concepts introduced
-    in earlier sections to discuss important practical considerations for
-    the use of the Lomb-Scargle periodogram, including the choice of
-    frequency grid, uncertainties and false alarm probabilities, and modes of
-    failure that should be expected when working with real-world data.
-  \item[\sect{conclusion}] concludes and summarizes the key recommendations
-    for practical use of the Lomb-Scargle periodogram.
-\end{description}
+The remainder of this paper is organized as follows:
+{\bf\sect{continuous-fourier-transform}} presents a review of the 
+continous Fourier transform and some of its useful properties,
+including defining the notion of a power spectrum (i.e. Schuster
+periodogram) for detecting periodic content in a signal.
+{\bf\sect{window-functions}} builds on these properties to explore how
+different observation patterns (i.e. window functions) affect the observed
+power spectrum, and discusses a conceptual understanding of the
+well-known Nyquist limiting frequency.
+{\bf\sect{non-uniform-sampling}} considers non-uniformly sampled signals as
+a special case of an observational window, and shows that the Nyquist-like
+limit for this case is quite different than what many practitioners in 
+the field often assume.
+{\bf\sect{schuster-to-lomb-scargle}} introduces the Lomb-Scargle periodogram,
+a modified version of the classical periodogram for unevenly-sampled data,
+as well as the motivation behind these modifications.
+{\bf\sect{lomb-scargle-extensions}} discusses a complementary view of the
+Lomb-Scargle periodogram as the result of least-squares model fitting,
+as well as some extensions enabled by that viewpoint
+(including various ``Bayesian'' periodograms).
+{\bf\sect{practical-considerations}} utilizes the concepts introduced
+in earlier sections to discuss important practical considerations for
+the use of the Lomb-Scargle periodogram, including the choice of
+frequency grid, uncertainties and false alarm probabilities, and modes of
+failure that should be expected when working with real-world data.
+{\bf\sect{conclusion}} concludes and summarizes the key recommendations
+for practical use of the Lomb-Scargle periodogram.
+
 All figures in this paper were produced using Python, and in particular the
 Numpy \citep{numpy, numpybook},
 Pandas \citep{pandas},
@@ -249,7 +247,8 @@ The continuous Fourier transform has a number of useful properties that we will 
 
 \begin{description}
    \item[The Fourier transform is a linear operation.]
-     That is, for any constant $A$ and any functions $f$ and $g$, we can write
+     That is, for any constant $A$ and any functions $f(t)$ and $g(t)$,
+     we can write:
      \begin{eqnarray}
        \mathcal{F}\{f(t) + g(t)\} &=& \mathcal{F}\{f(t)\} + \mathcal{F}\{g(t)\}\nonumber\\
        \mathcal{F}\{A f(t)\} &=& A\mathcal{F}\{f(t)\}
@@ -304,8 +303,8 @@ time offsets; this squared amplitude is usually known as the
 The power spectrum of a function is a positive real-valued function of the
 frequency $f$ that quantifies the contribution of each frequency $f$ to
 the total signal.
-Note that if $g$ is real-valued, it can be shown that
-$\mathcal{P}_g(f) = \mathcal{P}_g(-f)$.
+Note that if $g$ is real-valued, it follows that $P_g$ is an even function;
+{i.e.} $\mathcal{P}_g(f) = \mathcal{P}_g(-f)$.
 
 \subsection{Some Useful Fourier Pairs}
 
@@ -376,7 +375,7 @@ More quantitatively, a function with a characteristic scale $T$ will in
 general have a Fourier transform with characteristic scale of $1/T$.
 Such reciprocity is central to many diverse applications of Fourier analysis,
 from electrodynamics to music theory to quantum mechanics.
-For our purposes, this property of the transform will turn out to be quite
+For our purposes, this property will turn out to be quite
 important as we push further in understanding the Lomb-Scargle Periodogram.
 
 
@@ -384,8 +383,8 @@ important as we push further in understanding the Lomb-Scargle Periodogram.
 
 A final property of the Fourier transform that we will discuss here is its
 ability to convert convolutions into point-wise products.
-A convolution of two functions, usually denoted with a $\ast$, is defined
-as follows:
+A convolution of two functions, usually denoted by the $\ast$ symbol,
+is defined as follows:
 \begin{equation}
   [f \ast g](t) \equiv \int_{-\infty}^\infty f(\tau)g(t - \tau) d\tau
   \eqlabel{convolution-definition}
@@ -411,7 +410,7 @@ the two functions:
   \mathcal{F}\{f \ast g\} = \mathcal{F}\{f\} \cdot \mathcal{F}\{g\}
   \eqlabel{convolution-theorem}
 \end{equation}
-In practice, this is a much more efficient means of computing the convolution
+In practice, this can be a much more efficient means of computing a convolution
 than to directly solve at each time $t$ the integral over $\tau$ that appears
 in \eq{convolution-definition}.
 This result in \eq{convolution-theorem} is known as the
@@ -482,16 +481,17 @@ periodograms, as we shell see.
 
 First, let's consider the case of observing a continuous periodic signal over
 a limited span of time, as illustrated in \Fig{rectangular-window}.
-Here we consider a periodic function observed only within the window $-3<t<3$.
-The observed signal in this case can be thought of as a pointwise product of
+Here we consider a continuous periodic function observed only within the
+window $-3<t<3$.
+The observed signal in this case can be understood as the pointwise product of
 the underlying infinite periodic signal, and a rectangular window function.
-Using \eq{convolution-theorem-inverse}, we see that the Fourier transform of
-this function is equivalent to the convolution of the Fourier transforms of
-each component, which are a set of delta functions and a sinc function,
-respectively.
-For a purely periodic signal, this convolution has the effect of broadening
-the delta functions representing the signal, turning each of them into a
-shifted sinc function.
+By the convolution theorem, the Fourier transform will be given by the
+convolution of the transform of the underlying function---here a set of
+delta functions at the component frequencies---and the transform of the window
+function---here a sinc function.
+For the purely periodic signal like the one seen in \fig{rectangular-window},
+this convolution has the effect of replacing each delta function with a
+sinc function.
 Because of the inverse relationship between the width of the window and the
 width of its transform (see \Fig{fourier-pairs}), it follows that a wider
 observing window leads to proportionally less spread in the Fourier
@@ -512,8 +512,8 @@ transform of the observed function.
 
 \subsection{The Dirac Comb and the Discrete Fourier Transform}
 Another window function that commonly arises is when a continuous signal is
-sampled instantaneously at regular intervals.
-Such an observation is, in effect, a point-wise product between the true
+sampled (nearly) instantaneously at regular intervals.
+Such an observation can be thought of as a point-wise product between the true
 underlying signal and a Dirac comb with the $T$ parameter matching the spacing
 of the observations; this is illustrated in \fig{comb-window-1}.
 
@@ -532,31 +532,29 @@ Interestingly, because the Fourier transform of a Dirac comb is another Dirac
 comb, the effect of such an observing window is to create a long sequence
 of aliases of the underlying transform with a spacing of $1/T$.
 With this in mind, we can be assured in this case that evaluating the
-transform in the range $(2T)^{-1} \le f < (2T)^{-1}$ is sufficient to capture
+transform in the range $0 \le f < 1/T$ is sufficient to capture
 all the available frequency information:
 the signal outside that range is a sequence of identical aliases of
-what lies in that range.
-In fact, due to the nature of the aliasing, it is in fact sufficient to
-compute the transform in {\it any} range of width $1/T$, and it is often
-convenient to instead use the range $0 \le f < 1/T$.
+what lies within that range.
 
 \subsubsection{The Nyquist Limit}
 \sectlabel{nyquist}
 
 The example in \fig{comb-window-1} is somewhat of a best-case scenario, because
-the true Fourier transform values are non-zero only within a range of width $1/T$.
-If we change the sampling rate so that this is no longer the case, we will
-have a situation similar to that in \fig{comb-window-2}.
-A sparser sampling of the signal leads to a narrower sampling in frequency,
-and the signal transform no longer fits within the frequency window.
-The result is that the true Fourier transform {\it cannot be recovered}
-from the observed transform.
+the true Fourier transform values are non-zero only within a range of
+width $1/T$.
+If we increase the time between observations, decreasing the spacing of the
+frequency comb, the true transform no longer ``fits'' inside the window
+transform, and we will have a situation similar to that in \fig{comb-window-2}.
+The result is a mixing of different portions of the signal, such that
+the true Fourier transform {\it cannot be recovered}
+from the observed data!
 
 This implies that if we have a regularly-sampled function with a sampling
 rate of $f_0 = 1/T$, we can only fully recover the frequency information
 if the signal is {\it band-limited} between frequencies $\pm f_0/2$.
 This is one way to motivate the famous Nyquist sampling limit, which
-approaches the question the other way around and says
+approaches the question from the other direction and states
 that to fully represent the frequency content of a ``band-limited signal''
 whose Fourier transform is zero outside the range $\pm B$,
 we must sample the data with a rate of at least $f_{Ny} = 2B$.
@@ -583,7 +581,7 @@ and in this way we can arrive at the common form of the discrete Fourier
 transform.
 Suppose we have a true (infinitely long and continuous) signal $g(t)$, but
 we observe it only at a regular grid with spacing $\Delta t$. In this case, our
-observed signal is $g_{obs} = g(t) \III_T(t)$ and its Fourier transform is
+observed signal is $g_{obs} = g(t) \III_{\Delta t}(t)$ and its Fourier transform is
 \begin{equation}
   \hat{g}_{obs}(f) = \sum_{n=-\infty}^\infty g(n\Delta t) e^{-2\pi i f n \Delta t},
   \eqlabel{DFT-f-inf}
@@ -646,10 +644,10 @@ to compute the {\it Schuster Periodogram}, first proposed by \citet{Schuster98}:
   P_S(f) = \frac{1}{N}\left|\sum_{n=1}^N g_n e^{-2\pi i f t_n}\right|^2
   \eqlabel{schuster-periodogram}
 \end{equation}
-Apart from the $1/N$ scaling, this sum is precisely the Fourier power
+Apart from the $1/N$ proportionality, this sum is precisely the Fourier power
 spectrum in \eq{power-spectrum}, computed for a continuous signal with
 uniform sampling.
-It follows that, in the uniform sampling case the Schuster periodogram captures
+It follows that, in the uniform sampling case, the Schuster periodogram captures
 all of the relevant frequency information present in the data.
 
 
@@ -664,8 +662,9 @@ all of the relevant frequency information present in the data.
   \includegraphics[width=\textwidth]{fig10_random_window}
   \caption{The effect of non-uniform sampling on the observed Fourier transform.
     These samples have the same average spacing as those in \fig{comb-window-1},
-    but the lack of structure in observing window translates to a lack of
-    structure in its transform, causing the observed transform to be ``noisy''.
+    but the irregular spacing within the observing window translates to 
+    irregular frequency peaks in its transform,
+    causing the observed transform to be ``noisy''.
     Here black and gray lines represent the real and imaginary parts of the
     transform, respectively.
     \figlabel{random-window}}
@@ -678,10 +677,7 @@ Using the same approach as we used to explore uniform sampling in the previous
 section, we can now explore non-uniform sampling here.
 
 In the general non-uniform case, we measure some signal at a set of $N$ times
-which we will denote $\{t_n\}$.
-Our observing window function in this case is still a sum of delta functions,
-but at non-uniform locations.
-Mathematically, the observing window will look like this:
+which we will denote $\{t_n\}$, which leads to the following observing window:
 \begin{equation}
   W_{\{t_n\}}(t) = \sum_{n=1}^{N} \delta(t - t_n)
   \eqlabel{nonuniform-window}
@@ -701,16 +697,9 @@ signal is a convolution of the transforms of the true signal and the window:
   \eqlabel{g-obs-conv}
 \end{equation}
 Unlike in the uniform case, the window transform $\mathcal{F}\{W_{\{t_n\}}\}$
-will generally {\it not} be a nice clean function; from \eq{FT-def} and
-\eq{nonuniform-window}, we can write
-\begin{equation}
-  \mathcal{F}\{W_{\{t_n\}}\}(f) = \sum_{n=1}^{N} e^{-2\pi i f t_n}
-  \eqlabel{nonuniform-window-FT}
-\end{equation}
-For uniformly-spaced observing times $t_n$, the symmetry leads to cancellations
-so that the window transform is a clean Dirac comb.
-For non-uniform observing times, this symmetry is broken and the window
-transform will be much more ``nosiy''.
+will generally {\it not} be a nice clean function; the symmetry present in
+the Dirac comb is broken by the uneven sampling,
+leading the transform to be much more ``noisy''.
 This can be seen in \fig{random-window}, which shows the Fourier transform of
 a non-uniform observing window with an average sampling rate identical to
 that in \fig{comb-window-1}, along with its imact on the observed Fourier
@@ -718,7 +707,7 @@ transform.
 
 A few things stand-out in this figure. In particular, the Fourier transform of
 the non-uniformly spaced delta functions looks like random noise, and in some
-senses it is: the locations and heights of the Fourier peaks are related to
+sense it is: the locations and heights of the Fourier peaks are related to
 the intervals between observations, and so randomization of observation times
 leads to a randomization of Fourier peak locations and heights.
 That is, {\it non-structured spacing of observations will lead to
@@ -754,7 +743,7 @@ randomized frequency peaks due to randomized spacing between observations.
 
 From this non-uniform Fourier transform, it is straightforward to extend the
 definition of the Schuster periodogram to the non-uniform case.
-Plugging \eq{g-nonuniform} into the Fourier transform of \eq{FT-def}, in analogy to \eq{schuster-periodogram}, gives the following form of the power spectrum:
+Combining \eq{g-nonuniform} with the Fourier transform in \eq{FT-def}, in analogy to \eq{schuster-periodogram}, gives the following form of the power spectrum:
 \begin{equation}
   P(f) = \frac{1}{N}\left|\sum_{n=1}^N g(t_n)e^{-2\pi i t_n} \right|^2
 \end{equation}
@@ -766,15 +755,13 @@ with a non-structured window function.
 The resulting periodogram, then, can only be used as a qualitative approximation
 of the true periodogram, and will only approach the true periodogram as the
 number of observed samples gets very large.
-For a discussion of nonuniform window functions and attempts to correct
-for their effect on the periodogram, see \sect{windows-and-deconvolution}.
 
 
 \subsection{A Non-uniform Nyquist Limit?}
 \sectlabel{pseudo-nyquist}
 
 As we have seen in \sect{nyquist}, the Nyquist limit is a direct consequence
-of the Dirac comb window function created by evenly-sampled data,
+of the symmetry in the Dirac comb window function that describes evenly-sampled data,
 and uneven sampling destroys the symmetry that underlies its definition.
 Nevertheless, the idea of the ``Nyquist frequency'' seems to have taken hold
 in the scientific psyche to the extent that the idea is often mis-applied in
@@ -786,17 +773,18 @@ larger (and thus far less relevant) than in the evenly-sampled case.
 \subsubsection{Incorrect Limits in the Literature}
 
 In the scientific literature it is quite common to come across various proposals
-for a Nyquist-like or pseudo-Nyquist limit in the case of irregular sampling.
+for a Nyquist-like limit applied in the case of irregular sampling.
 A few typical approaches include using the mean of the sampling intervals
 \citep[e.g.][]{Scargle82, Horne86, NumRec},
 the harmonic mean of the sampling intervals \citep[e.g.][]{Debosscher07},
 or the minimum sample spacing \citep[e.g.][]{Percy86, Roberts87, Press89, Hilditch01}.
-All of these are tempting criteria in that they recover the classical Nyquist 
+All of these ``pseudo-Nyquist'' limits are tempting criteria in that
+they recover the classical Nyquist 
 frequency in the limit of evenly-spaced data.
 Unfortunately, none of these approaches is correct: in general,
 unevenly-sampled data can probe frequencies far larger than any of these
-supposed limits (a fact that several of these citations do hint at
-parenthetically).
+supposed limits---a fact that several of these citations do hint at
+parenthetically.
 
 As a simple example of where such logic can fail spectacularly,
 consider the data from \fig{LINEAR-data}: though the mean sample
@@ -829,9 +817,9 @@ As a more extreme example, consider the data shown in \fig{pseudo-nyquist}.
 This consists of noisy samples from a sinusoid with a period of 0.01 units,
 with sample spacings ranging between 2 and 18 units: needless to say, any
 pseudo-Nyquist definition based on an average or minimum sample spacings
-will be {\it far} smaller than the true frequency of 100; still, the
-the Lomb-Scargle periodogram in the lower right panel shows quite cleanly
-the true frequency.
+will be {\it far} below the true frequency of 100; still, the
+the Lomb-Scargle periodogram in the lower right panel quite cleanly
+recovers the true frequency.
 
 \subsubsection{The Non-uniform Nyquist Limit}
 
@@ -847,9 +835,10 @@ finding some common factor, such that each spacing $\Delta t_i$ is {\it exactly}
 an integer multiple of this factor.
 \citet{Eyer99} prove this formally, but the result can be understood
 by thinking of such data as a windowed version of uniformly sampled
-data with spacing $p$, where the window is zero at some observations.
+data with spacing $p$, where the window is zero at all points but the
+location of the observations.
 Such uniform data has a classical Nyquist limit of $1/(2p)$, and a window
-function applied to that data does not change that fact.
+function applied on top of that sampling does not change that fact.
 
 \Fig{nyquist-eyer99} shows an example of such a Nyquist frequency.
 The data are non-uniformly sampled at times $t_i = n_i * p$, with $p=0.01$
@@ -862,7 +851,7 @@ of exact aliases of the signal at $f < f_{Ny}$.
 \begin{figure}[ht]
   \centering
   \includegraphics[width=\textwidth]{fig13_nyquist_eyer99}
-  \caption{A visualization of the \citep{Eyer99} definition of the Nyquist
+  \caption{A visualization of the \citet{Eyer99} definition of the Nyquist
     frequency. Data are non-uniformly sampled at times $t_i = n_i p$, for
     integer $n_i$ and $p=0.01$.
     This results in a Nyquist frequency of $f_{Ny}= (2p)^{-1} = 50$:
@@ -878,13 +867,13 @@ To realize this situation in practice, however,
 would require infinitely precise measurements of the
 times $t_i$; finite precision of time measurements means the Nyquist
 frequency can be large, but not infinite.
-Quantitatively, if the times are recorded to $D$ decimal places,
+For example, if your observation times are recorded to $D$ decimal places,
 the Nyquist frequency will be at most
 \begin{equation}
-  f_{Ny} = \frac{1}{2} 10^D,
+  f_{Ny} \le \frac{1}{2} 10^D,
   \eqlabel{nonuniform-nyquist}
 \end{equation}
-(cf. \fig{nyquist-eyer99}).
+with the inequality due to the fact that larger common factors may exist.
 In other words, absent other relevant patterns in the observations,
 the Nyquist frequency for irregularly-sampled data is most
 typically set by {\it the precision of the time measurements}.
@@ -897,7 +886,7 @@ kind of frequency limit exists.
 This is typical in, e.g., optical astronomy, where a single observation typically consists of an integration of observed flux over a finite duration $\delta t$.
 As noted by \citet{ICVG2014}, this time-scale of integration represents another
 kind of limiting frequency for irregularly-sampled data.
-Such a situation means that the measurement is effectively a convolution of
+Such a situation means that the observation is effectively a convolution of
 the underlying signal with a rectangular window function of width $\delta t$,
 in a manner analogous to \fig{convolution-theorem}.
 By the convolution theorem, the observed transform will be a point-wise
@@ -913,9 +902,28 @@ Nyquist limit: the Nyquist limit is the frequency beyond which all signal
 is aliased into the Nyquist range; the windowing limit is the frequency
 beyond which all signal is zero or nearly zero.
 
-\subsubsection{Which Limiting Frequency is Useful?}
+\subsubsection{Practicality of Limiting Frequencies}
+The frequency grid implied by such large Nyquist frequencies in practice can be
+much larger than is computationally feasible.
+For example, consider the LSST project, which will have roughly 30-second
+exposures taken over a 10-year baseline. With
+$f_{Ny} \approx (2\cdot 30{\rm sec})^{-1}$ and a grid spacing
+of $\Delta f = (5\cdot10 {\rm yr})^{-1}$ (see \sect{frequency-grid}),
+the size of the required frequency grid is on order 25 million bins, which is
+far too large a periodogram to be computationally feasible given the
+computational constraints of the LSST pipeline, even for extremely
+efficient periodogram methods (see \sect{algorithmic-considerations}).
 
-\todo{Computational constraints; use of prior knowledge}
+In practice, the limiting frequency of the periodogram should be set based on
+some prior knowledge of the types of signals you are interested in.
+For example, if you are interested in galactic RR Lyrae stars, the shortest
+applicable period is on order a few hours \citep{Sesar2010}, requiring
+evaluation of only a hundred thousand or so periodogram frequencies for
+data with a 10-year baseline.
+The key point is that for working with unevenly-sampled data in practice,
+computational constraints will mean that the maximum frequency
+should more often be set by {\it what you are looking for}
+rather than any hard limit based on Nyquist-like limits.
 
 \subsection{Semi-structured Observing Windows}
 
@@ -925,7 +933,10 @@ function.
 For non-uniform observations, such symmetry does not exist, but {\it structure}
 in the observing window can lead to partial aliasing of signals in the
 data \citep[see, e.g.][]{Deeming75}.
-
+In this section, we will examine two typical window functions derived from
+real-world observations: one ground-based (LINEAR) and one space-based (Kepler).
+For details on how window power spectra can be computed in practice, see
+\sect{windows-and-deconvolution}.
 
 \begin{figure}[ht]
   \centering
@@ -948,22 +959,21 @@ Namely, if the window power shows a spike at a period of $p$ days, this means
 that an observation at time $t_0$ is likely to be followed by another
 observation near a time $t_0 + np$ for integer $n$.
 
-Thus the strong spike at a period of 1 day indicate that observations are
+With this in mind, the strong spike at a period of 1 day indicates
+that observations are
 taken near the same time of day: this is typical of a ground-based survey
-with observations recorded only at night.
+with observations recorded only during the night hours.
 The additional spikes at periods of $1/n$ days (for integer $n$) are aliases
-of this same effect.
-
-This window also shows a strong spike at a period of 1 year, indicating that
-there was a strong seasonal pattern in the observations.
+of this same feature.
+\fig{LINEAR-window} also shows a wide spike at a period of 1 year, indicating
+that there is a detectable annual pattern in the observations.
 Finally, there is a noticeable spike at approximately 14 days that is likely
-related to patterns in scheduling of observing runs.
+related to patterns of scheduling within the survey.
 
 Recall that a Fourier spectrum observed through a particular window will reflect
 a convolution of the true spectrum and the window spectrum
 (cf.\ \fig{random-window}), and so we would expect this structure to be
 imprinted on the power spectrum measured from the data.
-
 
 \begin{figure}[ht]
   \centering
@@ -982,12 +992,20 @@ imprinted on the power spectrum measured from the data.
     \figlabel{LINEAR-window-effect}}
 \end{figure}
 
-This behavior is illustrated in \fig{LINEAR-window-effect}.
-The upper panel shows the window power spectrum as a function of frequency (not period, as in \fig{LINEAR-window}), while lower panel shows the observed signal power spectrum as a function of frequency.
-The upper panel and its inset show clearly the 1-day and 1-year features we noted previously.
-The lower panel shows the observed power spectrum of the data: these diurnal and annual peaks in the window function are quite clearly imprinted on the observed power spectrum at relevant scales.
-This approximate aliasing is similar to the exact aliasing seen in regularly-sampled data at the Nyquist frequency; however, in this case the magnitude of the
-aliased signal fades further from the frequency driving the signal.
+This imprint of the window power is illustrated in \fig{LINEAR-window-effect}.
+The upper panel shows the window power spectrum as a function of frequency
+(not period, as in \fig{LINEAR-window}), while lower panel shows the observed
+signal power spectrum as a function of frequency.
+The upper panel and its inset show clearly the 1-day and 1-year features we
+noted previously.
+The lower panel shows the observed power spectrum of the data: these diurnal
+and annual peaks in the window function are quite clearly imprinted on the
+observed power spectrum at relevant scales.
+This approximate aliasing is similar to the exact aliasing seen in
+regularly-sampled data at the Nyquist frequency; however, in this case
+the magnitude of the aliased signal fades further from the frequency
+driving the signal.
+
 
 \subsubsection{A Space-based Observing Window: Kepler}
 
@@ -1005,43 +1023,40 @@ aliased signal fades further from the frequency driving the signal.
 Space-based surveys will generally have quite different observing windows.
 For example, the upper-left panel of \fig{kepler-data}
 shows observations of an RR-Lyrae variable star from the Kepler survey,
-measured over 4000 times over a period of three months,
+measured 4083 times over a period of three months,
 with an irregular observing cadence of just under 30 minutes
  \citep[For deeper discussion of these observations, see][]{Kolenberg2010}.
 The Kepler observations are very nearly uniformly-spaced, and this is reflected
 in the window power spectrum, shown in the upper-right panel of
 \fig{kepler-data}.
 The window function is a series of very narrow evenly-spaced spikes,
-reminiscent of the Dirac comb shown in \figs{comb-window-1}{comb-window-2},
-which we used to motivate the idea of the Nyquist limit.
-Thus, in this case we can treat $f_{Ny} = 0.5/29.4$ minutes$^{-1}$ as the
-effective Nyquist limit for the data, though aliasing is imperfect due to
-the uneven spacing of samples, shown in the lower-left panels of
-\fig{kepler-data}.
-
+reminiscent of the Dirac comb shown in \figs{comb-window-1}{comb-window-2}.
+By analogy we can treat $f_{Ny} = 0.5/29.4$ minutes$^{-1}$ as the
+effective Nyquist limit for the data, keeping in mind that aliasing beyond this
+``limit'' will be imperfect due to the uneven spacing of the samples
+(see the lower-left panels of \fig{kepler-data}).
 The lower-right panel of \fig{kepler-data} shows the power spectrum of the
-observations, with gray shading indicating the ``Aliased'' region of the
-spectrum.
-The period of 13.6 hours is strongly apparent, along with smaller spikes at
-integer multiples of this frequency that indicate higher-order periodic
+observations, with gray shading indicating the (nearly) aliased region
+of the spectrum.
+The period of 13.6 hours is quite strongly apparent, along with smaller spikes
+at integer multiples of this frequency that indicate higher-order periodic
 components in the signal.
 
 The window functions for ground-based and space-based observations, reflected
 by LINEAR data in \fig{LINEAR-window-effect} and Kepler data in
 \fig{kepler-data}, are quite different, but in both cases essential features
-of the observed power spectra can be understood by recognizing it reflects
+of the observed power spectra can be understood by recognizing that the
+periodogram measures
 not the power spectrum of the underlying signal, but a power specrtrum from
 the convolution of the true signal transform and the Fourier transform of
 the window function.
-For another example of this type of observing window analysis, see
-\citep{Deeming75}
 
 
 \section{From Schuster to Lomb-Scargle}
 \sectlabel{schuster-to-lomb-scargle}
 
-Up until now, we've been mainly discussing the direct extension of the Schuster
-periodogram in \eq{schuster-periodogram} to non-uniform data.
+Up until now, we have been mainly discussing the direct extension of the
+Schuster periodogram in \eq{schuster-periodogram} to non-uniform data.
 Returning to this definition, we can rewrite the expression in a more
 suggestive way:
 \begin{eqnarray}
@@ -1058,13 +1073,10 @@ periodic signals, its statistical properties are not as straightforward as in
 the uniform case: the periodogram has noise properties that are nontrivial
 to quantify, even when applied to ideal data (data with uncorrelated
 Gaussian noise).
-
 For the sake of evaluating the significance of periodogram peaks
 (see \sect{uncertainties}), it would be preferable if the non-equispaced
 periodogram had a noise distribution that could be 
 straightforwardly computed from the uncertainties of the data.
-
-\todo{Mention requirement of uncorrelated noise, and correction for this explored by \citet{Vio2010}}
 
 \citet{Scargle82} showed that while the classical periodogram of
 \eq{classical-periodogram} has such desireable statistical properties
@@ -1076,10 +1088,10 @@ To address this, he considered a generalized form of the periodogram,
        + \frac{B^2}{2} \left(\sum_n g_n \sin(2\pi f [t_n-\tau])\right)^2,
 \end{equation}
 where $A$ and $B$ are arbitrary functions of the frequency $f$ and
-observing times $\{t_i\}$ (but not the values $\{g_n\}$, and showed
+observing times $\{t_i\}$ (but not the values $\{g_n\}$), and showed
 that you can choose one particular form of $A$ and $B$ such that
 \begin{enumerate}
-  \item The periodogram reduces to the classical form in the case of equally-spaced data,
+  \item The periodogram reduces to the classical form in the case of equally-spaced observations,
   \item The periodogram has desireable statistical properties, in the sense discussed above,
   \item The periodogram is insensitive to global time-shifts in the data.
 \end{enumerate}
@@ -1132,39 +1144,42 @@ obtained by fitting a model consisting of a simple sinusoid to the data at
 each frequency $f$ and
 constructing a ``periodogram'' from the $\chi^2$ goodness-of-fit at each
 frequency--an estimator which was considered in some depth by \citet{Lomb76}.
-In this view, the $\tau$ shift defined in \eq{tau-def} serves to orthogonalize
-the normal equations used in the least squares analysis.
-
+From this perspective, the $\tau$ shift defined in \eq{tau-def} serves to
+orthogonalize the normal equations used in the least squares analysis.
 Partly due to the deep connection between Fourier analysis and least-squares
 analysis, the modified periodogram in \eq{lomb-scargle-periodogram}
-has since become commonly referred to as the {\it Lomb-Scargle Periodogram}
-\citep[though versions of this approach had been employed even earlier;
-  see, e.g.][]{Gottlieb75}.
-
+has since become commonly referred to as the {\it Lomb-Scargle Periodogram},
+although versions of this approach had been employed even earlier
+\citep[see, e.g.][]{Gottlieb75}.
 Because of this similarity between the classical and Lomb-Scargle periodograms,
-our discussion of windowing effects applies---at least qualitatively---to
-results computed with the Lomb-Scargle periodogram.
+the bulk of or previous discussion applies---at least qualitatively---to
+periodograms computed with the Lomb-Scargle method.
 In particular, reasoning about the effect of window functions on the observed
 Lomb-Scargle power spectrum remains useful even if it is true in only a
 qualitative sense.
+
+One important caveat of the Lomb-Scargle approach is that the statistical
+guarantees only apply when the observations have {\it uncorrelated white
+noise}; data with more complicated noise characteristics must be treated
+more carefully; see, e.g., \citep{Vio2010}.
 
 
 \section{The Least-Square Periodogram and its Extensions}
 \sectlabel{lomb-scargle-extensions}
 
 The equivalence of the Fourier interpretation and least squares interpretation of the Lomb-Scargle periodogram allows for some interesting and useful
-extensions, which we will explore in this section.
-First, let's look at the Least Squares periodogram itself:
+extensions, some of which we will explore in this section.
+First, let's consider the Least Squares periodogram itself.
 
 In the least squares interpretation of the periodogram, a sinusoidal model is proposed at each candidate frequency $f$:
 \begin{equation}
-  y_{model}(t;f) = A_f \sin(2 \pi f (t - \phi_f))
+  y(t;f) = A_f \sin(2 \pi f (t - \phi_f))
 \end{equation}
 where the amplitude $A_f$ and phase $\phi_f$ can vary as a function of frequency.
-This is fit to the data in the standard least-squares sense, by constructing
-the $\chi^2$ statistic at each frequency:
+These model parameters are fit to the data in the standard least-squares sense,
+by constructing the $\chi^2$ statistic at each frequency:
 \begin{equation}
-  \chi^2(f) \equiv \sum_n \big(y_n - y_{model}(t_n;f)\big)^2
+  \chi^2(f) \equiv \sum_n \big(y_n - y(t_n;f)\big)^2
   \eqlabel{chi2-simple}
 \end{equation}
 We can find the ``best'' model $\hat{y}(t;f)$ by minimizing $\chi^2(f)$ at
@@ -1194,7 +1209,7 @@ on more general forms of the above model to more effectively fit the data?
 \end{figure}
 
 
-\subsection{Observational Noise}
+\subsection{Measurement Errors}
 \sectlabel{extensions-observational-noise}
 Perhaps the most important modification of the periodogram is to
 construct a periodogram that correctly handles measurement error in the data.
@@ -1209,18 +1224,27 @@ The periodogram constructed from this $\chi^2$ definition will more accurately
 reflect the spectral power of noisy observations.
 The effect of this modification on \eq{lomb-scargle-periodogram} is the addition
 of a multiplicative weight $1/\sigma_n$ within each of the summations.
-Early versions of this sort of modification appeared in \citet{Gilliland87},
-\citet{Scargle89}, and \citet{Irwin89};
-\citet{Zechmeister09} showed that such a modification
-does not change the desirable statistical properties of the resulting
-periodogram.
-
+Early versions of this sort of modification appeared in \citet{Gilliland87}, and
+\citet{Irwin89}; \citet{Scargle89} derived this ``weighted'' form of the
+periodogram without direct reference to the least squares model,
+and \citet{Zechmeister09} showed that such a modification does not change
+the useful statistical properties of the resulting periodogram.
 
 \subsection{Data Centering and the Floating Mean Periodogram}
 \sectlabel{floating-mean}
 
 Another commonly-applied modification of the periodogram has variously been
-called the {\it Date-compensated Discrete Fourier Transform} \citep{Ferraz-Mello81}, the {\it floating-mean periodogram} \citep{Cumming99}, and the {\it generalized Lomb-Scargle Method} \citep{Zechmeister09}, and involves adding an offset term to the sinusoidal model at each frequency\footnote{We choose to follow \citet{Cumming99} and \citet{VanderPlas2015} and call this a ``Floating Mean'' model, to avoid confusion surrounding the different uses of the term ``generalized periodogram'' in, {e.g.} \citet{Bretthorst88} and \citet{Zechmeister09}.}:
+called the
+{\it Date-compensated Discrete Fourier Transform} \citep{Ferraz-Mello81},
+the {\it floating-mean periodogram} \citep{Cumming99,VanderPlas2015},
+or the {\it generalized Lomb-Scargle Method} \citep{Zechmeister09},
+and involves adding an offset term to the sinusoidal model at each
+frequency\footnote{We choose to follow \citet{Cumming99} and
+  \citet{VanderPlas2015} and call this a ``Floating Mean'' model, to
+  avoid confusion surrounding the different uses of the term
+  ``generalized periodogram'' in, {e.g.} \citet{Bretthorst88} and
+  \citet{Zechmeister09}.
+}:
 \begin{equation}
   y_{model}(t;f) = y_0(f) + A_f \sin(2 \pi f (t - \phi_f))
   \eqlabel{floating-mean-model}
@@ -1240,7 +1264,7 @@ where the periodogram suppresses peaks of interest.
 consist of noisy observations of a sinusoidal signal in which the faintest
 observations are omitted from the dataset (due to, {e.g.} a detection threshold).
 Applying the standard Lomb-Scargle periodogram to pre-centered data leads to a
-periodogram that misses the true period of 0.3 days (lower right panel).
+periodogram that suppresses the true period of 0.3 days (lower right panel).
 Using the floating-mean model of \eq{floating-mean-model} yields a periodogram
 that detects this true period (upper right panel).
 
@@ -1267,9 +1291,9 @@ two independent Gaussian random variables.
 \subsection{Higher-order Fourier Models}
 \sectlabel{multiterm}
 
-A further generalization involves multi-term Fourier models at each frequency:
+A further generalization involves multi-term Fourier models:
 rather than fitting just a single sinusoid at each frequency, we might fit a
-partial Fourier series at each frequency, adding $K$ additional components at
+partial Fourier series, adding $K-1$ additional components at
 integer multiples of the fundamental frequency:
 \begin{equation}
   y_{model}(t;f) = A_f^{0} + \sum_{k=1}^K A_f^{(k)} \sin(2\pi k f (t - \phi_f^{(k)})).
@@ -1283,10 +1307,10 @@ other more complex models.
   \includegraphics[width=\textwidth]{fig23_binary_multiterm}
   \caption{1-term and 6-term Lomb-Scargle models fit to LINEAR object
     14752041, an eclipsing binary. Notice that the standard periodogram
-    (top panels) finds an alias of the true 17.5-hour frequency,
+    (upper panels) finds an alias of the true 17.5-hour frequency,
     because a simple sinusoidal model cannot closely fit both the primary
-    and secondary eclipse. A six-term Fourier model (bottom panels), on
-    the other hand, does find the true period.
+    and secondary eclipse. A six-term Fourier model, on
+    the other hand, does find the true period (lower panels).
     \figlabel{binary-multiterm}}
 \end{figure}
 
@@ -1343,13 +1367,14 @@ new or strengthened features due to the more flexible model.
 In cases where the single-term power spectrum is itself noisy and/or dominated
 by partial aliasing due to window effects, these additional aliases can
 quickly wash-out any gains from the more complicated model.
-For example, consider the periodogram in \fig{LINEAR-multiterm}: as previously
-discussed, this periodogram contains a number of aliases of the true peak due
-to the dominant 24-hour signal in the window function.
+For example, consider the multi-term periodograms for the LINEAR data
+depicted in \fig{LINEAR-multiterm}: as previously discussed,
+the LINEAR periodogram contains a number of aliases of the true peak due
+to the dominant 1-day signal in the window function.
 Adding terms to this model only compounds this problem, increasing the number of
 spurious peaks at the low-frequency end.
-For data with even moderate levels of noise, coincidences of these peaks can
-easily lead to spurious signals dominating the true peak.
+For data with even moderate levels of noise, chance coincidences of these
+peaks can easily lead to spurious detections which dominate the true peak.
 
 \subsection{Additional Extensions}
 When the periodogram is viewed from the least-squares model-fitting perspective,
@@ -1358,16 +1383,16 @@ There have been some very interesting applications extending this type of
 analysis to more arbitrary models.
 For example, \citet{Bretthorst88} studies generalized 
 Bayesian ``periodograms'' that can measure
-decaying signals, non-stationary signals, multiple signals, and other models,
-and shows the effectiveness of such approaches in applications from
+decaying signals, non-stationary signals, multi-frequency signals, and other models.
+He shows the effectiveness of such approaches in applications from
 medical imaging and astronomy.
 The crux of such extensions is the fact that you often need to use some prior
-knowledge of your data to decide when it indicates a need for a more
-complicated model, and additionally what form of additional variation to add.
+knowledge of the system being observed to decide whether a more complicated
+model is indicated, as well as what form of model to apply.
 In practice this comes up only when searching for very specific signals for
 which a more complicated model has some physical motivation.
 
-On the astronomy side, several examples of such extensions exist.
+On the astronomy side, several examples of this flavor of extension exist.
 For example, the Supersmoother approach to detecting periodicity
 involves fitting a flexible non-parametric smoothing
 function to the data at each frequency: the flexibility of the model leads
@@ -1390,13 +1415,14 @@ are not available for more general functional forms
 The least squares view of the Lomb-Scargle periodogram creates a natural
 bridge, via maximum likelihood, to Bayesian periodic analysis.
 In fact, \citet{Jaynes87} showed that the standard form of the Lomb-Scargle
-periodogram can be derived directly from the principles of Bayesian probability
-theory outlined in his comprehensive treatment of the subject \citep{Jaynes03}.
+periodogram can be derived directly from the axioms of Bayesian probability
+theory outlined in his comprehensive treatment of the subject
+\citep{Jaynes03}\footnote{Read this. Really.}.
 In the Bayesian view, the Lomb-Scargle periodogram is the optimal statistic
 for detecting a stationary sinusoidal signal in the presence of Gaussian
 noise.
 
-For the standard model, the Bayesian periodogram is given by the posterior
+For the standard, simple-sinusoid model, the Bayesian periodogram is given by the posterior
 probability of frequency $f$ given the data $D$ and sinusoidal model $M$:
 \begin{equation}
   p(f~|~D, M) \propto e^{-N \chi^2 / 2} \propto e^{P_{LS}(f)}
@@ -1419,9 +1445,10 @@ is to suppress all peaks in relation to the largest one of the spectrum.
     \figlabel{bayesian-periodogram}}
 \end{figure}
 
-The benefit of the Bayesian approach is that it allows more principled treatment
-of nuisance parameters related to noise in the data and choices of model,
-and Bayesian periodogram extensions have been used quite effectively in a
+The benefit of the Bayesian approach is that it allows more flexible models,
+more principled treatment of nuisance parameters related to noise in the data,
+and the ability to make use of prior information in a periodic analysis.
+As mentioned above, Bayesian periodogram extensions have been used quite effectively in a
 variety of circumstances \citep[see, e.g.][]{Bretthorst88}.
 Additionally, the Bayesian result explicitly returns probability density as
 a function of frequency, and it is tempting to think of this as the
@@ -1430,7 +1457,8 @@ a function of frequency, and it is tempting to think of this as the
 The problem, however, is that the Bayesian periodogram does {\it not} return
 a simple probability that the data is periodic with a given frequency, but rather
 a probability at each frequency conditioned on a relatively strong assumption:
-that the data are drawn from a sinusoidal model.
+that the data are drawn from a sinusoidal model (or, more generally, the
+particular form of model you have selected).
 Now, the standard Lomb-Scargle periodogram also assumes a sinusoidal model,
 and is thus subject to the same criticism.
 But unlike the simple Bayesian approach, the standard periodogram affords
@@ -1700,8 +1728,17 @@ window power to understand features of the resulting periodogram.
 
 \subsubsection{Computing the Window Function}
 The window power spectrum can be computed directly from the
-delta-function representation of the window
-function; recalling \eq{nonuniform-window-FT}, the window power spectrum
+delta-function representation of the window function;
+From \eq{FT-def}, \eq{power-spectrum}, and \eq{nonuniform-window},
+we can write
+\begin{equation}
+  \mathcal{F}\{W_{\{t_n\}}\}(f) = \sum_{n=1}^{N} e^{-2\pi i f t_n}
+  \eqlabel{nonuniform-window-FT}
+\end{equation}
+For uniformly-spaced observing times $t_n$, the symmetry leads to cancellations
+so that the window transform is a clean Dirac comb.
+For non-uniform observing times, this symmetry is broken and the window
+transform will be much more ``nosiy''.
 for observation times $\{t_n\}$ is
 \begin{equation}
   \mathcal{P}_W(f;\{t_n\}) = \left|\sum_{n=1}^{N} e^{-2\pi i f t_n}\right|^2
