@@ -179,30 +179,35 @@ about these questions.
 
 \subsection{Outline}
 The paper is organized as follows:
-In \sect{continuous-fourier-transform}, we review the continous Fourier
-transform and some of its useful properties, including defining the notion of
-a power spectrum for measuring periodic content in a signal.
-In \sect{window-functions}, we use these properties to understand how different
-observation patterns (i.e. window functions) affect the power spectrum, and
-discuss a conceptual understanding of the well-known Nyquist limiting frequency.
-In \sect{non-uniform-sampling}, we consider non-uniformly sampled signals as
-a special case of such windowing, and show that the Nyquist-like limit for
-this case is quite different than what many practitioners in the field
-assume.
-In \sect{schuster-to-lomb-scargle}, we discuss the properties of the
-Lomb-Scargle periodogram, a modified version of the classical periodogram
-for unevenly-sampled data, as well as the motivation behind these modifications.
-In \sect{lomb-scargle-extensions}, we discuss a complementary view of the
-periodogram as the result of least-squares model fitting, as well as some
-extensions that allows (including the ``Bayesian'' periodogram).
-In \sect{practical-considerations}, we discuss important practical
-considerations for the use of the Lomb-Scargle periodogram, including
-the choice of frequency grid, false alarm probabilities, and various modes
-of failure that should be expected when working with real-world data.
-Finally in \sect{conclusion}, we conclude and summarize the key recommendations
-for practical use of the Lomb-Scargle periodogram.
-
-\subsection{Code and Figures}
+\begin{description}
+  \item[\sect{introduction}] is this introduction.
+  \item[\sect{continuous-fourier-transform}] presents a review of the 
+    continous Fourier transform and some of its useful properties,
+    including defining the notion of a power spectrum for measuring
+    periodic content in a signal.
+  \item[\sect{window-functions}] builds on these properties to explore how
+    different observation patterns (i.e. window functions) affect the observed
+    power spectrum, and discusses a conceptual understanding of the
+    well-known Nyquist limiting frequency.
+  \item[\sect{non-uniform-sampling}] considers non-uniformly sampled signals as
+    a special case of an observational window, and shows that the Nyquist-like
+    limit for this case is quite different than what many practitioners in 
+    the field often assume.
+  \item[\sect{schuster-to-lomb-scargle}] details the Lomb-Scargle periodogram,
+    a modified version of the classical periodogram for unevenly-sampled data,
+    as well as the motivation behind these modifications.
+  \item[\sect{lomb-scargle-extensions}] discusses a complementary view of the
+    Lomb-Scargle periodogram as the result of least-squares model fitting,
+    as well as some extensions enabled by that viewpoint
+    (including various ``Bayesian'' periodograms).
+  \item[\sect{practical-considerations}] utilizes the concepts introduced
+    in earlier sections to discuss important practical considerations for
+    the use of the Lomb-Scargle periodogram, including the choice of
+    frequency grid, uncertainties and false alarm probabilities, and modes of
+    failure that should be expected when working with real-world data.
+  \item[\sect{conclusion}] concludes and summarizes the key recommendations
+    for practical use of the Lomb-Scargle periodogram.
+\end{description}
 All figures in this paper were produced using Python, and in particular the
 Numpy \citep{numpy, numpybook},
 Pandas \citep{pandas},
@@ -1461,6 +1466,11 @@ particularly for multimodal or other complicated posterior distributions
 
 \section{Practical Considerations when using Lomb-Scargle Periodograms}
 \sectlabel{practical-considerations}
+The previous sections have given a conceptual introduction to the Lomb-Scargle
+periodogram, intertwining the Fourier and Least-squares views.
+With these principles understood, this section gets to the meat of the subject
+at hand: given this understanding of the Lomb-Scargle periodogram and related
+approaches, what practical issues are involved in its effective use?
 
 \subsection{Choosing a Frequency Grid}
 \sectlabel{frequency-grid}
@@ -1811,17 +1821,17 @@ implementations of the \citet{Press89}, \citet{Zechmeister09}, and
 \citet{Palmer09} algorithms, which were adapted from Python code originally
 published by \citet{ICVG2014} and \citet{VanderPlas2015}.
 All code behind this paper is available in the form of Jupyter notebooks in the
-paper's GitHub repository\footnote{\url{http://github.com/jakevdp/PracticalLombScargle}}.
+paper's GitHub repository at \url{http://github.com/jakevdp/PracticalLombScargle/}.
 
 
 \subsection{Periodogram Normalization and Interpretation}
 \sectlabel{normalizations}
 
-One point of confusion in periodogram implementations is the interpretation
-of the periodogram values and their meaning.
+Often it is useful to be able to interpret the periodogram values themselves.
 Recall that there are two equally valid perspectives of what the periodogram
-measures: the Fourier view and the least-squares view.
-Each of these suggests a different natural approach to normalizing and interpreting the periodogram.
+is measuring---the Fourier view and the least-squares view---and each of these
+lends itself to a different approach to normalizion and interpretation of the
+periodogram.
 
 \subsubsection{PSD normalization}
 When considering the periodogram from the Fourier perspective,
@@ -1873,7 +1883,8 @@ is directly proportional to the unnormalized
 While the normalization does not affect the shape of the periodogram,
 its main practical consequence is that the statistics of the resulting
 periodogram differ slightly, and this needs to be taken into account when
-computing analytic estimates of uncertainties and false alarm probabilities.
+computing analytic estimates of uncertainties and false alarm probabilities
+(see the next section).
 Other normalizations exist as well, but seem to be rarely used in practice.
 For a concise summary of periodogram normalizations and their statistical
 properties, refer to the introduction of \citet{Baluev2008}.
@@ -1908,8 +1919,8 @@ but it is perhaps more intuitive to see this visually.
 baseline $T=4$ units covering four cycles, with varying sample sizes and
 signal-to-noise ratios.
 In all cases, the width of the peaks (most clearly visible in one or another
-normalization) are essentially {\it identical}, regardless of the data
-quality or quantity!
+normalization) are essentially {\it identical}, regardless of the quality
+or quantity of data!
 Evidently, peak width ({i.e.} frequency precision) is not a particularly
 useful measure of uncertainty in the detection of periods.
 
@@ -2102,29 +2113,40 @@ without the need to compute thousands of full bootstrapped periodograms.
 
 While the False Alarm Probability can be a useful concept, you should be
 careful to keep in mind that it answers a very specific question:
-{\it what is the probability that a signal with no periodic component would
-lead to a peak of this magnitude?}
-In other words, it is a measure of the false positive rate: the rate at which
-we would expect to incorrectly identify a periodic signal where none
-actually exists.
-It tells us nothing about the false negative rate; {i.e.} the rate at which
+{\it ``what is the probability that a signal with no periodic component would
+  lead to a peak of this magnitude?''}.
+In particular, it emphatically does {\it not} answer the much more relevant
+question {\it ``what is the probability that this data is periodic
+  given these observations?''.}
+This boils down to a case of $P(A~|~B) \ne P(B~|~A)$, but still it is common to
+see the false alarm probability treated as if it speaks to the second rather
+than the first question.
+In other words, the false alarm probability tells you the false positive rate
+in a frequentist, rather than Bayesian sense: that is, it is a false positive
+rate conditioned on the entire space of possible observations rather than on
+the particular data you observed.
+
+Similarly, the false alarm probability tells us nothing about the false
+negative rate; {i.e.} the rate at which
 we would expect to miss a periodic signal that is, in fact, present.
 It also tells us nothing about the error rate; {i.e.} the rate at which we
 would expect to identify an incorrect alias of a signal present in our data
 (as we saw in \sect{failure-modes}).
 Too often users are tempted to interpret the FAP too broadly, with the hope that
-it would speak to these additional questions as well.
+it would speak to questions that are beyond its reach.
 
 To the best of my knowledge, there is currently no silver bullet for answering
-these broader questions within the Lomb-Scargle approach.
+these broader, more relevant questions of uncertainty of Lomb-Scargle results.
 Perhaps the most fruitful path toward understanding of such effects for a
-particular survey---with particular noise characteristics and a particular
-observing window---is via simulated data injected into the detection
+particular set of observations---with particular noise characteristics and a
+particular observing window---is via simulated data injected into the detection
 pipeline.
-In fact, this type of simulation is a vital component of most (if not all)
-current and future time-domain surveys that seek to catalog periodic objects,
-regardless of the particular approach used to detect periodicity
-\citep[see, e.g.][]{opsim1, opsim2, Ivezic08LSST, Sesar2010, Oluseyi12, McQuillan2012, Drake2014}
+In fact, this type of simulation is a vital component of most---I might even
+venture to say all---current and future time-domain surveys that seek to
+detect, characterize, and catalog periodic objects,
+regardless of the particular approach used to identify periodicity
+\citep[see, e.g.][]{opsim1, opsim2, Ivezic08LSST, Sesar2010,
+  Oluseyi12, McQuillan2012, Drake2014}
 
 
 \section{Conclusion and Summary}
