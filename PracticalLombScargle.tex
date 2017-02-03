@@ -876,7 +876,8 @@ the Nyquist frequency will be at most
 with the inequality due to the fact that larger common factors may exist.
 In other words, absent other relevant patterns in the observations,
 the Nyquist frequency for irregularly-sampled data is most
-typically set by {\it the precision of the time measurements}.
+typically set by {\it the precision of the time measurements}
+\citep[see][for a more rigorous derivation of this]{Koen2006}.
 
 \subsubsection{Frequency Limit due to Windowing}
 
@@ -1158,10 +1159,10 @@ In particular, reasoning about the effect of window functions on the observed
 Lomb-Scargle power spectrum remains useful even if it is true in only a
 qualitative sense.
 
-One important caveat of the Lomb-Scargle approach is that the statistical
+One important caveat of the simple Lomb-Scargle formula is that the statistical
 guarantees only apply when the observations have {\it uncorrelated white
 noise}; data with more complicated noise characteristics must be treated
-more carefully; see, e.g., \citep{Vio2010} or the Least Squares approach
+more carefully; see, e.g., \citet{Vio2010} or the Least Squares approach
 discussed in \sect{extensions-observational-noise}.
 
 
@@ -1231,21 +1232,26 @@ periodogram without direct reference to the least squares model,
 and \citet{Zechmeister09} showed that such a modification does not change
 the useful statistical properties of the resulting periodogram.
 
-This also suggests a convenient way to construct a periodogram that accounts
-for correlated noise across observations; denoting the  $N\times N$ noise
-covariance matrix for $N$ observations by $\Sigma$, and constructing the
-vectors $\vec{y} = [y_1, y_2,\cdots y_n]^T$
-and $\vec{y}_{model} = [y_{model}(t_1),y_{model}(t_1),\cdots y_{model}(t_n)]^T$,
-then the $\chi^2$ statistic can be written
+This generalization of $\chi^2(f)$ also suggests a convenient way to
+construct a periodogram in the presence of correlated observational noise.
+If we let $\Sigma$ denote the  $N\times N$ noise
+covariance matrix for $N$ observations, and construct the
+vectors
+\begin{eqnarray}
+  &\vec{y} = [y_1, y_2,\cdots y_n]^T \nonumber\\
+  &\vec{y}_{model} = [y_{model}(t_1),y_{model}(t_1),\cdots y_{model}(t_n)]^T,
+\end{eqnarray}
+then the $\chi^2$ expression for correlated errors can be written
 \begin{equation}
-  \chi^2(f) = (\vec{y}-\vec{y}_{model})^T\Sigma^{-1}(\vec{y}-\vec{y}_{model})
+  \chi^2(f) = (\vec{y}-\vec{y}_{model})^T\Sigma^{-1}(\vec{y}-\vec{y}_{model}),
   \eqlabel{chi2-with-correlated-errors}
 \end{equation}
-In the case of uncorrelated errors, the off-diagonal terms of $\Sigma$
-are zero, and this expression reduces to \eq{chi2-with-errors}.
-This is similar in spirit to the approach to correlated noise developed
-by \citet{Vio2010} from the Fourier perspective, and is in fact identical
-in the case of the ``zero-mean colored noise'' example considered therein.
+which reduces to \eq{chi2-with-errors} if noise is uncorrelated (i.e., if the
+off-diagonal terms of $\Sigma$ are zero).
+This resulting periodogram is quite similar to the approach to correlated
+noise developed by \citet{Vio2010} from the Fourier perspective,
+and is in fact exactly equivalent in the case of the
+``zero-mean colored noise'' example considered therein.
 
 \subsection{Data Centering and the Floating Mean Periodogram}
 \sectlabel{floating-mean}
