@@ -1161,7 +1161,8 @@ qualitative sense.
 One important caveat of the Lomb-Scargle approach is that the statistical
 guarantees only apply when the observations have {\it uncorrelated white
 noise}; data with more complicated noise characteristics must be treated
-more carefully; see, e.g., \citep{Vio2010}.
+more carefully; see, e.g., \citep{Vio2010} or the Least Squares approach
+discussed in \sect{extensions-observational-noise}.
 
 
 \section{The Least-Square Periodogram and its Extensions}
@@ -1229,6 +1230,22 @@ Early versions of this sort of modification appeared in \citet{Gilliland87}, and
 periodogram without direct reference to the least squares model,
 and \citet{Zechmeister09} showed that such a modification does not change
 the useful statistical properties of the resulting periodogram.
+
+This also suggests a convenient way to construct a periodogram that accounts
+for correlated noise across observations; denoting the  $N\times N$ noise
+covariance matrix for $N$ observations by $\Sigma$, and constructing the
+vectors $\vec{y} = [y_1, y_2,\cdots y_n]^T$
+and $\vec{y}_{model} = [y_{model}(t_1),y_{model}(t_1),\cdots y_{model}(t_n)]^T$,
+then the $\chi^2$ statistic can be written
+\begin{equation}
+  \chi^2(f) = (\vec{y}-\vec{y}_{model})^T\Sigma^{-1}(\vec{y}-\vec{y}_{model})
+  \eqlabel{chi2-with-correlated-errors}
+\end{equation}
+In the case of uncorrelated errors, the off-diagonal terms of $\Sigma$
+are zero, and this expression reduces to \eq{chi2-with-errors}.
+This is similar in spirit to the approach to correlated noise developed
+by \citet{Vio2010} from the Fourier perspective, and is in fact identical
+in the case of the ``zero-mean colored noise'' example considered therein.
 
 \subsection{Data Centering and the Floating Mean Periodogram}
 \sectlabel{floating-mean}
@@ -1746,10 +1763,15 @@ for observation times $\{t_n\}$ is
 \end{equation}
 Comparing this to \eq{schuster-periodogram}, we see that this is essentially
 the Schuster periodogram for data $g_n=1$ at all times $t_n$;
-with that in mind one quick way to compute the window power is to use
-a standard Lomb-Scargle periodogram on a series of unit measurements,
-making sure to {\it not} pre-center the data or to use a floating mean model.
-This method is how window power spectra have been computed throughout this
+with that in mind one quick way to compute a qualitatively correct window
+power is to use a standard Lomb-Scargle periodogram on a series of unit
+measurements, making sure to {\it not} pre-center the data or to use a
+floating mean model.
+As \citep{Scargle82} notes, this is {\it not} the true window---it differs
+from the true window just as the Lomb-Scargle periodogram differs from the
+Schuster periodogram---but in practice it is accurate enough to give
+useful insight into the window function's important features.
+This method is how window power spectra has been computed throughout this
 paper.
 
 \subsubsection{Deconvolution and CLEANing}
@@ -1759,18 +1781,18 @@ power spectrum
 Recall from \eq{g-nonuniform} that the observed data is a point-wise product
 of the underlying function and the survey window:
 \begin{equation}
-  g_{obs}(t) = g_{true}(t)W_{\{t_n\}}(t),
+  g_{obs}(t) = g(t)W_{\{t_n\}}(t),
 \end{equation}
 and the convolution theorem tells us that the observed Fourier transform is
 a convolution of the true transform and the window transform:
 \begin{equation}
-  \mathcal{F}\{g_{obs}\} = \mathcal{F}\{g_{true}\} \ast \mathcal{F}\{W_{\{t_n\}}\}
+  \mathcal{F}\{g_{obs}\} = \mathcal{F}\{g\} \ast \mathcal{F}\{W_{\{t_n\}}\}
 \end{equation}
 Given this relationship, we might hope to be able to invert this
-convolution to recover $\mathcal{F}\{g_{true}\}$ directly.
+convolution to recover $\mathcal{F}\{g\}$ directly.
 For example, we could write:
 \begin{eqnarray}
-  \mathcal{F}\{g_{true}\} &=& \mathcal{F}\{g_{obs}/W_{\{t_n\}}\}\nonumber\\
+  \mathcal{F}\{g\} &=& \mathcal{F}\{g_{obs}/W_{\{t_n\}}\}\nonumber\\
                    &=& \mathcal{F}\{g_{obs}\} \ast \mathcal{F}\{1/W_{\{t_n\}}\}
 \end{eqnarray}
 Because of the localization of observations, $W_{\{t_n\}}(t)$ is zero for most
