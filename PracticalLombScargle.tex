@@ -877,7 +877,7 @@ with the inequality due to the fact that larger common factors may exist.
 In other words, absent other relevant patterns in the observations,
 the Nyquist frequency for irregularly-sampled data is most
 typically set by {\it the precision of the time measurements}
-\citep[see][for a more rigorous derivation of this]{Koen2006}.
+\citep[see][for a more rigorous treatment of this result]{Koen2006}.
 
 \subsubsection{Frequency Limit due to Windowing}
 
@@ -903,28 +903,28 @@ Nyquist limit: the Nyquist limit is the frequency beyond which all signal
 is aliased into the Nyquist range; the windowing limit is the frequency
 beyond which all signal is zero or nearly zero.
 
-\subsubsection{Practicality of Limiting Frequencies}
-The frequency grid implied by such large Nyquist frequencies in practice can be
-much larger than is computationally feasible.
-For example, consider the LSST project, which will have roughly 30-second
-exposures taken over a 10-year baseline. With
-$f_{Ny} \approx (2\cdot 30{\rm sec})^{-1}$ and a grid spacing
-of $\Delta f = (5\cdot10 {\rm yr})^{-1}$ (see \sect{frequency-grid}),
-the size of the required frequency grid is on order 25 million bins, which is
-far too large a periodogram to be computationally feasible given the
-computational constraints of the LSST pipeline, even for extremely
-efficient periodogram methods (see \sect{algorithmic-considerations}).
+%\subsubsection{Practicality of Limiting Frequencies}
+%The frequency grid implied by such large Nyquist frequencies in practice can be
+%much larger than is computationally feasible.
+%For example, consider the LSST project, which will have roughly 30-second
+%exposures taken over a 10-year baseline. With
+%$f_{Ny} \approx (2\cdot 30{\rm sec})^{-1}$ and a grid spacing
+%of $\Delta f = (5\cdot10 {\rm yr})^{-1}$ (see \sect{frequency-grid}),
+%the size of the required frequency grid is on order 25 million bins, which is
+%far too large a periodogram to be computationally feasible given the
+%computational constraints of the LSST pipeline, even for extremely
+%efficient periodogram methods (see \sect{algorithmic-considerations}).
 
-In practice, the limiting frequency of the periodogram should be set based on
-some prior knowledge of the types of signals you are interested in.
-For example, if you are interested in galactic RR Lyrae stars, the shortest
-applicable period is on order a few hours \citep{Sesar2010}, requiring
-evaluation of only a hundred thousand or so periodogram frequencies for
-data with a 10-year baseline.
-The key point is that for working with unevenly-sampled data in practice,
-computational constraints will mean that the maximum frequency
-should more often be set by {\it what you are looking for}
-rather than any hard limit based on Nyquist-like limits.
+%In practice, the limiting frequency of the periodogram should be set based on
+%some prior knowledge of the types of signals you are interested in.
+%For example, if you are interested in galactic RR Lyrae stars, the shortest
+%applicable period is on order a few hours \citep{Sesar2010}, requiring
+%evaluation of only a hundred thousand or so periodogram frequencies for
+%data with a 10-year baseline.
+%The key point is that for working with unevenly-sampled data in practice,
+%computational constraints will mean that the maximum frequency
+%should more often be set by {\it what you are looking for}
+%rather than any hard limit based on Nyquist-like limits.
 
 \subsection{Semi-structured Observing Windows}
 
@@ -1099,7 +1099,7 @@ that you can choose one particular form of $A$ and $B$ such that
 The values of $A$ and $B$ leading to these properties lead to the following
 modification of the classical expression for the periodogram:
 \begin{eqnarray}
-  P(f) =
+  P_{LS}(f) =
   \frac{1}{2} \Bigg\{ &
   \bigg(\sum_n g_n \cos(2\pi f [t_n-\tau])\bigg)^2 \bigg/
   \sum_n \cos^2(2\pi f [t_n-\tau]) &\nonumber\\
@@ -1277,19 +1277,19 @@ Lomb-Scargle approach assumes that the
 data are pre-centered around the mean value of the (unknown) signal.
 In many analyses, this requirement is accomplished by pre-centering using
 the mean estimated from the data points themselves.
-
 When the data provide full phase coverage of the observed signal,
 this approach is generally robust.
 However, due to selection effects and survey cadence, full phase
 coverage can not always be guaranteed, which can potentially lead to situations
 where the periodogram suppresses peaks of interest.
+
 \Fig{standard-vs-floatingmean} shows a simulated example of this: the data
 consist of noisy observations of a sinusoidal signal in which the faintest
-observations are omitted from the dataset (due to, {e.g.} a detection threshold).
+observations are omitted from the dataset (due to, e.g., a detection threshold).
 Applying the standard Lomb-Scargle periodogram to pre-centered data leads to a
 periodogram that suppresses the true period of 0.3 days (lower right panel).
 Using the floating-mean model of \eq{floating-mean-model} yields a periodogram
-that detects this true period (upper right panel).
+that identifies this true period (upper right panel).
 
 \begin{figure}[ht]
   \centering
@@ -1304,12 +1304,9 @@ that detects this true period (upper right panel).
     \figlabel{standard-vs-floatingmean}}
 \end{figure}
 
-\citet{Zechmeister09} provide a detailed study of this
-generalized/floating-mean periodogram, and shows that the beneficial
-statistical properties of the standard periodogram apply here as well;
-namely, the periodogram noise at each frequency is given by the sum of
-two independent Gaussian random variables.
-
+\citet{Zechmeister09} provide a detailed study of such a model,
+and show that the addition of the floating mean term does not change
+the advantageous statistical properties of the periodogram.
 
 \subsection{Higher-order Fourier Models}
 \sectlabel{multiterm}
@@ -1353,10 +1350,10 @@ noisier periodogram.
 This background noise is easy to understand: in the least-squares view of the
 periodogram, the periodogram height at any frequency is directly related to
 how well the model fits the data.
-For Linear models, adding additional terms will {\it always} provide an
-equal or better fit to data than the simpler model, and so a periodogram based
-on a more complex model will be higher {\it at all frequencies}, not just
-at frequencies of interest!
+For linear models, adding additional terms will {\it always} provide an
+equal or better fit to data than the simpler model, and so it follows that
+a periodogram based on a more complex model will be higher
+{\it at all frequencies}, not just at frequencies of interest!
 
 \begin{figure}[ht]
   \centering
@@ -1375,9 +1372,9 @@ additional peak at $f_0 / 2$, in which the original peak is the second
 harmonic. Similarly, a 3-term periodogram will add additional peaks both at
 $f_0 / 2$ and $f_0 / 3$, due to the original peak falling in the second and
 third harmonic.
-In general, you can expect an $N$-term periodogram to contain $N$ copies of
-every feature present in the standard periodogram, in addition to any
-new or strengthened features due to the more flexible model.
+In general, you can expect an $N$-term periodogram to contain $N$ aliases of
+every feature present in the standard periodogram; any strong peak revealed
+by the multi-term periodogram is due to two or more of these aliases coinciding.
 
 \begin{figure}[ht]
   \centering
@@ -1397,7 +1394,8 @@ to the dominant 1-day signal in the window function.
 Adding terms to this model only compounds this problem, increasing the number of
 spurious peaks at the low-frequency end.
 For data with even moderate levels of noise, chance coincidences of these
-peaks can easily lead to spurious detections which dominate the true peak.
+peaks can lead to spurious detections which dominate the true peak, particularly
+for models with many Fourier terms.
 
 \subsection{Additional Extensions}
 When the periodogram is viewed from the least-squares model-fitting perspective,
@@ -1413,13 +1411,14 @@ The crux of such extensions is the fact that you often need to use some prior
 knowledge of the system being observed to decide whether a more complicated
 model is indicated, as well as what form of model to apply.
 In practice this comes up only when searching for very specific signals for
-which a more complicated model has some physical motivation.
+which a more complicated model has some {\it a priori} physical motivation.
 
 On the astronomy side, several examples of this flavor of extension exist.
 For example, the Supersmoother approach to detecting periodicity
 involves fitting a flexible non-parametric smoothing
-function to the data at each frequency: the flexibility of the model leads
-to fewer issues of aliasing \citep{Reimann94}.
+function to the data at each frequency \citep{Reimann94}: the flexibility
+of the model leads to fewer aliasing issues when compared to the more
+constrained sinusoidal model.
 Another approach is to use empirically-derived templates as a functional fit
 at each frequency; this has been employed effectively in \citet{Sesar2010,
 Sesar2013} and related work.
@@ -1428,10 +1427,9 @@ periodogram for use with multi-band observations, using various forms of
 regularization to control model complexity \citep{VanderPlas2015, Long2016}.
 With many of these least-squares and/or Bayesian extensions,
 computational complexity quickly becomes an issue, because fast
-$\mathcal{O}(N\log N)$ approaches along the lines of \citet{Press89}
-are not available for more general functional forms
-(see \sect{algorithmic-considerations}).
-
+$\mathcal{O}(N\log N)$ approaches which can be used for sinusoidal fits
+(see \sect{algorithmic-considerations}) are not available for more general
+functional forms.
 
 \subsection{A Note About ``Bayesian'' Periodograms}
 \sectlabel{bayesian-periodograms}
@@ -1442,13 +1440,13 @@ periodogram can be derived directly from the axioms of Bayesian probability
 theory outlined in his comprehensive treatment of the subject
 \citep{Jaynes03}\footnote{Read this. Really.}.
 In the Bayesian view, the Lomb-Scargle periodogram is the optimal statistic
-for detecting a stationary sinusoidal signal in the presence of Gaussian
+for detecting a stationary {\it sinusoidal} signal in the presence of Gaussian
 noise.
 
 For the standard, simple-sinusoid model, the Bayesian periodogram is given by the posterior
 probability of frequency $f$ given the data $D$ and sinusoidal model $M$:
 \begin{equation}
-  p(f~|~D, M) \propto e^{-N \chi^2 / 2} \propto e^{P_{LS}(f)}
+  p(f\mid D, M) \propto e^{-N \chi^2 / 2} \propto e^{P_{LS}(f)}
   \eqlabel{bayesian-periodogram}
 \end{equation}
 where $P_{LS}(f)$ is the Lomb-Scargle power from \eq{lomb-scargle-periodogram}.
@@ -1478,15 +1476,19 @@ a function of frequency, and it is tempting to think of this as the
 ``natural'' way to interpret the periodogram.
 
 The problem, however, is that the Bayesian periodogram does {\it not} return
-a simple probability that the data is periodic with a given frequency, but rather
-a probability at each frequency conditioned on a relatively strong assumption:
-that the data are drawn from a sinusoidal model (or, more generally, the
-particular form of model you have selected).
-Now, the standard Lomb-Scargle periodogram also assumes a sinusoidal model,
-and is thus subject to the same criticism.
-But unlike the simple Bayesian approach, the standard periodogram affords
-interpretation in light of Fourier transforms, window functions, and the
-like: in most cases of interest, this turns out to be {\it vital} to the
+the probability that the data is periodic with a given frequency, but rather
+the probability conditioned on a relatively strong assumption:
+that {\it the data are drawn from a sinusoidal model} (or, more generally, the
+particular form of model used to compute the likelihood).
+As such, you should not treat the Bayesian periodogram as a measure of
+generic periodicity, but rather as a measure of how close the data is to
+a sinusoid.
+Now, the standard Lomb-Scargle periodogram can also be viewed as a sinusoidal
+fit, and is thus subject to the same criticism in the least-squares
+interpretation.
+But unlike the Bayesian periodogram, the standard periodogram affords
+interpretation in light of Fourier analysis and window functions:
+in most cases of interest, such analysis turns out to be {\it vital} to the
 application and interpretation of the periodogram in most cases of interest
 (see \sect{failure-modes}).
 
@@ -1510,7 +1512,8 @@ flexible non-parametric functions \citep[e.g.][]{Gregory92}, and
 specially-designed stochastic models \citep[e.g.][]{Kelly14}.
 Though these can often be more accurate and powerful than the Lomb-Scargle
 approach, they tend to be far more expensive computationally.
-Bayesian approaches based on MCMC also tend to run into stability problems,
+Bayesian approaches based on Markov Chain Monte Carlo (MCMC) also tend to
+run into stability problems,
 particularly for multimodal or other complicated posterior distributions
 \citep[See, for example, the RR Lyrae discussion in][]{Kelly14}.
 
@@ -1519,13 +1522,16 @@ particularly for multimodal or other complicated posterior distributions
 \sectlabel{practical-considerations}
 The previous sections have given a conceptual introduction to the Lomb-Scargle
 periodogram, intertwining the Fourier and Least-squares views.
-With these principles understood, this section gets to the meat of the subject
-at hand: given this understanding of the Lomb-Scargle periodogram and related
+This section gets to the meat of the subject at hand:
+given this understanding of the Lomb-Scargle periodogram and related
 approaches, what practical issues are involved in its effective use?
+The following sections will identify several of the important issues and
+questions that are often ignored in the literature, but are nevertheless
+vital to using the periodogram in practice.
 
 \subsection{Choosing a Frequency Grid}
 \sectlabel{frequency-grid}
-The choice of frequency grid for a Lomb-Scargle analysis is an important one
+The frequency grid used for a Lomb-Scargle analysis is an important choice
 that is too-often glossed-over, probably because the choice is so
 straightforward in the more familiar case of uniformly-sampled data.
 For non-uniform data, it is not so simple, and there are two important
@@ -1543,10 +1549,11 @@ The high-frequency limit is more interesting, and goes back to the discussion
 of Nyquist and/or limiting frequencies from \sect{pseudo-nyquist}:
 in order to not miss relevant information, it is important to compute the
 periodogram up to some well-motivated limiting frequency $f_{max}$. This could
-be a true Nyquist limit based on the \citep{Eyer99} definition, a pseudo-Nyquist
+be a true Nyquist limit based on the \citet{Eyer99} definition, a pseudo-Nyquist
 limit based on careful scrutiny of the window function (cf. \fig{kepler-data}),
-or a limiting frequency based on the integration time of individual
-observations.
+a limiting frequency based on the integration time of individual
+observations, or a limit based on prior knowledge of the kinds of signals
+you expect to detect.
 
 \begin{figure}[ht]
   \centering
@@ -1562,7 +1569,7 @@ observations.
 
 With the frequency range decided, we next must determine how finely to sample
 the frequencies between the limits.
-This turns out to be quite important: if you choose too fine a grid, it can
+This choice turns out to be vital: if you choose too fine a grid, it can
 lead to unnecessarily long computation times that can add up quickly in the
 case of large surveys. If you choose too coarse a grid, you
 risk entirely missing narrow peaks that fall between grid points.
@@ -1570,7 +1577,7 @@ For example, \fig{LINEAR-coarse-grid} shows the true, well-sampled periodogram
 (gray line), along with a periodogram computed for 10,000 equally-spaced
 periods covering the same range (black line).
 Because the spacing of the 10,000-point grid is much larger than the width of
-the periodogram peaks, the computation {\it entirely misses} the most
+the periodogram peaks, the analysis {\it entirely misses} the most
 important peaks in the periodogram!
 
 This shows us that it's important to choose grid spacings smaller than the
@@ -1579,9 +1586,9 @@ From our discussion of windowing in \sect{window-functions}
 (particularly \fig{rectangular-window}), we know that data observed through a
 rectangular window of length $T$ will have sinc-shaped peaks of width
 ${\sim}1/T$.
-To ensure that our grid sufficiently covers each peak, it is prudent to
-over-sample by some factor---say $n_{over}$ samples per peak---and
-use a grid of size $\Delta f = \frac{1}{n_{over} T}$.
+To ensure that our grid sufficiently samples each peak, it is prudent to
+over-sample by some factor---say $n_o$ samples per peak---and
+use a grid of size $\Delta f = \frac{1}{n_o T}$.
 This pushes the total number of required periodogram evaluations to
 \begin{equation}
   \eqlabel{n-eval}
@@ -1594,7 +1601,6 @@ frequency of $48.9\ {\rm days}^{-1}$ and
 an observing window of $T = 90\ {\rm days}$.
 To compute five samples per peak thus requires $N_{eval} \approx 22,000$
 evaluations of the periodogram.
-
 On the other hand, the LINEAR data shown in \fig{LINEAR-data} does not have
 any noteable aliasing structure in its window function.
 In this case the maximum detectable frequency is the Nyquist limit defined
@@ -1614,9 +1620,10 @@ $N_{eval} \approx 240,000$ periodogram evaluations.
 By comparison, data from the upcoming LSST survey \citep{Ivezic08LSST}
 will fall somewhere in-between: full frequency coverage of
 the 10-year data up to a limiting frequency defined by the 30-second
-exposure time for each observation will require roughly 2.5 million
-periodogram evaluations per object, which for fast Lomb-Scargle implementations
-(see the next section) can be accomplished in seconds on a single core.
+exposure time for each observation would require roughly 25 million
+periodogram evaluations per object, which for fast implementations
+(see the next section) could be accomplished in several seconds on
+a single core.
 
 One final note: although it can be more easily interpretable to
 visualize periodograms as a function of period rather than a function of
@@ -1644,7 +1651,7 @@ frequency.
   \caption{Comparison of the true period and peak Lomb-Scargle period for
     1000 simulated periodic light curves.
     Each has 60 irregular observations over 180 nights,
-    with a cadence typical of ground-based surveys ({i.e.} showing a strong
+    with a cadence typical of ground-based surveys (i.e., showing a strong
     diurnal window pattern similar to \fig{LINEAR-window}).
     The Lomb-Scargle peak does not always coincide with the true period,
     and there is noticeable structure among these failures.
@@ -1678,19 +1685,25 @@ This is the source of the failure modes depicted in panel (a) of
 \fig{failure-modes}; in terms of periods the above expression becomes:
 \begin{equation}
   P_{obs} = \left(\frac{1}{P_{true}} + n\ \delta f\right)^{-1}
+  \eqlabel{alias-periods}
 \end{equation}
 where, to be clear, $n$ is a positive or negative integer and $\delta f$ is
-a strong feature in the window function (here, 1 day).
-For this data, close to 36\% of the objects are mis-characterized along these
-failure modes.
+the frequency of a strong feature in the window  (here, $1\ {\rm day}^{-1}$).
+For the simulated data, close to 36\% of the objects are mis-characterized
+along these failure modes.
 
 Another mode of failure is when the periodogram for an object with frequency
 $f_0$ isolates a higher harmonic of that fundamental frequency, such as $2f_0$.
-This may occur for signals that are not strictly sinusoidal, and this harmonic
-frequency peak is subject to the same windowing effects as above.
-Thus we can describe the failure modes depicted in panel (b) of \fig{failure-modes} with the following equation, for positive integers $m > 0$:
+This may occur for periodic signals that are not strictly sinusoidal, and so
+has power at a higher harmonics.
+Additionally, this higher harmonic peak can be subject to the same aliasing
+effects as in \eq{alias-periods}.
+Thus we can adapt \eq{alias-periods} and describe the failure modes depicted
+in panel (b) of \fig{failure-modes} with the following equation,
+for positive integers $m > 0$:
 \begin{equation}
   P_{obs} = \left(\frac{m}{P_{true}} + n\delta f\right)^{-1}
+  \eqlabel{alias-harmonic-periods}
 \end{equation}
 In \fig{failure-modes}, the $m=2$ harmonic and its aliases account for roughly
 15\% of the results.
@@ -1698,12 +1711,12 @@ In \fig{failure-modes}, the $m=2$ harmonic and its aliases account for roughly
 Panel (c) of \fig{failure-modes} shows the final pattern of failure in
 Lomb-Scargle results, which has an opposite trend with true period.
 This is closely related to the effects shown in panels (a) and (b),
-but comes from the fact that
-the Lomb-Scargle periodogram at frequency $f_0$ contains contributions from
-signals at both $+f_0$ and $-f_0$.
-When diurnal aliasing leads to power at negative frequencies, this is reflected
-at the absolute value of that frequency, so it is more accurate to take the
-absolute value of the above formula
+but comes from the even symmetry of the Lomb-Scargle periodogram.
+Every periodogram peak at frequency $f_0$ has a corresponding peak at $-f_0$,
+and this is true of aliases as well.
+The aliases of negative-frequency peaks can cross into the positive-frequency
+range, and this can be accounted for by a further modification of
+\eq{alias-harmonic-periods}---taking its absolute value:
 \begin{equation}
   P_{obs} = \left|\frac{m}{P_{true}} + n\delta f\right|^{-1}
   \eqlabel{failure-modes}
@@ -1726,7 +1739,7 @@ at $\delta f$, something like the following should probably be employed:
     If a significant peak is found, then $f_{peak}$ is probably an order-$m$
     harmonic of the true frequency.
   \item Check for peaks at $|f_{peak} \pm n\delta f|$ for at least
-    $n \in \{1, 2\}$. If these aliases exist, then it is likely that you have
+    $n \in \{1, 2\}$. If these aliases exist, then it is possible that you have
     found a peak on the sequence of expected aliases---though keep in mind that
     there is no way to know from the periodogram alone whether or not
     this is the ``true'' peak!
@@ -1735,8 +1748,8 @@ at $\delta f$, something like the following should probably be employed:
     among them.
 \end{enumerate}
 For noisy observations, this procedure cannot generally guarantee that you
-have found the correct peak, but it is far preferable than making the mistake
-of blindly trusting the highest peak in the periodogram!
+have found the correct peak, but it is far preferable to the simplistic
+approach of blindly trusting the highest peak in the periodogram!
 We will come back to the question of uncertainty in the periodogram result
 in \sect{uncertainties}.
 
@@ -1748,6 +1761,9 @@ Our discussion of window functions here and in \sect{window-functions}
 has highlighted the impact of structure in the survey window on the
 resulting observed power spectrum, and the importance of examining that
 window power to understand features of the resulting periodogram.
+Here we will consider the computation of the window function, as well
+as the possibility of recovering the true periodogram by deconvolving
+the window.
 
 \subsubsection{Computing the Window Function}
 The window power spectrum can be computed directly from the
@@ -1755,25 +1771,17 @@ delta-function representation of the window function;
 From \eq{FT-def}, \eq{power-spectrum}, and \eq{nonuniform-window},
 we can write
 \begin{equation}
-  \mathcal{F}\{W_{\{t_n\}}\}(f) = \sum_{n=1}^{N} e^{-2\pi i f t_n}
-  \eqlabel{nonuniform-window-FT}
-\end{equation}
-For uniformly-spaced observing times $t_n$, the symmetry leads to cancellations
-so that the window transform is a clean Dirac comb.
-For non-uniform observing times, this symmetry is broken and the window
-transform will be much more ``nosiy''.
-for observation times $\{t_n\}$ is
-\begin{equation}
   \mathcal{P}_W(f;\{t_n\}) = \left|\sum_{n=1}^{N} e^{-2\pi i f t_n}\right|^2
   \eqlabel{window-power-analytic}
 \end{equation}
 Comparing this to \eq{schuster-periodogram}, we see that this is essentially
-the Schuster periodogram for data $g_n=1$ at all times $t_n$;
-with that in mind one quick way to compute a qualitatively correct window
-power is to use a standard Lomb-Scargle periodogram on a series of unit
-measurements, making sure to {\it not} pre-center the data or to use a
+the Schuster periodogram for data $g_n=1$ at all times $t_n$.
+With this fact in mind, one convenient way to estimate the form of the
+window power is to compute a standard Lomb-Scargle periodogram on a series of
+unit measurements, making sure to {\it not} pre-center the data or to use a
 floating mean model.
-As \citep{Scargle82} notes, this is {\it not} the true window---it differs
+As \citet{Scargle82} notes, this computation does {\it not} give the true
+window---it differs
 from the true window just as the Lomb-Scargle periodogram differs from the
 Schuster periodogram---but in practice it is accurate enough to give
 useful insight into the window function's important features.
@@ -1783,7 +1791,7 @@ paper.
 \subsubsection{Deconvolution and CLEANing}
 With this ability to compute the window function, we might hope to be able to
 use it {\it quantitatively} to remove spurious peaks from the observed
-power spectrum
+power spectrum.
 Recall from \eq{g-nonuniform} that the observed data is a point-wise product
 of the underlying function and the survey window:
 \begin{equation}
@@ -1798,6 +1806,7 @@ Given this relationship, we might hope to be able to invert this
 convolution to recover $\mathcal{F}\{g\}$ directly.
 For example, we could write:
 \begin{eqnarray}
+  g(t) &=& g_{obs}(t) / W_{\{t_n\}}(t)\nonumber\\
   \mathcal{F}\{g\} &=& \mathcal{F}\{g_{obs}/W_{\{t_n\}}\}\nonumber\\
                    &=& \mathcal{F}\{g_{obs}\} \ast \mathcal{F}\{1/W_{\{t_n\}}\}
 \end{eqnarray}
@@ -1825,13 +1834,13 @@ unequal observations (see \sect{schuster-to-lomb-scargle}),
 and so any attempt to apply CLEAN to Lomb-Scargle analysis directly would
 be fundamentally flawed even if it were not ill-posed to begin with.
 
-The latter two issues could be addressed by focusing on the non-uniform
+The latter two issues could be remedied by focusing on the non-uniform
 Fourier transform and the Schuster periodogram rather than the Lomb-Scargle
-approach, but one would lose the advantageous statistical properties of the
-resulting transform, as well as the correspondance with least-squares fitting
+modification, but doing so would jettison the useful statistical properties
+of Lomb-Scargle, as well as the correspondance with least-squares fitting
 that allows useful extensions to models handling a floating mean and
-observational noise.
-Even in this case, though, the first issue remains quite problematic.
+observational noise, and would still not address the far more problematic
+first issue.
 My feeling is that there is room for a more principled approach to the
 unconstrained deconvolution problem for periodograms derived from non-uniform
 fast Fourier transforms, perhaps through some sort of L1/lasso regularization
@@ -1848,7 +1857,7 @@ fast alternatives are available.
 
 Suppose you have a set of $N$ observations over a time-span $T$ for an average
 cadence of $\overline{\delta t} = N/T$.
-From \eq{n-eval} we see that the number of frequencies evaluated is
+From \eq{n-eval} we see that the number of frequencies we need to evaluate is
 $N_f \propto T f_{max} = N f_{max} / \overline{\delta t}$.
 Holding constant the average survey cadence $\overline{\delta t}$ and individual
 observation properties (which control $f_{max}$), we find that the number of
@@ -1859,7 +1868,7 @@ $N_f$ frequencies, and thus we see that the
 na{\"i}ve scaling of the algorithm with the size of the dataset is
 $\mathcal{O}(N^2)$, when survey properties are held constant.
 Due to the trigonometric functions involved, this turns out to be a rather
-``expensive'' $\mathcal{O}(N^2)$, which makes the straightforward
+``expensive'' $\mathcal{O}(N^2)$, which makes the direct
 implementation impractical for even modestly-sized datasets.
 
 Fortunately, several faster implementations have been proposed to compute the
@@ -1881,7 +1890,8 @@ presents an adaptation of the \citet{Press89} method that can compute the
 multi-term result in $\mathcal{O}(NK\log N)$, for $N$ data points and
 $K$ Fourier components.
 
-All periodograms in this paper were computed using the Astropy
+All periodograms in this paper were computed using the
+Astropy\footnote{\url{http://docs.astropy.org/en/stable/stats/lombscargle.html}}
 implementations of the \citet{Press89}, \citet{Zechmeister09}, and
 \citet{Palmer09} algorithms, which were adapted from Python code originally
 published by \citet{ICVG2014} and \citet{VanderPlas2015}.
