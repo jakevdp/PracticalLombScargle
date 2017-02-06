@@ -206,14 +206,6 @@ failure that should be expected when working with real-world data.
 {\bf\sect{conclusion}} concludes and summarizes the key recommendations
 for practical use of the Lomb-Scargle periodogram.
 
-All figures in this paper were produced using Python, and in particular the
-Numpy \citep{numpy, numpybook},
-Pandas \citep{pandas},
-Astropy \citep{Astropy2013},
-and Matplotlib \citep{matplotlib} packages.
-Code to reproduce these figures is available in Jupyter notebooks at
-\url{http://github.com/jakevdp/PracticalLombScargle/}.
-
 \section{Background: the Continuous Fourier Transform}
 \sectlabel{continuous-fourier-transform}
 
@@ -1790,6 +1782,7 @@ This method is how window power spectra has been computed throughout this
 paper.
 
 \subsubsection{Deconvolution and CLEANing}
+\sectlabel{CLEAN}
 With this ability to compute the window function, we might hope to be able to
 use it {\it quantitatively} to remove spurious peaks from the observed
 power spectrum.
@@ -1872,12 +1865,13 @@ This can be formalized more precisely in the least squares interpretation of
 the periodogram, in which the inverse of the curvature of the peak is
 identified with the uncertainty \citep{ICVG2014}---which in the Bayesian
 view amounts to fitting a Gaussian curve to the (exponentiated)
-peak \citep{Jaynes1987, Bretthorst88}---and this introduces some first-order
-dependence on the number of samples and their signal-to-noise ratio rather
-than the peak width alone.
+peak \citep{Jaynes87, Bretthorst88}---and this introduces first-order
+dependence on the number of samples and their signal-to-noise ratio,
+though the uncertainty remains proportional to the peak width.
+\todo{explain this difference in terms of FWHM of exponentiated power?}
 
-We have motivated from the Fourier window discussions that peak width
-scales with the observational baseline; the surprising result is that to
+We have motivated from the Fourier window discussions that peak width is
+the inverse of the observational baseline; the surprising result is that to
 first order the peak width in the periodogram {\it does not depend} on
 either the number of observations or their signal-to-noise ratio!
 This can be seen visually in \fig{peak-width-height},
@@ -1887,7 +1881,7 @@ In all cases, the widths of the primary peak are essentially {\it identical},
 regardless of the quality or quantity of data!
 Data quality and quantity are reflected in the height of the peak in relation
 to the ``background noise'', which speaks to the peak {\it significance} rather
-than the precision of frequency estimation.
+than the precision of frequency detection.
 
 \begin{figure}[ht]
   \centering
@@ -1897,22 +1891,23 @@ than the precision of frequency estimation.
     Top panels show the normalized periodogram (\eq{lomb-scargle-normalized}),
     while bottom panels show the PSD-normalized periodogram
     (\eq{lomb-scargle-periodogram})
-    Somewhat surprisingly, neither the number of points nor the signal-to-noise
-    ratio affects the peak width \figlabel{peak-width-height}}
+    Perhaps surprisingly, neither the number of points nor the signal-to-noise
+    ratio affects the peak width. \figlabel{peak-width-height}}
 \end{figure}
 
-Because of this, if you insist on reporting frequency errorbars derived from
+For this reason, if you insist on reporting frequency errorbars derived from
 peak width, the results can be pretty silly for observations with
 long baselines.
 For example, going by the peak width in \fig{LINEAR-power}, the
-periodogram reveals a period of $2.58014 \pm 0.00004$ hours.
+periodogram reveals a period of $2.58014 \pm 0.00004$ hours, a relative
+precision of about 1/1000 percent.
 While this is an accurate characterization of the period precision
 {\it assuming that peak is the correct one}, it does not capture the
 much more relevant uncertainties demonstrated in \sect{failure-modes},
 in which we might find ourselves on the wrong peak entirely!
-This is why in general, peak widths and Gaussian error bars are not all that
-useful for reporting useful or accurate uncertainties in the context of
-periodogram analysis.
+This is why in general, peak widths and Gaussian error bars should generally
+be avoided when reporting uncertainties in the context of a periodogram
+analysis.
 
 \subsubsection{False Alarm Probability}
 A much more relevant quantity for expressing uncertainty of periodogram results
@@ -2238,6 +2233,13 @@ paper's GitHub repository\footnote{\url{http://github.com/jakevdp/PracticalLombS
 \section{Conclusion and Summary}
 \sectlabel{conclusion}
 
+This paper has been a conceptual tour of the Lomb-Scargle periodogram, from
+its roots in Fourier analysis, to its equivalence with special cases of
+periodic analysis based on least squares model fitting and Bayesian
+analysis. I will finish here with a brief summary of the practical
+recommendations contained in these pages, along with a somewhat iconoclastic
+post-script for further thought.
+
 \subsection{Summary of Recommendations}
 
 \todo{Summarize key recommendations}
@@ -2259,13 +2261,74 @@ paper's GitHub repository\footnote{\url{http://github.com/jakevdp/PracticalLombS
 \end{itemize}
 
 \subsection{Postscript: Why Lomb-Scargle?}
-
+After considering all of these practical aspects, I think it is worth
+revisiting the question of {\it why} astronomers lean toward the
+Lomb-Scargle approach rather than the (in many ways simpler) Schuster
+periodogram.
+In particular, after three decades of use, there seems to be an unrealistic
+mythology about the efficacy of the Lomb-Scargle approach among astronomers.
+It's common to see statements or implications like the following:
 \begin{itemize}
-  \item Advantages: equivalence to least squares, 
-  \item Myths: not faster than Schuster, does not correct for irregular sampling, frequencies are not independent, no savings over full model fit at each frequency \citep{ICVG2014}, straight Least Squares treatment not useful \sect{failure-modes}.
+  \item {\it Myth: The Lomb-Scargle periodogram can be computed more efficiently
+    than the Schuster periodogram.} Reality: computationally, the two
+    are quite similar, and in fact the fastest Lomb-Scargle algorithm currently
+    available is based on the Schuster periodogram computed via the
+    the NFFT algorithm (see \sect{algorithmic-considerations})
+  \item {\it Myth: The Lomb-Scargle periodogram is faster than the least squares
+    periodogram because it avoids explicitly solving for model coefficients.}
+    Reality: model coefficients can be determined with not much extra
+    computation \citep[see discussion in][]{ICVG2014}.
+  \item {\it Myth: The Lomb-Scargle periodogram allows analytic computation of
+    statistics for periodogram peaks.} Reality: while this is true at
+    individual frequencies, it is not true for the more relevant issue of
+    peak-value statistics, which must be either approximated or computed by
+    bootstrap resampling.
+  \item {\it Myth: The Lomb-Scargle periodogram corrects for aliasing due to
+    sampling and leads to independent noise at each frequency.}
+    Reality: for structured window functions, the Lomb-Scargle
+    periodogram has the same partial aliasing issues as the Schuster
+    periodogram (see \sect{failure-modes}).
+  \item {\it Myth: Bayesian analysis shows that Lomb-Scargle is the optimal
+    statistic for detecting periodic signals in data.} Reality: it rather
+    shows that Lomb-Scargle is the optimal statistic for
+    {\it fitting a sinusoid to data}, which is not the same as saying it
+    is optimal for finding a generic, non-sinusoidal signal.
 \end{itemize}
+With these myths debunked, what advantage remains for Lomb-Scargle?
+What advantages would we lose by instead using a Schuster periodogram,
+estimating uncertainty, significance, and false alarm probability by
+resampling and simulation, as we must for Lomb-Scargle itself?
+I think we only lose the advantage of being able to generalize to more
+complicated models in the Bayesian sense, in which case you're not really
+using Lomb-Scargle at all, but rather a generative Bayesian model for your
+data.
+The point of correspondance for a sinusoidal model is perhaps useful trivia,
+but not a reason to use that model if your data is not known to be sinusoidal.
 
-\todo{wrap up with some witty \& pithy lines of encouragement.}
+Conversely, if you use a Schuster approach rather than a Lomb-Scargle approach,
+what you gain is the ability to reason quantitatively about the effects of the
+survey window function on the resulting periodogram (see \sect{CLEAN}).
+While the deconvolution problem is well-known to be ill-posed, there may be a
+way forward for cleaned periodograms based on regularized deconvolutions.
+
+In any case, I would contend that there is ample room for practitioners to
+question the prevailing folk wisdom of the unspoken advantage of Lomb-Scargle
+over approaches based directly on the Fourier transform, such as the Schuster
+periodogram.
+
+% Edelson-Krolik + FFT -> Lomb-Scargle?
+
+\subsection{Figures and Code}
+
+All computations and figures in this paper were produced using Python,
+and in particular the
+Numpy \citep{numpy, numpybook},
+Pandas \citep{pandas},
+Astropy \citep{Astropy2013},
+and Matplotlib \citep{matplotlib} packages.
+Code to reproduce these figures is available in Jupyter notebooks at
+\url{http://github.com/jakevdp/PracticalLombScargle/}.
+
 
 {\it Acknowledgments:} I am grateful to Jeff Scargle, Max Mahlke,
 Zeljko Ivezic, and Andy Connolly for helpful feedback on early drafts
@@ -2274,7 +2337,6 @@ This work was supported by the University of Washington eScience Institute,
 with funding from the Gordon and Betty Moore Foundation, the Alfred P. Sloan
 Foundation, and the Washington Research Foundation.
 
-% Edelson-Krolik + FFT -> Lomb-Scargle?
 
 \bibliographystyle{apj}
 \bibliography{PracticalLombScargle}
