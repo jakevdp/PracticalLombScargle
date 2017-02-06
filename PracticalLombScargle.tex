@@ -877,7 +877,8 @@ with the inequality due to the fact that larger common factors may exist.
 In other words, absent other relevant patterns in the observations,
 the Nyquist frequency for irregularly-sampled data is most
 typically set by {\it the precision of the time measurements}
-\citep[see][for a more rigorous treatment of this result]{Koen2006}.
+\citep[see][for more rigorous treatments
+  of this result]{Bretthorst2003, Koen2006}.
 
 \subsubsection{Frequency Limit due to Windowing}
 
@@ -1190,7 +1191,7 @@ we will denote this minimum value as $\hat{\chi}^2(f)$.
 \citet{Scargle82} showed that with this setup, the Lomb-Scargle
 periodogram from \eq{lomb-scargle-periodogram} can be equivalently written:
 \begin{equation}
-  P(f) = \frac{N}{2}\big[\hat{\chi}^2_0 - \hat{\chi}^2(f)\big]
+  P(f) = \frac{1}{2}\big[\hat{\chi}^2_0 - \hat{\chi}^2(f)\big]
   \eqlabel{lomb-scargle-chi2}
 \end{equation}
 where $\hat{\chi}^2_0$ is the non-varying reference model.
@@ -1847,122 +1848,6 @@ fast Fourier transforms, perhaps through some sort of L1/lasso regularization
 that imposes assumptions of sparsity on the true periodogram, but to date this 
 does not appear to have been explored anywhere in the literature.
 
-\subsection{Algorithmic Considerations}
-\sectlabel{algorithmic-considerations}
-Given the size of the frequency grid required to fully characterize the periods
-from a given dataset, it is vital to have an efficient algorithm for evaluating
-the periodogram. We will see that the na{\"i}ve implementation of
-\eq{lomb-scargle-periodogram} scales poorly with the size of the data, but that
-fast alternatives are available.
-
-Suppose you have a set of $N$ observations over a time-span $T$ for an average
-cadence of $\overline{\delta t} = N/T$.
-From \eq{n-eval} we see that the number of frequencies we need to evaluate is
-$N_f \propto T f_{max} = N f_{max} / \overline{\delta t}$.
-Holding constant the average survey cadence $\overline{\delta t}$ and individual
-observation properties (which control $f_{max}$), we find that the number of
-frequencies required is directly proportional to the number of data points.
-The computation of the Lomb-scargle periodogram in \eq{lomb-scargle-periodogram}
-requires sums over $N$ sinusoids at each of the
-$N_f$ frequencies, and thus we see that the
-na{\"i}ve scaling of the algorithm with the size of the dataset is
-$\mathcal{O}(N^2)$, when survey properties are held constant.
-Due to the trigonometric functions involved, this turns out to be a rather
-``expensive'' $\mathcal{O}(N^2)$, which makes the direct
-implementation impractical for even modestly-sized datasets.
-
-Fortunately, several faster implementations have been proposed to compute the
-periodogram to arbitrary precision in $\mathcal{O}(N\log N)$ time.
-The first of these is discussed in \citet{Press89}, which uses an inverse
-interpolation operation along with a Fast Fourier Transform to compute the
-trigonometric components of \eq{lomb-scargle-periodogram} very efficiently over
-a large number of frequencies.
-\citet{Zechmeister09} showed how this approach can be easily extended to
-the floating mean periodogram discussed in \sect{floating-mean}.
-
-A qualitatively similar approach to the \citet{Press89} algorithm
-is presented by \citet{Leroy2012}:
-It makes use of the Non-equispaced Fast Fourier Transform
-\citep[NFFT, see][]{Keiner2009} to compute the Lomb-Scargle periodogram about
-a factor of 10 faster than the \citet{Press89} approach.
-For the multi-term models discussed in \sect{multiterm}, \citet{Palmer09}
-presents an adaptation of the \citet{Press89} method that can compute the
-multi-term result in $\mathcal{O}(NK\log N)$, for $N$ data points and
-$K$ Fourier components.
-
-All periodograms in this paper were computed using the
-Astropy\footnote{\url{http://docs.astropy.org/en/stable/stats/lombscargle.html}}
-implementations of the \citet{Press89}, \citet{Zechmeister09}, and
-\citet{Palmer09} algorithms, which were adapted from Python code originally
-published by \citet{ICVG2014} and \citet{VanderPlas2015}.
-All code behind this paper is available in the form of Jupyter notebooks in the
-paper's GitHub repository at \url{http://github.com/jakevdp/PracticalLombScargle/}.
-
-
-\subsection{Periodogram Normalization and Interpretation}
-\sectlabel{normalizations}
-
-Often it is useful to be able to interpret the periodogram values themselves.
-Recall that there are two equally valid perspectives of what the periodogram
-is measuring---the Fourier view and the least-squares view---and each of these
-lends itself to a different approach to normalizion and interpretation of the
-periodogram.
-
-\subsubsection{PSD normalization}
-When considering the periodogram from the Fourier perspective,
-it is useful to normalize the periodogram such that in the special case
-of equal spaced data, it recovers the standard Fourier power spectrum.
-This is the normalization used in \eq{lomb-scargle-periodogram} and the
-equivalent least-squares expression seen in \eq{lomb-scargle-chi2}:
-\begin{equation}
-  P(f) = \frac{N}{2}\big[\hat{\chi}^2_0 - \hat{\chi}^2(f)\big]
-  \eqlabel{lomb-scargle-chi2-2}
-\end{equation}
-For equally-spaced data, this periodogram is identical to the standard
-definition based on the fast Fourier transform:
-\begin{equation}
-  P(f) = \frac{1}{N} \left| FFT(y_n) \right|^2
-\end{equation}
-in particular, this means that the units of the periodogram are $unit(y)^2$,
-and can be interpreted as squared-amplitudes of the Fourier component at
-each frequency.
-Note that this changes if data uncertainties are incorporated into
-the periodogram as in \sect{extensions-observational-noise},
-the periodogram in this normalization becomes unitless: it is essentially
-a measure of periodic content in signal-to-noise ratio
-rather than in signal itself.
-
-\subsubsection{Least-squares normalization}
-In the least-squares view of the periodogram, the periodogram is interpreted
-as an inverse measure of the goodness-of-fit for a model.
-When we express the periodogram as a function of $\chi^2$ model fits as in
-\eq{lomb-scargle-chi2-2}, it becomes clear that the periodogram has a
-mathematical maximum value: if the sinusoidal model {\it perfectly} fits
-the data at some frequency $f_0$, then $\hat{\chi}^2(f_0) = 0$ and the
-periodogram is maximized at a value of $N\hat{\chi}^2_0 / 2$.
-On the other end, it is mathematically impossible for a sinusoidal model to
-do worse than the simple constant, non-varying fit reflected in
-$\hat{\chi}^2_0$, and so the minimum value of \eq{lomb-scargle-chi2-2} is
-exactly zero.
-
-This suggests a different normalization of the periodogram, where the values
-are dimensionless and lie between 0 and 1:
-\begin{equation}
-  P_{norm}(f) = 1 - \frac{\hat{\chi}^2(f)}{\hat{\chi}^2_0}
-  \eqlabel{lomb-scargle-normalized}
-\end{equation}
-This ``normalized periodogram'' is unitless, and
-is directly proportional to the unnormalized
-(or PSD-normalized) periodogram in \eq{lomb-scargle-chi2-2}.
-
-While the normalization does not affect the shape of the periodogram,
-its main practical consequence is that the statistics of the resulting
-periodogram differ slightly, and this needs to be taken into account when
-computing analytic estimates of uncertainties and false alarm probabilities
-(see the next section).
-Other normalizations exist as well, but seem to be rarely used in practice.
-For a concise summary of periodogram normalizations and their statistical
-properties, refer to the introduction of \citet{Baluev2008}.
 
 \subsection{Uncertainties in Periodogram Results}
 \sectlabel{uncertainties}
@@ -1973,31 +1858,36 @@ terms of errorbars, {e.g.} ``the period is $16.3 \pm 0.6$ hours''.
 For periods derived from the Lomb-Scargle periodogram, however, uncertainties
 generally cannot be meaningfully expressed in this way:
 as we saw in the discussion of failure modes in \sect{failure-modes},
-the concern for periodograms is more often errors associated with
+the concern for periodograms is more often inaccuracy associated with
 false peaks and aliases, rather than with imprecision in peak location.
 
 \subsubsection{Peak Width and Frequency Precision}
 
-A periodic signal will be reflected in a periodogram by the presence of a
-peak of a certain height and width.
-The width of the peak is directly related to the precision with which that
-peak's frequency is measured; the height of the peak 
-is related to the significance of the detection.
-We have motivated from Fourier window discussions that the peak width scales
-with the observational baseline; the surprising result is that the peak width
-{\it does not depend} on either the number of observations or the noise
-in those observations!
+A periodic signal will be reflected in the periodogram by the presence of a
+peak of a certain width and height.
+In the Fourier view, the precision with which a peak's frequency can be
+identified is directly related to the width of the peak; often the
+width at half-maximum is used.
+This can be formalized more precisely in the least squares interpretation of
+the periodogram, in which the inverse of the curvature of the peak is
+identified with the uncertainty \citep{ICVG2014}---which in the Bayesian
+view amounts to fitting a Gaussian curve to the (exponentiated)
+peak \citep{Jaynes1987, Bretthorst88}---and this introduces some first-order
+dependence on the number of samples and their signal-to-noise ratio rather
+than the peak width alone.
 
-This can be proven mathematically \citep[see, e.g.][]{Bretthorst88, ICVG2014},
-but it is perhaps more intuitive to see this visually.
-\fig{peak-width-height} shows periodograms for simulated data with a fixed
-baseline $T=4$ units covering four cycles, with varying sample sizes and
-signal-to-noise ratios.
-In all cases, the width of the peaks (most clearly visible in one or another
-normalization) are essentially {\it identical}, regardless of the quality
-or quantity of data!
-Evidently, peak width ({i.e.} frequency precision) is not a particularly
-useful measure of uncertainty in the detection of periods.
+We have motivated from the Fourier window discussions that peak width
+scales with the observational baseline; the surprising result is that to
+first order the peak width in the periodogram {\it does not depend} on
+either the number of observations or their signal-to-noise ratio!
+This can be seen visually in \fig{peak-width-height},
+which shows periodograms for simulated data with a fixed 4-period baseline,
+with varying sample sizes and signal-to-noise ratios.
+In all cases, the widths of the primary peak are essentially {\it identical},
+regardless of the quality or quantity of data!
+Data quality and quantity are reflected in the height of the peak in relation
+to the ``background noise'', which speaks to the peak {\it significance} rather
+than the precision of frequency estimation.
 
 \begin{figure}[ht]
   \centering
@@ -2008,16 +1898,14 @@ useful measure of uncertainty in the detection of periods.
     while bottom panels show the PSD-normalized periodogram
     (\eq{lomb-scargle-periodogram})
     Somewhat surprisingly, neither the number of points nor the signal-to-noise
-    ratio affects the peak width; nor do they affect the peak height under
-    the appropriate normalization.
-    \figlabel{peak-width-height}}
+    ratio affects the peak width \figlabel{peak-width-height}}
 \end{figure}
 
-If you insist on reporting precision derived from a peak width
-in terms of an errorbar, the results can be pretty silly for observations
-with long baselines.
+Because of this, if you insist on reporting frequency errorbars derived from
+peak width, the results can be pretty silly for observations with
+long baselines.
 For example, going by the peak width in \fig{LINEAR-power}, the
-periodogram reveals a period of $2.58024 \pm 0.00005$ hours.
+periodogram reveals a period of $2.58014 \pm 0.00004$ hours.
 While this is an accurate characterization of the period precision
 {\it assuming that peak is the correct one}, it does not capture the
 much more relevant uncertainties demonstrated in \sect{failure-modes},
@@ -2033,11 +1921,11 @@ background ``noise'' displayed in the periodogram.
 \fig{peak-width-height} indicates that this property {\it does} depend on
 both the number of observations and their signal-to-noise ratio: for the
 small-$N$/low signal-to-noise cases, the spurious peaks in the background
-become comparable to the true peak.
+become comparable to the size of the true peak.
 In fact, as we saw in \sect{schuster-to-lomb-scargle}, the ability to
 analytically define and quantify the relationship between peak height
-and significance is one of the considerations that led to the standard
-form of the Lomb-Scargle periodogram.
+and significance is one of the primary considerations that led to the
+standard form of the Lomb-Scargle periodogram.
 
 The typical approach to quantifying the significance of a peak is the {\it
 False Alarm Probability} (FAP), which measures the probability that a dataset
@@ -2099,7 +1987,8 @@ but all such approaches are necessarily only approximations.
 \subsubsubsection{\citet{Baluev2008} Method}
 
 A more sophisticated treatment of the problem is that of \citet{Baluev2008},
-who derived an analytic result based on the theory of stochastic processes.
+who derived an analytic result based on theory regarding extreme values
+of stochastic processes.
 The Baluev result is not an exact measure of the FAP, but rather an upper
 limit that is shown to be quite close to the true FAP even
 with highly structured window functons.
@@ -2116,11 +2005,10 @@ where, for the normalized periodogram (\eq{lomb-scargle-normalized}),
 \end{equation}
 and $W = f_{max} \sqrt{4\pi\ {\rm var}(t)}$ measures the effective width of the
 observing window in units of the maximum frequency chosen for the analysis.
-This result is not an exact measure of the FAP, but rather an approximation
-to the upper limit that is valid for alias-free periodograms, {i.e.} cases
-where the window function has very little structure.
-Nonetheless, \citet{Baluev2008} showed that this approximation holds quite well
-even in the case of realistic survey windows.
+This result is not an exact measure of the FAP, but rather an
+upper limit that is valid for alias-free periodograms, {i.e.} cases
+where the window function has very little structure,
+but which holds quite well even in the case of more realistic survey windows.
 
 \subsubsubsection{Bootstrap Method}
 In the absence of a true analytic solution to the False Alarm Probability, we
@@ -2142,13 +2030,15 @@ Unfortunately, the computational costs of the bootstrap can be quite
 prohibitive: to accurately measure small levels of FAP requires constructing
 a large number of full periodograms.
 If you are probing a false positive rate of $r$ among $N$ bootstrap reseamples,
-you would roughly expect to find $rN \pm \sqrt{rN}$ peaks in your sample.
+you would roughly expect to find $rN \pm \sqrt{rN}$ relevant peaks in your
+bootstrap sample.
 More concretely, for 1,000 bootstrap samples, you'll find only $\sim 10\pm 3$
 peaks reflecting a 1\% false positive rate.
 The random fluctuations in that count translate directly to an inability to
 accurately estimate the false positive rate at that level.
-A good rule-of-thumb is that to accurately characterize a FPR $r$ requires
-something like $50 / r$ individual periodograms to be computed---this grows
+A good rule-of-thumb is that to accurately characterize a false positive rate
+$r$ requires
+something like $\sim 10 / r$ individual periodograms to be computed---this grows
 computationally intractable quite quickly.
 The bootstrap is also not universally applicable: for example, it does not
 correctly account for cases where noise in observations is correlated;
@@ -2170,7 +2060,7 @@ for more discussion of the bootstrap approach and its caveats, see
 \fig{FAP-bootstrap} compares these methods of estimating the false alarm
 probability, for both an unstructured survey window, and a structured window
 which produces the kinds of aliasing we have discussed above.
-The naive approximation in this case under-estimates the FAP at nearly all
+The na{\"i}ve approximation in this case under-estimates the FAP at nearly all
 levels---so, for example, it might lead you to think a peak has a FAP of 10\%
 when in fact it is closer to 30\%.
 The Baluev method, by design, over-estimates the FAP, and is quite close to
@@ -2220,8 +2110,129 @@ In fact, this type of simulation is a vital component of most---I might even
 venture to say all---current and future time-domain surveys that seek to
 detect, characterize, and catalog periodic objects,
 regardless of the particular approach used to identify periodicity
-\citep[see, e.g.][]{opsim1, opsim2, Ivezic08LSST, Sesar2010,
+\citep[see, e.g.][etc.]{opsim1, opsim2, Ivezic08LSST, Sesar2010,
   Oluseyi12, McQuillan2012, Drake2014}
+
+
+
+\subsection{Periodogram Normalization and Interpretation}
+\sectlabel{normalizations}
+
+Often it is useful to be able to interpret the periodogram values themselves.
+Recall that there are two equally valid perspectives of what the periodogram
+is measuring---the Fourier view and the least-squares view---and each of these
+lends itself to a different approach to normalizion and interpretation of the
+periodogram.
+
+\subsubsection{PSD normalization}
+When considering the periodogram from the Fourier perspective,
+it is useful to normalize the periodogram such that in the special case
+of equal spaced data, it recovers the standard Fourier power spectrum.
+This is the normalization used in \eq{lomb-scargle-periodogram} and the
+equivalent least-squares expression seen in \eq{lomb-scargle-chi2}:
+\begin{equation}
+  P(f) = \frac{1}{2}\big[\hat{\chi}^2_0 - \hat{\chi}^2(f)\big]
+  \eqlabel{lomb-scargle-chi2-2}
+\end{equation}
+For equally-spaced data, this periodogram is identical to the standard
+definition based on the fast Fourier transform:
+\begin{equation}
+  P(f) = \frac{1}{N} \left| FFT(y_n) \right|^2
+\end{equation}
+in particular, this means that the units of the periodogram are $unit(y)^2$,
+and can be interpreted as squared-amplitudes of the Fourier component at
+each frequency.
+Note that this changes if data uncertainties are incorporated into
+the periodogram as in \sect{extensions-observational-noise},
+the periodogram in this normalization becomes unitless: it is essentially
+a measure of periodic content in signal-to-noise ratio
+rather than in signal itself.
+
+\subsubsection{Least-squares normalization}
+In the least-squares view of the periodogram, the periodogram is interpreted
+as an inverse measure of the goodness-of-fit for a model.
+When we express the periodogram as a function of $\chi^2$ model fits as in
+\eq{lomb-scargle-chi2-2}, it becomes clear that the periodogram has a
+mathematical maximum value: if the sinusoidal model {\it perfectly} fits
+the data at some frequency $f_0$, then $\hat{\chi}^2(f_0) = 0$ and the
+periodogram is maximized at a value of $N\hat{\chi}^2_0 / 2$.
+On the other end, it is mathematically impossible for a sinusoidal model to
+do worse than the simple constant, non-varying fit reflected in
+$\hat{\chi}^2_0$, and so the minimum value of \eq{lomb-scargle-chi2-2} is
+exactly zero.
+
+This suggests a different normalization of the periodogram, where the values
+are dimensionless and lie between 0 and 1:
+\begin{equation}
+  P_{norm}(f) = 1 - \frac{\hat{\chi}^2(f)}{\hat{\chi}^2_0}
+  \eqlabel{lomb-scargle-normalized}
+\end{equation}
+This ``normalized periodogram'' is unitless, and
+is directly proportional to the unnormalized
+(or PSD-normalized) periodogram in \eq{lomb-scargle-chi2-2}.
+
+While the normalization does not affect the shape of the periodogram,
+its main practical consequence is that the statistics of the resulting
+periodogram differ slightly, and this needs to be taken into account when
+computing analytic estimates of uncertainties and false alarm probabilities
+(see the next section).
+Other normalizations exist as well, but seem to be rarely used in practice.
+For a concise summary of periodogram normalizations and their statistical
+properties, refer to the introduction of \citet{Baluev2008}.
+
+
+
+
+\subsection{Algorithmic Considerations}
+\sectlabel{algorithmic-considerations}
+Given the size of the frequency grid required to fully characterize the periods
+from a given dataset, it is vital to have an efficient algorithm for evaluating
+the periodogram. We will see that the na{\"i}ve implementation of
+\eq{lomb-scargle-periodogram} scales poorly with the size of the data, but that
+fast alternatives are available.
+
+Suppose you have a set of $N$ observations over a time-span $T$ for an average
+cadence of $\overline{\delta t} = N/T$.
+From \eq{n-eval} we see that the number of frequencies we need to evaluate is
+$N_f \propto T f_{max} = N f_{max} / \overline{\delta t}$.
+Holding constant the average survey cadence $\overline{\delta t}$ and individual
+observation properties (which control $f_{max}$), we find that the number of
+frequencies required is directly proportional to the number of data points.
+The computation of the Lomb-scargle periodogram in \eq{lomb-scargle-periodogram}
+requires sums over $N$ sinusoids at each of the
+$N_f$ frequencies, and thus we see that the
+na{\"i}ve scaling of the algorithm with the size of the dataset is
+$\mathcal{O}(N^2)$, when survey properties are held constant.
+Due to the trigonometric functions involved, this turns out to be a rather
+``expensive'' $\mathcal{O}(N^2)$, which makes the direct
+implementation impractical for even modestly-sized datasets.
+
+Fortunately, several faster implementations have been proposed to compute the
+periodogram to arbitrary precision in $\mathcal{O}(N\log N)$ time.
+The first of these is discussed in \citet{Press89}, which uses an inverse
+interpolation operation along with a Fast Fourier Transform to compute the
+trigonometric components of \eq{lomb-scargle-periodogram} very efficiently over
+a large number of frequencies.
+\citet{Zechmeister09} showed how this approach can be easily extended to
+the floating mean periodogram discussed in \sect{floating-mean}.
+
+A qualitatively similar approach to the \citet{Press89} algorithm
+is presented by \citet{Leroy2012}:
+It makes use of the Non-equispaced Fast Fourier Transform
+\citep[NFFT, see][]{Keiner2009} to compute the Lomb-Scargle periodogram about
+a factor of 10 faster than the \citet{Press89} approach.
+For the multi-term models discussed in \sect{multiterm}, \citet{Palmer09}
+presents an adaptation of the \citet{Press89} method that can compute the
+multi-term result in $\mathcal{O}(NK\log N)$, for $N$ data points and
+$K$ Fourier components.
+
+All periodograms in this paper were computed using the
+Astropy\footnote{\url{http://docs.astropy.org/en/stable/stats/lombscargle.html}}
+implementations of the \citet{Press89}, \citet{Zechmeister09}, and
+\citet{Palmer09} algorithms, which were adapted from Python code originally
+published by \citet{ICVG2014} and \citet{VanderPlas2015}.
+All code behind this paper is available in the form of Jupyter notebooks in the
+paper's GitHub repository\footnote{\url{http://github.com/jakevdp/PracticalLombScargle/}}.
 
 
 \section{Conclusion and Summary}
