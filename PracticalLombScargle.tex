@@ -1910,6 +1910,8 @@ be avoided when reporting uncertainties in the context of a periodogram
 analysis.
 
 \subsubsection{False Alarm Probability}
+\sectlabel{false-alarm-probability}
+
 A much more relevant quantity for expressing uncertainty of periodogram results
 is the height of the peak, and in particular the height compared to the
 background ``noise'' displayed in the periodogram.
@@ -2242,74 +2244,100 @@ post-script for further thought.
 
 \subsection{Summary of Recommendations}
 
-\todo{Summarize key recommendations}
+\todo{Flesh these out}
 
 \begin{itemize}
-\item always use the floating-mean model---it has many benefits with virtually zero cost
-\item always explore the window power first, so that you know what alias structures to expect
-\item the peak of the periodogram rarely tells the entire story. Always check
-  for aliases that are expected from window structure ($f = f_0 \pm n\delta f$)
-  and from non-sinusoidal signals ($f = f_0 / m$).
+\item choose your frequency range \& grid spacing carefully, so as to not
+  miss relevant peaks.
+\item always compute the window periodogram first, so that you know what alias
+  structures to expect in the periodogram for your data.
+\item always use the floating-mean model---it has many benefits with
+  virtually zero down-sides.
+\item the highest peak of the periodogram rarely tells the entire story.
+  Always check for aliases that are expected from window structure
+  ($f = f_{max} \pm n\delta f$) and from non-sinusoidal signals
+  ($f = f_{max} / m$).
 \item avoid Bayesian methods unless you are very comfortable with the
-  assumptions they make about your signal
+  assumptions they make about the form of your signal.
 \item avoid peak widths as a proxy for uncertainty unless you are quite
   certain that your analysis has found the correct peak.
 \item avoid false alarm probabilities as a proxy for uncertainty
   unless you make very clear {\it exactly} what kind of error they measure.
   Estimate the FAP via bootstrap if computationally feasible, and otherwise
   keep in mind the failures of available estimates.
+\item in the context of a time-domain survey, always use simulated observations
+  to evaluate your rates of false positives, false negatives, and failures to
+  identify the correct frequency.
+\item in cases of strong aliasing, consider using Lomb-Scargle as a first pass,
+  and then select among candidate frequencies with a more detailed model of
+  the signals you expect.
 \end{itemize}
 
 \subsection{Postscript: Why Lomb-Scargle?}
-After considering all of these practical aspects, I think it is worth
-revisiting the question of {\it why} astronomers lean toward the
+After considering all of these practical aspects of the periodogram,
+I think it is worth stepping back to
+revisit the question of {\it why} astronomers lean toward the
 Lomb-Scargle approach rather than the (in many ways simpler) Schuster
 periodogram.
-In particular, after three decades of use, there seems to be an unrealistic
-mythology about the efficacy of the Lomb-Scargle approach among astronomers.
+In particular, three decades after the entry of ``Lomb-Scargle'' into the
+astronomy community's vernacular, there seems to be a well-developed
+mythology surrounding the efficacy and efficiency of the Lomb-Scargle approach.
 It's common to see statements or implications like the following:
 \begin{itemize}
   \item {\it Myth: The Lomb-Scargle periodogram can be computed more efficiently
     than the Schuster periodogram.} Reality: computationally, the two
     are quite similar, and in fact the fastest Lomb-Scargle algorithm currently
     available is based on the Schuster periodogram computed via the
-    the NFFT algorithm (see \sect{algorithmic-considerations})
-  \item {\it Myth: The Lomb-Scargle periodogram is faster than the least squares
-    periodogram because it avoids explicitly solving for model coefficients.}
+    the NFFT algorithm (see \sect{algorithmic-considerations}).
+  \item {\it Myth: The Lomb-Scargle periodogram is faster than a direct
+    least squares periodogram because it avoids explicitly solving for
+    model coefficients.}
     Reality: model coefficients can be determined with not much extra
     computation \citep[see discussion in][]{ICVG2014}.
   \item {\it Myth: The Lomb-Scargle periodogram allows analytic computation of
     statistics for periodogram peaks.} Reality: while this is true at
     individual frequencies, it is not true for the more relevant issue of
     peak-value statistics, which must be either approximated or computed by
-    bootstrap resampling.
+    bootstrap resampling (see \sect{false-alarm-probability})
   \item {\it Myth: The Lomb-Scargle periodogram corrects for aliasing due to
     sampling and leads to independent noise at each frequency.}
     Reality: for structured window functions, the Lomb-Scargle
     periodogram has the same partial aliasing issues as the Schuster
-    periodogram (see \sect{failure-modes}).
+    periodogram, including spurious peaks due to partial aliasing, and
+    highly correlated periodogram errors (see \sect{failure-modes}).
   \item {\it Myth: Bayesian analysis shows that Lomb-Scargle is the optimal
-    statistic for detecting periodic signals in data.} Reality: it rather
+    statistic for detecting periodic signals in data.} Reality: it
     shows that Lomb-Scargle is the optimal statistic for
     {\it fitting a sinusoid to data}, which is not the same as saying it
-    is optimal for finding a generic, non-sinusoidal signal.
+    is optimal for finding a generic, non-sinusoidal signal
+    (see \sect{bayesian-periodograms}).
 \end{itemize}
 With these myths debunked, what advantage remains for Lomb-Scargle?
-What advantages would we lose by instead using a Schuster periodogram,
+What would we lose if we instead used a Schuster periodogram,
 estimating uncertainty, significance, and false alarm probability by
 resampling and simulation, as we must for Lomb-Scargle itself?
+
 I think we only lose the advantage of being able to generalize to more
 complicated models in the Bayesian sense, in which case you're not really
 using Lomb-Scargle at all, but rather a generative Bayesian model for your
-data.
-The point of correspondance for a sinusoidal model is perhaps useful trivia,
-but not a reason to use that model if your data is not known to be sinusoidal.
+data based on some strong prior information about the form of your signal.
+The equivalence of Lomb-Scargle to a Bayesian sinusoidal model is perhaps
+interesting trivia, but not itself a reason to use that model if your data
+is not known {\it a priori} to be sinusoidal.
 
-Conversely, if you use a Schuster approach rather than a Lomb-Scargle approach,
+Conversely, if you replace your Lomb-Scargle approach with a Schuster approach,
 what you gain is the ability to reason quantitatively about the effects of the
 survey window function on the resulting periodogram (see \sect{CLEAN}).
-While the deconvolution problem is well-known to be ill-posed, there may be a
-way forward for cleaned periodograms based on regularized deconvolutions.
+While the deconvolution problem is ill-posed, there is no reason to assume
+this is a fatal defect: ill-posed linear models are solved routinely in
+other areas of computational research, particularly by using priors or
+various forms of regularization.
+
+One clear advantage of both Lomb-Scargle and Schuster periodograms is that
+they are quite fast to compute compared to more sophisticated approaches to
+periodic analysis based on more constrained generative models or Bayesian
+non-parametric models, and in the context of large time-domain surveys can
+provide rough periodicity detections and catalog parameters in near real-time.
 
 In any case, I would contend that there is ample room for practitioners to
 question the prevailing folk wisdom of the unspoken advantage of Lomb-Scargle
