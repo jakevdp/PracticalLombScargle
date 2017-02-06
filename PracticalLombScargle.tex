@@ -163,11 +163,12 @@ the results in \fig{LINEAR-power}:
     an analysis is sensitive to?
   \item How should we choose the spacing of the frequency grid for our
     periodogram?
-  \item What assumptions is the Lomb-Scargle periodogram making about the
+  \item What assumptions does the Lomb-Scargle approach make regarding the
     shape of the unknown signal?
-  \item How should we understand the uncertainty of the peak frequency?
+  \item How should we understand and report the uncertainty of the
+    determined frequency?
 \end{enumerate}
-Quantitative answers to these sorts of questions are discussed in various
+Quantitative treatments of these sorts of questions are presented in various
 textbooks and review papers, but I have not come across any single concise
 reference that gives a good intuition for how to think about such questions.
 This paper seeks to fill that gap, and provide a practical,
@@ -2239,46 +2240,77 @@ This paper has been a conceptual tour of the Lomb-Scargle periodogram, from
 its roots in Fourier analysis, to its equivalence with special cases of
 periodic analysis based on least squares model fitting and Bayesian
 analysis. I will finish here with a brief summary of the practical
-recommendations contained in these pages, along with a somewhat iconoclastic
-post-script for further thought.
+recommendations contained in these pages, along with a somewhat opinionated
+and iconoclastic post-script for further thought.
 
 \subsection{Summary of Recommendations}
+\sectlabel{summary}
+The previous pages contain a large amount of background and advice for working
+with the Lomb-Scargle periodogram.
+Here I will quickly summarize the steps you should take when applying this
+algorithm to a dataset:
 
-\todo{Flesh these out}
+\begin{enumerate}
+  \item Choose an appropriate frequency grid: the minimum can be set to zero,
+    the maximum set based on the precision of the time measurements
+    (\sect{}), and the grid spacing set based on the temporal baseline of
+    the data (\sect{}) so as to not sample too coarsely around peaks.
+    If this grid size is computationally intractable, reduce the maximum
+    frequency based on what kinds of signals you are looking for (\sect{}).
+  \item Compute the window transform using the Lomb-Scargle periodogram,
+    by substituting $g_n=1$ for each $t_n$ and making sure not to pre-center
+    the data or use a floating-mean model (\sect{}). Examine this window
+    function for dominant features, such as daily or annual aliases (cf.
+    \fig{}) or Nyquist-like limits (cf. \fig{}).
+  \item Compute the periodogram for your data. You should always use the
+    floating-mean model (\sect{}), as it produces more robust periodograms
+    and has few if any disadvantages.
+  \item Plot the periodogram, and identify any patterns that may be caused
+    by features you observed in the window function power. Plot reference
+    lines showing several False Alarm Probability levels to understand whether
+    your periodogram peaks are significant enough to be labeled detections:
+    use the Baluev method (\sect{})
+    or the bootstrap method (\sect{}) 
+    if it is computationally feasible.
+    Keep in mind exactly what the False Alarm Probability measures, and
+    avoid the temptation to misinterpret it (\sect{}).
+  \item If the window function shows strong aliasing, locate the expected
+    multiple maxima and plot the phased light curve at each
+    (cf. \fig{}).If there is indication
+    that the sinusoidal model under-fits the data (cf. \fig{}) then consider
+    re-fitting with a multi-term Fourier model (\sect{}).
+  \item If you have prior knowledge of the shape of light curves you are
+    trying to detect, consider using more complex models to choose between
+    multiple peaks in the periodogram (\sect{}). This type of refinement can
+    be quite useful in building automated pipelines for period fitting,
+    especially in cases where the window aliasing is strong.
+  \item If you are building an automated pipeline based on Lomb-Scargle for
+    use in a survey, consider injecting known signals into the pipeline to
+    measure your detection efficiency as a function of object type, brightness,
+    and other relevant characteristics (\sect{})
+\end{enumerate}
 
-\begin{itemize}
-\item choose your frequency range \& grid spacing carefully, so as to not
-  miss relevant peaks.
-\item always compute the window periodogram first, so that you know what alias
-  structures to expect in the periodogram for your data.
-\item always use the floating-mean model---it has many benefits with
-  virtually zero down-sides.
-\item the highest peak of the periodogram rarely tells the entire story.
-  Always check for aliases that are expected from window structure
-  ($f = f_{max} \pm n\delta f$) and from non-sinusoidal signals
-  ($f = f_{max} / m$).
-\item avoid Bayesian methods unless you are very comfortable with the
-  assumptions they make about the form of your signal.
-\item avoid peak widths as a proxy for uncertainty unless you are quite
-  certain that your analysis has found the correct peak.
-\item avoid false alarm probabilities as a proxy for uncertainty
-  unless you make very clear {\it exactly} what kind of error they measure.
-  Estimate the FAP via bootstrap if computationally feasible, and otherwise
-  keep in mind the failures of available estimates.
-\item in the context of a time-domain survey, always use simulated observations
-  to evaluate your rates of false positives, false negatives, and failures to
-  identify the correct frequency.
-\item in cases of strong aliasing, consider using Lomb-Scargle as a first pass,
-  and then select among candidate frequencies with a more detailed model of
-  the signals you expect.
-\end{itemize}
+This list is certainly not comprehensive for all uses of the periodogram, but
+it should serve as a gentle reminder of the kinds of issues you should keep
+in mind when using the method in practice.
+
+\subsection{Other Measures of Periodicity}
+\todo{fill this in}
 
 \subsection{Postscript: Why Lomb-Scargle?}
+\sectlabel{postscript}
 After considering all of these practical aspects of the periodogram,
 I think it is worth stepping back to
 revisit the question of {\it why} astronomers lean toward the
 Lomb-Scargle approach rather than the (in many ways simpler) Schuster
 periodogram.
+
+%One clear advantage retained by both the Lomb-Scargle and Schuster periodograms
+%is that they are quite efficient compared with more sophisticated approaches
+%to periodic analysis based on more constrained generative models or Bayesian
+%non-parametric models, and in the context of large time-domain surveys can
+%provide rough periodicity detections and catalog parameters in near real-time.
+
 In particular, three decades after the entry of ``Lomb-Scargle'' into the
 astronomy community's vernacular, there seems to be a well-developed
 mythology surrounding the efficacy and efficiency of the Lomb-Scargle approach.
@@ -2292,8 +2324,8 @@ It's common to see statements or implications like the following:
   \item {\it Myth: The Lomb-Scargle periodogram is faster than a direct
     least squares periodogram because it avoids explicitly solving for
     model coefficients.}
-    Reality: model coefficients can be determined with not much extra
-    computation \citep[see discussion in][]{ICVG2014}.
+    Reality: model coefficients can be determined with little extra
+    computation \citep[see the discussion in][]{ICVG2014}.
   \item {\it Myth: The Lomb-Scargle periodogram allows analytic computation of
     statistics for periodogram peaks.} Reality: while this is true at
     individual frequencies, it is not true for the more relevant issue of
@@ -2302,15 +2334,15 @@ It's common to see statements or implications like the following:
   \item {\it Myth: The Lomb-Scargle periodogram corrects for aliasing due to
     sampling and leads to independent noise at each frequency.}
     Reality: for structured window functions, the Lomb-Scargle
-    periodogram has the same partial aliasing issues as the Schuster
+    periodogram has the same window-driven issues as the Schuster
     periodogram, including spurious peaks due to partial aliasing, and
     highly correlated periodogram errors (see \sect{failure-modes}).
   \item {\it Myth: Bayesian analysis shows that Lomb-Scargle is the optimal
-    statistic for detecting periodic signals in data.} Reality: it
-    shows that Lomb-Scargle is the optimal statistic for
+    statistic for detecting periodic signals in data.} Reality: Bayesian
+    analysis shows that Lomb-Scargle is the optimal statistic for
     {\it fitting a sinusoid to data}, which is not the same as saying it
-    is optimal for finding a generic, non-sinusoidal signal
-    (see \sect{bayesian-periodograms}).
+    is optimal for finding the frequency of a generic, potentially
+    non-sinusoidal signal (see \sect{bayesian-periodograms}).
 \end{itemize}
 With these myths debunked, what advantage remains for Lomb-Scargle?
 What would we lose if we instead used a Schuster periodogram,
@@ -2333,12 +2365,6 @@ this is a fatal defect: ill-posed linear models are solved routinely in
 other areas of computational research, particularly by using priors or
 various forms of regularization.
 
-One clear advantage of both Lomb-Scargle and Schuster periodograms is that
-they are quite fast to compute compared to more sophisticated approaches to
-periodic analysis based on more constrained generative models or Bayesian
-non-parametric models, and in the context of large time-domain surveys can
-provide rough periodicity detections and catalog parameters in near real-time.
-
 In any case, I would contend that there is ample room for practitioners to
 question the prevailing folk wisdom of the unspoken advantage of Lomb-Scargle
 over approaches based directly on the Fourier transform, such as the Schuster
@@ -2357,14 +2383,13 @@ and Matplotlib \citep{matplotlib} packages.
 Code to reproduce these figures is available in Jupyter notebooks at
 \url{http://github.com/jakevdp/PracticalLombScargle/}.
 
-
+\acknowledgments
 {\it Acknowledgments:} I am grateful to Jeff Scargle, Max Mahlke,
 Zeljko Ivezic, and Andy Connolly for helpful feedback on early drafts
 of this paper.
 This work was supported by the University of Washington eScience Institute,
 with funding from the Gordon and Betty Moore Foundation, the Alfred P. Sloan
 Foundation, and the Washington Research Foundation.
-
 
 \bibliographystyle{apj}
 \bibliography{PracticalLombScargle}
