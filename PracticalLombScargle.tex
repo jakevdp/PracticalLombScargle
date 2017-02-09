@@ -164,7 +164,7 @@ the results in \fig{LINEAR-power}:
   \item How should we choose the spacing of the frequency grid for our
     periodogram?
   \item What assumptions does the Lomb-Scargle approach make regarding the
-    shape of the unknown signal?
+    form of the unknown signal?
   \item How should we understand and report the uncertainty of the
     determined frequency?
 \end{enumerate}
@@ -177,6 +177,90 @@ for detection and characterization of periodic signals.
 This paper does not seek a complete or rigorous treatment of the mathematics
 involved, but rather seeks to develop the intuition of {\it how} to think
 about these questions.
+
+\subsection{Why Lomb-Scargle?}
+\sectlabel{why-lomb-scargle}
+
+Before we begin exploring the Lomb-Scargle periodogram in more depth,
+it is worth briefly considering the broader context of methods for
+detecting and characterizing periodicity in time series.
+
+First, it is important to note that there are many different modes of
+time series observation.
+Point observation like that shown in \fig{LINEAR-data} is typical of
+optical astronomy: values (often with uncertainties) are measured at
+discrete point in time, which may be equally or unequally-spaced.
+Other modes of observation---e.g., time-tag-events, binned event data,
+time-to-spill events, etc.---are common in high-energy astronomy and other
+areas. We will not consider such event-driven data modes here, but note
+that there have been some interesting explorations of unified statistical
+treatments of all of the above modes of observation
+\citep[e.g.][]{Scargle98, Scargle2002}.
+
+Even limiting our focus to point observations, there are a large number of
+complementary techniques for periodic analysis, which generally can be
+categorized into a few broad categories:
+\begin{description}
+  \item[Fourier Methods] are based on the Fourier transform, power spectra,
+    and closely related correlation functions. These methods include the
+    Schuster periodogram \citep{Schuster98}, the Lomb-Scargle periodogram
+    \citep{Lomb76, Scargle82}, the correlation-based method of
+    \citet{Edelson88}, and related approaches
+    \citep[see also][who discusses wavelet transforms in this
+      context]{Foster96}.
+  \item[Phase-folding Methods], as the name implies, depend on folding
+    observations as a function of phase, computing a cost function across
+    the phased data (often within bins constructed across phase space)
+    and optimizing this cost function across candidate frequencies.
+    Some examples are
+    String Length \citep{Dworetsky83},
+    Analysis of Variance \citep{Schwarzenberg-Czerny89},
+    Phase Dispersion Minimization \citep{Stellingwerf78},
+    the Gregory-Laredo method \citep{Gregory92},
+    and the conditional entropy method \citep{Graham2013}.
+    Methods based on correntropy are similar in spirit, but do not always
+    require explicit phase folding \citep{Huijse2011,Huijse2012}.
+  \item[Least Squares Methods] involve fitting a model to the data at each
+    candidate frequency, and selecting the model which maximizes the likelihood.
+    The Lomb-Scargle periodogram also falls in this category
+    (see \sect{schuster-to-lomb-scargle}), as does the Supersmoother approach
+    \citep{Reimann94}. Other studies recommend statistics other than
+    least square residuals; see, e.g., the orthogonal polynomial fits of
+    \citet{Schwarzenberg-Czerny96}.
+  \item[Bayesian Approaches] apply Bayesian probability theory to the problem,
+    often in a similar manner to the phase-folding and/or least-squares
+    approaches.
+    Examples are the generalized Lomb-Scargle models of \citet{Bretthorst88},
+    the phase-binning model of \citet{Gregory92}, Gaussian process models
+    \citep[e.g.][]{Wang2012}, and models based on stochastic processes
+    \citep[e.g.][]{Kelly14}.
+\end{description}
+Various reviews have been undertaken to compare the efficiency and effectiveness
+of the various available methods; for example, \citet{Schwarzenberg-Czerny99}
+focuses on the statistical properties of methods and recommends methods
+based on smooth model fits over methods based on phase binning,
+while \citet{Graham2013b} instead takes an empirical approach and finds that
+for several realistic data sets, no algorithm provides universally optimal
+detection efficiencies.
+
+In light of this breadth of available methods, why focus here on the
+Lomb-Scargle periodogram?
+One reason is cultural: the Lomb-Scargle periodogram is perhaps the best-known
+technique to compute periodicity of unequally-spaced data in astronomy and
+other fields, and so is often the first technique a researcher will reach for
+when searching for periodic content in a signal.
+But there is a deeper reason as well;
+it turns out that Lomb-Scargle occupies a unique niche:
+it is motivated by Fourier analysis,
+but it can also be viewed as a least squares method
+(see \sect{schuster-to-lomb-scargle}), can be derived from the principles
+of Bayesian probability theory (see \sect{bayesian-periodograms}), and has
+been shown to be closely related to bin-based phase-folding techniques under
+some circumstances \citep[see][]{Swingler89}.
+Thus, as a unique point of correspondance between many classes of methods,
+an intuitive understanding of the Lomb-Scargle method and the practical
+issues involved in its application end up being highly relevant to
+understanding and using the other methods listed above.
 
 \subsection{Outline}
 The remainder of this paper is organized as follows:
@@ -440,16 +524,7 @@ the observation.
 For example, a continuous signal measured over a finite duration is described
 by a rectangular window function spanning the duration of the observation,
 and a signal measured at regular intervals is described by a Dirac comb window
-function marking those measurement times.\footnote{
-  Throughout this paper we are concerned only with the mode of measurement
-  common in optical astronomy; {i.e.} point observation. Other modes of
-  observation, such as time-tag-events, binned event data, or
-  time-to-spill events, are common in high-energy astronomy and other areas.
-  We will not consider such event-driven data modes here, but it should be
-  noted that there have been some interesting explorations of unified
-  statistical treatments of all of the above modes of observation
-  \citep[e.g.][]{Scargle98, Scargle2002}.
-}
+function marking those measurement times.
 
 The Fourier transform we measure in these cases, then, is not the
 transform of the continuous underlying function, but rather a 
@@ -769,6 +844,7 @@ In the scientific literature it is quite common to come across various proposals
 for a Nyquist-like limit applied in the case of irregular sampling.
 A few typical approaches include using the mean of the sampling intervals
 \citep[e.g.][]{Scargle82, Horne86, NumRec},
+\todo{median? Schwarzenberg-Czerny 1996, ApJ 460}
 the harmonic mean of the sampling intervals \citep[e.g.][]{Debosscher07},
 or the minimum sample spacing \citep[e.g.][]{Percy86, Roberts87, Press89, Hilditch01}.
 All of these ``pseudo-Nyquist'' limits are tempting criteria in that
@@ -1588,8 +1664,17 @@ This pushes the total number of required periodogram evaluations to
   \eqlabel{n-eval}
   N_{eval} = n_o T f_{max}
 \end{equation}
+So what is a good choice for $n_o$?
+Values ranging from $n_o=5$ \citep{Schwarzenberg-Czerny96, VanderPlas2015}
+to $n_o=10$ \citep{Desbosscher07, Richards12}
+seem to be common in the literature;
+for periodograms computed in this paper, we use $n_o=5$.
+% \citep{Schwarzenberg-Czerny96} discusses how $n_o$ can be selected
+% more carefully based on factors such as oversampling, number of harmonics
+% in the model, and other considerations.
 
-Depending on the characteristics of the dataset, this number can vary greatly.
+Depending on the characteristics of the dataset, the size of the resulting
+frequency grid can vary greatly.
 For example, the Kepler data shown in \fig{kepler-data} has a pseudo-Nyquist
 frequency of $48.9\ {\rm days}^{-1}$ and
 an observing window of $T = 90\ {\rm days}$.
@@ -1608,21 +1693,22 @@ Computing this large a periodogram in most cases is computationally intractable
 a smaller limiting frequency based on prior information about what kind of
 signals are expected in the data: for example, in \fig{LINEAR-power}, we chose
 a limiting frequency of $f_{max} = (1\ {\rm hour})^{-1}$ based on typical
-oscillation periods of SX Phe-type stars. This leads to a much more manageable
+oscillation periods expected for SX Phe-type stars.
+This leads to a much more manageable
 $N_{eval} \approx 240,000$ periodogram evaluations.
 
-By comparison, data from the upcoming LSST survey \citep{Ivezic08LSST}
+By comparison, data from the LSST survey \citep{Ivezic08LSST}
 will fall somewhere in-between: full frequency coverage of
 the 10-year data up to a limiting frequency defined by the 30-second
-exposure time for each observation would require roughly 25 million
+integration time for each visit would require roughly 25 million
 periodogram evaluations per object, which for fast implementations
 (see the next section) could be accomplished in several seconds on
-a single core.
+a modern CPU.
 
 One final note: although it can be more easily interpretable to
 visualize periodograms as a function of period rather than a function of
 frequency, the peak widths are not constant in period.
-Thus regular period grids tend to over-sample at large periods and under-sample
+Regular period grids tend to over-sample at large periods and under-sample
 at small periods;
 for this reason it is preferable to use a regular grid in frequency.
 
@@ -2239,9 +2325,13 @@ paper's GitHub repository\footnote{\url{http://github.com/jakevdp/PracticalLombS
 This paper has been a conceptual tour of the Lomb-Scargle periodogram, from
 its roots in Fourier analysis, to its equivalence with special cases of
 periodic analysis based on least squares model fitting and Bayesian
-analysis. I will finish here with a brief summary of the practical
-recommendations contained in these pages, along with a somewhat opinionated
-and iconoclastic post-script for further thought.
+analysis.
+From this conceptual understanding, we considered a list of challenges
+and issues to be considered when applying the method in practice.
+We will finish here with a brief summary of these practical
+recommendations, a brief discussion of other methods for detecting
+periodicity, and a somewhat opinionated
+post-script for further thought.
 
 \subsection{Summary of Recommendations}
 \sectlabel{summary}
@@ -2249,6 +2339,8 @@ The previous pages contain a large amount of background and advice for working
 with the Lomb-Scargle periodogram.
 Here I will quickly summarize the steps you should take when applying this
 algorithm to a dataset:
+
+\todo{fill-in references}
 
 \begin{enumerate}
   \item Choose an appropriate frequency grid: the minimum can be set to zero,
@@ -2291,11 +2383,9 @@ algorithm to a dataset:
 \end{enumerate}
 
 This list is certainly not comprehensive for all uses of the periodogram, but
-it should serve as a gentle reminder of the kinds of issues you should keep
-in mind when using the method in practice.
+it should serve as a brief reminder of the kinds of issues you should keep
+in mind when using the method to detect periodic signals.
 
-\subsection{Other Measures of Periodicity}
-\todo{fill this in}
 
 \subsection{Postscript: Why Lomb-Scargle?}
 \sectlabel{postscript}
@@ -2305,16 +2395,14 @@ revisit the question of {\it why} astronomers lean toward the
 Lomb-Scargle approach rather than the (in many ways simpler) Schuster
 periodogram.
 
-%One clear advantage retained by both the Lomb-Scargle and Schuster periodograms
-%is that they are quite efficient compared with more sophisticated approaches
-%to periodic analysis based on more constrained generative models or Bayesian
-%non-parametric models, and in the context of large time-domain surveys can
-%provide rough periodicity detections and catalog parameters in near real-time.
-
-In particular, three decades after the entry of ``Lomb-Scargle'' into the
-astronomy community's vernacular, there seems to be a well-developed
-mythology surrounding the efficacy and efficiency of the Lomb-Scargle approach.
-It's common to see statements or implications like the following:
+As discussed in \sect{schuster-to-lomb-scargle}, the periodogram has two
+benefits over the Schuster approach:
+the noise distribution at each individual frequency is the sum
+of two Gaussians, and the result is equivalent to a periodogram derived
+from a least squares analysis.
+But somehow along the way, a mythology seems to have developed surrounding
+the efficiency and efficacy of the Lomb-Scargle approach. In particular,
+it's common to see statements or implications along the lines of the following:
 \begin{itemize}
   \item {\it Myth: The Lomb-Scargle periodogram can be computed more efficiently
     than the Schuster periodogram.} Reality: computationally, the two
@@ -2329,8 +2417,8 @@ It's common to see statements or implications like the following:
   \item {\it Myth: The Lomb-Scargle periodogram allows analytic computation of
     statistics for periodogram peaks.} Reality: while this is true at
     individual frequencies, it is not true for the more relevant issue of
-    peak-value statistics, which must be either approximated or computed by
-    bootstrap resampling (see \sect{false-alarm-probability})
+    peak heights across multiple frequencies, which must be either approximated
+    or computed by bootstrap resampling (see \sect{false-alarm-probability})
   \item {\it Myth: The Lomb-Scargle periodogram corrects for aliasing due to
     sampling and leads to independent noise at each frequency.}
     Reality: for structured window functions, the Lomb-Scargle
@@ -2344,18 +2432,24 @@ It's common to see statements or implications like the following:
     is optimal for finding the frequency of a generic, potentially
     non-sinusoidal signal (see \sect{bayesian-periodograms}).
 \end{itemize}
-With these myths debunked, what advantage remains for Lomb-Scargle?
+With these myths set aside, what is the practical advantage of Lomb-Scargle
+over a Schuster approach?
 What would we lose if we instead used a Schuster periodogram,
 estimating uncertainty, significance, and false alarm probability by
 resampling and simulation, as we must for Lomb-Scargle itself?
 
-I think we only lose the advantage of being able to generalize to more
-complicated models in the Bayesian sense, in which case you're not really
-using Lomb-Scargle at all, but rather a generative Bayesian model for your
+The advantage of analytic statistics for Lomb-Scargle evaporates in light of the
+need to account for multiple frequencies, so the only advantage left is the
+correspondance to least squares and Bayesian models, and in particular the
+ability to generalize to more complicated models where appropriate---but in
+this case you're not really using Lomb-Scargle at all,
+but rather a generative Bayesian model for your
 data based on some strong prior information about the form of your signal.
 The equivalence of Lomb-Scargle to a Bayesian sinusoidal model is perhaps
 interesting trivia, but not itself a reason to use that model if your data
-is not known {\it a priori} to be sinusoidal.
+is not known {\it a priori} to be sinusoidal---it could even be construed as
+an argument {\it against} Lomb-Scargle in the general case where the assumption
+of a sinusoid is not well-founded.
 
 Conversely, if you replace your Lomb-Scargle approach with a Schuster approach,
 what you gain is the ability to reason quantitatively about the effects of the
@@ -2364,13 +2458,10 @@ While the deconvolution problem is ill-posed, there is no reason to assume
 this is a fatal defect: ill-posed linear models are solved routinely in
 other areas of computational research, particularly by using priors or
 various forms of regularization.
-
 In any case, I would contend that there is ample room for practitioners to
-question the prevailing folk wisdom of the unspoken advantage of Lomb-Scargle
-over approaches based directly on the Fourier transform, such as the Schuster
+question the prevailing folk wisdom of the advantage of Lomb-Scargle
+over approaches based directly on the Fourier transform and Schuster
 periodogram.
-
-% Edelson-Krolik + FFT -> Lomb-Scargle?
 
 \subsection{Figures and Code}
 
