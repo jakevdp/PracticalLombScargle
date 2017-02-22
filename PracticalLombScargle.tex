@@ -266,7 +266,7 @@ can speak to important considerations for all of these methods.
 
 \subsection{Outline}
 The remainder of this paper is organized as follows:
-{\bf\sect{continuous-fourier-transform}} presents a review of the 
+{\bf\sect{continuous-fourier-transform}} presents a review of the
 continous Fourier transform and some of its useful properties,
 including defining the notion of a power spectrum (i.e. Schuster
 periodogram) for detecting periodic content in a signal.
@@ -276,7 +276,7 @@ power spectrum, and discusses a conceptual understanding of the
 Nyquist limiting frequency.
 {\bf\sect{non-uniform-sampling}} considers non-uniformly sampled signals as
 a special case of an observational window, and shows that the Nyquist-like
-limit for this case is quite different than what many practitioners in 
+limit for this case is quite different than what many practitioners in
 the field often assume.
 {\bf\sect{schuster-to-lomb-scargle}} introduces the Lomb-Scargle periodogram,
 a modified version of the classical periodogram for unevenly-sampled data,
@@ -754,7 +754,7 @@ transform.
   \includegraphics[width=\textwidth]{fig10_random_window}
   \caption{The effect of non-uniform sampling on the observed Fourier transform.
     These samples have the same average spacing as those in \fig{comb-window-1},
-    but the irregular spacing within the observing window translates to 
+    but the irregular spacing within the observing window translates to
     irregular frequency peaks in its transform,
     causing the observed transform to be ``noisy''.
     Here black and gray lines represent the real and imaginary parts of the
@@ -819,7 +819,7 @@ the harmonic mean of the sampling intervals \citep[e.g.][]{Debosscher07},
 the median of the sampling intervals \citep[e.g.][]{Graham2013b},
 or the minimum sample spacing \citep[e.g.][]{Percy86, Roberts87, Press89, Hilditch01}.
 All of these ``pseudo-Nyquist'' limits are tempting criteria in that
-they recover the classical Nyquist 
+they recover the classical Nyquist
 frequency in the limit of evenly-spaced data.
 Unfortunately, none of these approaches is correct: in general,
 unevenly-sampled data can probe frequencies far larger than any of these
@@ -906,7 +906,7 @@ of exact aliases of the signal at $|f| < f_{Ny}$.
 We should keep in mind one consequence of this Nyquist definition:
 if you have any pair of observation spacings
 whose ratio is irrational, {\it the Nyquist limit does not exist!}.
-To realize this situation in practice, however, 
+To realize this situation in practice, however,
 would require infinitely precise measurements of the
 times $t_i$; finite precision of time measurements means the Nyquist
 frequency can be large, but not infinite.
@@ -1102,7 +1102,7 @@ to quantify, even when applied to ideal data (data with uncorrelated
 Gaussian noise).
 For the sake of evaluating the significance of periodogram peaks
 (see \sect{uncertainties}), it would be preferable if the nonuniform
-periodogram had a noise distribution that could be 
+periodogram had a noise distribution that could be
 straightforwardly computed from the uncertainties of the data.
 
 \citet{Scargle82} showed that while the classical periodogram of
@@ -1448,6 +1448,7 @@ constrained sinusoidal model.
 Another approach is to use empirically-derived templates as a functional fit
 at each frequency; this has been employed effectively in \citet{Sesar2010,
 Sesar2013} and related work.
+
 Finally, there has been some exploration of extensions to the Lomb-Scargle
 periodogram for use with multi-band observations, using various forms of
 regularization to control model complexity \citep{VanderPlas2015, Long2016}.
@@ -1455,7 +1456,10 @@ With many of these least-squares and/or Bayesian extensions,
 computational complexity quickly becomes an issue, because fast
 $\mathcal{O}(N\log N)$ approaches which can be used for sinusoidal fits
 (see \sect{algorithmic-considerations}) are not available for more general
-functional forms.
+functional forms, though there is some promising work in this area: see,
+for example, the {\it Fast Template Periodogram} (Hoffman et al. 2017,
+{\it in prep}) which can quickly construct periodograms from Fourier
+approximations to templates.
 
 \subsection{A Note About ``Bayesian'' Periodograms}
 \sectlabel{bayesian-periodograms}
@@ -1892,7 +1896,7 @@ this would still not address the far more problematic first issue.
 My feeling is that there is room for a more principled approach to the
 unconstrained deconvolution problem for periodograms derived from non-uniform
 fast Fourier transforms, perhaps through some sort of L1/lasso regularization
-that imposes assumptions of sparsity on the true periodogram, but to date this 
+that imposes assumptions of sparsity on the true periodogram, but to date this
 does not appear to have been explored anywhere in the literature.
 
 
@@ -2033,7 +2037,7 @@ to compute: it's 2 sides out of six, or $p(r>4) = 1/3$.
 If, on the other hand, you roll 10 dice and choose the largest number among
 them, the probability that it will be greater than 4 is {\it far} larger
 than $1/3$; it is $p({\rm max}_{10}(r) > 4) = 1 - (1 - 1/3)^{10} \approx 0.98$.
-The case for the periodogram is analogous: the probability of seeing a 
+The case for the periodogram is analogous: the probability of seeing a
 spurious peak at any single location (\eq{LS-prob-z}) is relatively small,
 but the probability of seeing a single spurious peak among a large number
 of frequencies is much higher.
