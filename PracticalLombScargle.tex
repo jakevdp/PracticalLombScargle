@@ -87,13 +87,14 @@
 
 
 \begin{abstract}
-This paper presents a conceptual introduction to the Lomb-Scargle periodogram,
-and discusses important practical aspects of its use to detect and characterize
-periodic signals.
+The Lomb-Scargle periodogram is a well-known algorithm for detecting and
+characterizing periodic signals in unevenly-sampled data.
+This paper presents a conceptual introduction to the Lomb-Scargle periodogram
+and important practical considerations for its use.
 Rather than a rigorous mathematical treatment, the goal of this paper is to
 build intuition about what assumptions are implicit in the use of the
-periodogram, and to help develop the intuition required to interpret the
-periodogram correctly and use it effectively.
+periodogram, so as to motivate important practical considerations required
+in its application and interpretation.
 \end{abstract}
 
 \keywords{
@@ -265,30 +266,30 @@ between many classes of methods, and so provides a focus for discussion that
 can speak to important considerations for all of these methods.
 
 \subsection{Outline}
-The remainder of this paper is organized as follows:
+The remainder of this paper is organized as follows:\\
 {\bf\sect{continuous-fourier-transform}} presents a review of the
 continous Fourier transform and some of its useful properties,
 including defining the notion of a power spectrum (i.e. Schuster
-periodogram) for detecting periodic content in a signal.
+periodogram) for detecting periodic content in a signal.\\
 {\bf\sect{window-functions}} builds on these properties to explore how
 different observation patterns (i.e. window functions) affect the observed
 power spectrum, and discusses a conceptual understanding of the
-Nyquist limiting frequency.
+Nyquist limiting frequency.\\
 {\bf\sect{non-uniform-sampling}} considers non-uniformly sampled signals as
 a special case of an observational window, and shows that the Nyquist-like
 limit for this case is quite different than what many practitioners in
-the field often assume.
+the field often assume.\\
 {\bf\sect{schuster-to-lomb-scargle}} introduces the Lomb-Scargle periodogram,
 a modified version of the classical periodogram for unevenly-sampled data,
-as well as the motivation behind these modifications.
+as well as the motivation behind these modifications.\\
 {\bf\sect{lomb-scargle-extensions}} discusses a complementary view of the
 Lomb-Scargle periodogram as the result of least-squares model fitting,
-as well as some extensions enabled by that viewpoint.
-{\bf\sect{practical-considerations}} utilizes the concepts introduced
+as well as some extensions enabled by that viewpoint.\\
+{\bf\sect{practical-considerations}} builds on the concepts introduced
 in earlier sections to discuss important practical considerations for
 the use of the Lomb-Scargle periodogram, including the choice of
 frequency grid, uncertainties and false alarm probabilities, and modes of
-failure that should be accounted for when working with real-world data.
+failure that should be accounted for when working with real-world data.\\
 {\bf\sect{conclusion}} concludes and summarizes the key recommendations
 for practical use of the Lomb-Scargle periodogram.
 
@@ -1458,8 +1459,8 @@ $\mathcal{O}(N\log N)$ approaches which can be used for sinusoidal fits
 (see \sect{algorithmic-considerations}) are not available for more general
 functional forms, though there is some promising work in this area: see,
 for example, the {\it Fast Template Periodogram} (Hoffman et al. 2017,
-{\it in prep}) which can quickly construct periodograms from Fourier
-approximations to templates.
+{\it in prep}\footnote{\url{http://ascl.net/code/v/1559}})
+which can quickly construct periodograms from Fourier approximations to templates.
 
 \subsection{A Note About ``Bayesian'' Periodograms}
 \sectlabel{bayesian-periodograms}
@@ -2376,7 +2377,7 @@ in mind when using the method to detect periodic signals.
 \sectlabel{postscript}
 After considering all of these practical aspects of the periodogram,
 I think it is worth stepping back to
-revisit the question of {\it why} astronomers lean toward the
+revisit the question of {\it why} astronomers tend to gravitate toward the
 Lomb-Scargle approach rather than the (in many ways simpler) Schuster
 periodogram.
 
@@ -2401,13 +2402,14 @@ it's common to see statements or implications along the lines of the following:
     computation \citep[see the discussion in][]{ICVG2014}.
   \item {\it Myth: The Lomb-Scargle periodogram allows analytic computation of
     statistics for periodogram peaks.} Reality: while this is true at
-    individual frequencies, it is not true for the more relevant issue of
+    individual frequencies, it is not true for the more relevant question of
     maximum peak heights across multiple frequencies,
     which must be either approximated
-    or computed by bootstrap resampling (see \sect{false-alarm-probability})
+    or computed by bootstrap resampling (see \sect{uncertainties})
   \item {\it Myth: The Lomb-Scargle periodogram corrects for aliasing due to
     sampling and leads to independent noise at each frequency.}
-    Reality: for structured window functions, the Lomb-Scargle
+    Reality: for structured window functions common to most astronomical
+    applications, the Lomb-Scargle
     periodogram has the same window-driven issues as the Schuster
     periodogram, including spurious peaks due to partial aliasing, and
     highly correlated periodogram errors (see \sect{failure-modes}).
@@ -2455,20 +2457,22 @@ All computations and figures in this paper were produced using Python,
 and in particular used the
 Numpy \citep{numpy, numpybook},
 Pandas \citep{pandas},
-Astropy \citep{Astropy2013},
+AstroPy \citep{Astropy2013},
 and Matplotlib \citep{matplotlib} packages.
 Periodograms where computed using the
-Astropy\footnote{\url{http://docs.astropy.org/en/stable/stats/lombscargle.html}}
-implementations of the \citet{Press89}, \citet{Zechmeister09}, and
+AstroPy implementations\footnote{The AstroPy Lomb-Scargle documentation is at
+\url{http://docs.astropy.org/en/stable/stats/lombscargle.html}}
+of the \citet{Press89}, \citet{Zechmeister09}, and
 \citet{Palmer09} algorithms, which were adapted from Python code originally
 published by \citet{ICVG2014} and \citet{VanderPlas2015}.
 All code behind this paper, including code to reproduce all figures,
 is available in the form of Jupyter notebooks in the paper's GitHub
-repository\footnote{\url{http://github.com/jakevdp/PracticalLombScargle/}}.
+repository\footnote{Source code \& notebooks available at
+\url{http://github.com/jakevdp/PracticalLombScargle/}}.
 
 \acknowledgments
 {\it Acknowledgments:} I am grateful to Jeff Scargle, Max Mahlke,
-Zeljko Ivezic, and Andy Connolly for helpful feedback on early drafts
+and Zeljko Ivezic for helpful feedback on early drafts
 of this paper.
 This work was supported by the University of Washington eScience Institute,
 with funding from the Gordon and Betty Moore Foundation, the Alfred P. Sloan
