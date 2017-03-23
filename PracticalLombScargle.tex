@@ -2036,7 +2036,8 @@ We are generally not interested in the distribution of one particular
 randomly-chosen frequency,
 but rather the distribution of {\it the highest peak} of the
 periodogram, which is a quite different situation.
-If this is confusing, consider rolling a standard 6-sided die.
+
+By analogy, consider rolling a standard 6-sided die.
 The probability, in a single roll, of rolling a number, say $r > 4$ is easy
 to compute: it's 2 sides out of six, or $p(r>4) = 1/3$.
 If, on the other hand, you roll 10 dice and choose the largest number among
@@ -2074,7 +2075,8 @@ but all such approaches are necessarily only approximations.
 A more sophisticated treatment of the problem is that of \citet{Baluev2008},
 who derived an analytic result based on theory of extreme values
 for stochastic processes.
-For the PSD-normalized periodogram, \citet{Baluev2008} showed that the following
+For the standard periodogram in \eq{lomb-scargle-periodogram},
+\citet{Baluev2008} showed that the following
 formula for the FAP provides a close upper-limit even in the case of
 highly structured window functions:
 \begin{equation}
@@ -2093,8 +2095,8 @@ where the window function has very little structure,
 but which holds quite well even in the case of more realistic survey windows.
 
 \subsubsubsection{Bootstrap Method}
-In the absence of a true analytic solution to the False Alarm Probability, we
-can turn to computational methods such as the bootstrap.
+In the absence of a true analytic solution to the false alarm probability,
+we can turn to computational methods such as the bootstrap.
 The bootstrap method is a technique in which the statistic in question is
 computed repeatedly on many random resamplings of the data in order to
 approximate the distribution of that statistic
@@ -2189,8 +2191,8 @@ Perhaps the most fruitful path toward understanding of such effects for a
 particular set of observations---with particular noise characteristics and a
 particular observing window---is via simulated data injected into the detection
 pipeline.
-In fact, this type of simulation is a vital component of most---we might even
-venture all---current and future time-domain surveys that seek to
+In fact, this type of simulation is a vital component of most (if not all)
+current and future time-domain surveys that seek to
 detect, characterize, and catalog periodic objects,
 regardless of the particular approach used to identify periodicity
 \citep[see, e.g.][etc.]{opsim1, opsim2, Ivezic08LSST, Sesar2010,
@@ -2225,8 +2227,8 @@ definition based on the fast Fourier transform:
 in particular, this means that the units of the periodogram are $unit(y)^2$,
 and can be interpreted as squared-amplitudes of the Fourier component at
 each frequency.
-Note that this changes if data uncertainties are incorporated into
-the periodogram as in \sect{extensions-observational-noise},
+Note, however, that the units change if data uncertainties are incorporated
+into the periodogram as in \sect{extensions-observational-noise};
 the periodogram in this normalization becomes unitless: it is essentially
 a measure of periodic content in signal-to-noise ratio
 rather than in signal itself.
@@ -2239,10 +2241,10 @@ When we express the periodogram as a function of $\chi^2$ model fits as in
 mathematical maximum value: if the sinusoidal model {\it perfectly} fits
 the data at some frequency $f_0$, then $\hat{\chi}^2(f_0) = 0$ and the
 periodogram is maximized at a value of $\hat{\chi}^2_0 / 2$.
-On the other end, it is mathematically impossible for a sinusoidal model to
-do worse than the simple constant, non-varying fit reflected in
-$\hat{\chi}^2_0$, and so the minimum value of \eq{lomb-scargle-chi2-2} is
-exactly zero.
+On the other end, it is mathematically impossible for a best-fit sinusoidal
+model at any frequency to do worse than the simple constant, non-varying
+fit reflected in $\hat{\chi}^2_0$, and so the minimum value of
+\eq{lomb-scargle-chi2-2} is exactly zero.
 
 This suggests a different normalization of the periodogram, where the values
 are dimensionless and lie between 0 and 1:
@@ -2318,8 +2320,7 @@ analysis.
 From this conceptual understanding, we considered a list of challenges
 and issues to be considered when applying the method in practice.
 We will finish here with a brief summary of these practical
-recommendations, a brief discussion of other methods for detecting
-periodicity, and a somewhat opinionated
+recommendations, along with a somewhat opinionated
 post-script for further thought.
 
 \subsection{Summary of Recommendations}
@@ -2382,22 +2383,23 @@ in mind when using the method to detect periodic signals.
 After considering all of these practical aspects of the periodogram,
 I think it is worth stepping back to
 revisit the question of {\it why} astronomers tend to gravitate toward the
-Lomb-Scargle approach rather than the (in many ways simpler) Schuster
+Lomb-Scargle approach rather than the (in many ways simpler) classical
 periodogram.
 
-As discussed in \sect{schuster-to-lomb-scargle}, the periodogram has two
-benefits over the Schuster approach:
-the noise distribution at each individual frequency is the sum
-of two Gaussians, and the result is equivalent to a periodogram derived
+As discussed in \sect{schuster-to-lomb-scargle}, the Lomb-Scargle approach has
+two distinct benefits over the classical periodogram:
+the noise distribution at each individual frequency is chi-square distributed
+under the null hypothesis,
+and the result is equivalent to a periodogram derived
 from a least squares analysis.
 But somehow along the way, a mythology seems to have developed surrounding
 the efficiency and efficacy of the Lomb-Scargle approach. In particular,
 it's common to see statements or implications along the lines of the following:
 \begin{itemize}
   \item {\it Myth: The Lomb-Scargle periodogram can be computed more efficiently
-    than the Schuster periodogram.} Reality: computationally, the two
+    than the classical periodogram.} Reality: computationally, the two
     are quite similar, and in fact the fastest Lomb-Scargle algorithm currently
-    available is based on the Schuster periodogram computed via the
+    available is based on the classical periodogram computed via the
     the NFFT algorithm (see \sect{algorithmic-considerations}).
   \item {\it Myth: The Lomb-Scargle periodogram is faster than a direct
     least squares periodogram because it avoids explicitly solving for
@@ -2414,7 +2416,7 @@ it's common to see statements or implications along the lines of the following:
     sampling and leads to independent noise at each frequency.}
     Reality: for structured window functions common to most astronomical
     applications, the Lomb-Scargle
-    periodogram has the same window-driven issues as the Schuster
+    periodogram has the same window-driven issues as the classical
     periodogram, including spurious peaks due to partial aliasing, and
     highly correlated periodogram errors (see \sect{failure-modes}).
   \item {\it Myth: Bayesian analysis shows that Lomb-Scargle is the optimal
@@ -2425,25 +2427,25 @@ it's common to see statements or implications along the lines of the following:
     non-sinusoidal signal (see \sect{bayesian-periodograms}).
 \end{itemize}
 With these myths set aside, what is the practical advantage of Lomb-Scargle
-over a Schuster approach?
-What would we lose if we instead used a Schuster periodogram,
+over a classical periodogram?
+What would we lose if we instead used a simple Fourier periodogram,
 estimating uncertainty, significance, and false alarm probability by
 resampling and simulation, as we must for Lomb-Scargle itself?
 
 The advantage of analytic statistics for Lomb-Scargle evaporates in light of the
 need to account for multiple frequencies, so the only advantage left is the
-correspondance to least squares and Bayesian models, and in particular the
+correspondence to least squares and Bayesian models, and in particular the
 ability to generalize to more complicated models where appropriate---but in
 this case you're not really using Lomb-Scargle at all,
 but rather a generative Bayesian model for your
 data based on some strong prior information about the form of your signal.
 The equivalence of Lomb-Scargle to a Bayesian sinusoidal model is perhaps
-interesting trivia, but not itself a reason to use that model if your data
-is not known {\it a priori} to be sinusoidal---it could even be construed as
+an interesting bit of trivia, but not itself a reason to use that model if your
+data is not known {\it a priori} to be sinusoidal---it could even be construed as
 an argument {\it against} Lomb-Scargle in the general case where the assumption
 of a sinusoid is not well-founded.
 
-Conversely, if you replace your Lomb-Scargle approach with a Schuster approach,
+Conversely, if you replace your Lomb-Scargle approach with a classical periodogram,
 what you gain is the ability to reason quantitatively about the effects of the
 survey window function on the resulting periodogram (see \sect{CLEAN}).
 While the deconvolution problem is ill-posed, there is no reason to assume
@@ -2452,7 +2454,7 @@ other areas of computational research, particularly by using priors or
 various forms of regularization.
 In any case, I would contend that there is ample room for practitioners to
 question the prevailing folk wisdom of the advantage of Lomb-Scargle
-over approaches based directly on the Fourier transform and Schuster
+over approaches based directly on the Fourier transform and classical
 periodogram.
 
 \subsection{Figures and Code}
