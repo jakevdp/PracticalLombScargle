@@ -274,8 +274,8 @@ continous Fourier transform and some of its useful properties,
 including defining the notion of a power spectrum (i.e. classical/Schuster
 periodogram) for detecting periodic content in a signal.\\
 {\bf\sect{window-functions}} builds on these properties to explore how
-different observation patterns (i.e. window functions) affect the observed
-power spectrum, and discusses a conceptual understanding of the
+different observation patterns (i.e. window functions) affect the
+periodogram, and discusses a conceptual understanding of the
 Nyquist limiting frequency.\\
 {\bf\sect{non-uniform-sampling}} considers non-uniformly sampled signals as
 a special case of an observational window, and shows that the Nyquist-like
@@ -369,7 +369,7 @@ the Fourier transform directly measures periodic content in a continuous functio
 Further, if we compute the squared amplitude of the resulting transform, we
 can both do away with complex components and remove the phase imparted by
 the choice of temporal baseline; this squared amplitude is usually known as the
-{\it Power Spectrum}:
+{\it power spectral density} or the {\it power spectrum}:
 \begin{equation}
   \mathcal{P}_g \equiv \left|\mathcal{F}\{g\}\right|^2
   \eqlabel{power-spectrum}
@@ -707,12 +707,27 @@ to compute the {\it Classical Periodogram}, sometimes called the
   \eqlabel{schuster-periodogram}
 \end{equation}
 Apart from the $1/N$ proportionality, this sum is precisely the Fourier power
-spectrum in \eq{power-spectrum}, computed for a continuous signal with
-uniform sampling defined by a Dirac comb.
+spectrum in \eq{power-spectrum}, computed for a continuous signal observed
+with uniform sampling defined by a Dirac comb.
 It follows that, in the uniform sampling case, the Schuster periodogram
 captures all of the relevant frequency information present in the data.
 This definition readily generalizes to the non-uniform case, which we
 will explore in the following section.
+
+One point that should be emphasized is that the {\it periodogram} in
+\eq{schuster-periodogram} and the {\it power spectrum} in \eq{power-spectrum}
+are conceptually different things.
+As noted in \citet{Scargle82}, the astronomy community tends to use these
+terms interchangeably, but to be precise
+the periodogram---i.e., the statistic we compute from our data---is an
+{\it estimator} of the power spectrum---i.e., the underlying continuous
+function of interest.
+In fact, the classical periodogram and its extensions (including the
+Lomb-Scargle we will discuss momentarily)
+are not consistent estimators of the power spectrum: that is, the periodogram
+has unavoidable intrinsic variance, even in the limit of an infinite number
+of observations
+\citep[for a detailed discussion, see Chp 8.4 of][]{Anderson1971}.
 
 
 \section{Non-uniform Sampling}
