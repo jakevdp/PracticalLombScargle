@@ -93,8 +93,9 @@ This paper presents a conceptual introduction to the Lomb-Scargle periodogram
 and important practical considerations for its use.
 Rather than a rigorous mathematical treatment, the goal of this paper is to
 build intuition about what assumptions are implicit in the use of the
-periodogram, so as to motivate important practical considerations required
-in its application and interpretation.
+Lomb-Scargle periodogram and related estimators of periodicity,
+so as to motivate important practical considerations required
+in its proper application and interpretation.
 \end{abstract}
 
 \keywords{
@@ -106,7 +107,8 @@ in its application and interpretation.
 \sectlabel{introduction}
 
 The Lomb-Scargle periodogram \citep{Lomb76, Scargle82}
-is a well-known algorithm for detecting periodicity in unevenly-sampled
+is a well-known algorithm for detecting and characterizing
+periodicity in unevenly-sampled
 time-series, and has seen particularly wide use within the astronomy community.
 As an example of a typical application of this method,
 consider the data shown in \fig{LINEAR-data}:
@@ -117,8 +119,8 @@ By eye, it is clear that the brightness of the object varies in time with a
 range spanning approximately 0.8 magnitudes, but what is not immediately clear
 is that this variation is periodic in time.
 The Lomb-Scargle periodogram is a method that allows efficient computation of
-a Fourier-like power spectrum from such unevenly-sampled data, resulting in
-an intuitive means of determining the period of oscillation.
+a Fourier-like power spectrum estimator from such unevenly-sampled data,
+resulting in an intuitive means of determining the period of oscillation.
 
 
 \begin{figure}[ht]
@@ -145,11 +147,11 @@ an intuitive means of determining the period of oscillation.
 }
 \end{figure}
 
-The left panel of \fig{LINEAR-power} and its inset show the Lomb-Scargle
-periodogram computed for the data in \fig{LINEAR-data}.
-Computing the Lomb-Scargle periodogram for the data gives us a measure of the
+The Lomb-Scargle periodogram computed from this data is shown in the left
+panel  of \fig{LINEAR-data}.
+The Lomb-Scargle periodogram here yields an estimate of the Fourier
 power as a function of period of oscillation (\fig{LINEAR-power}, left), from
-which we can determine the period of oscillation of approximately 2.58 hours.
+which we can read-off the period of oscillation of approximately 2.58 hours.
 The right panel of \fig{LINEAR-power} shows a folded visualization of
 the same data as \fig{LINEAR-data} -- i.e.{} plotted as a function of phase
 rather than time.
@@ -170,8 +172,8 @@ the results in \fig{LINEAR-power}:
     an analysis is sensitive to?
   \item How should we choose the spacing of the frequency grid for our
     periodogram?
-  \item What assumptions does the Lomb-Scargle approach make regarding the
-    form of the unknown signal?
+  \item What assumptions, if any, does the Lomb-Scargle approach make
+    regarding the form of the unknown signal?
   \item How should we understand and report the uncertainty of the
     determined frequency?
 \end{enumerate}
@@ -183,7 +185,7 @@ just-technical-enough guide to the effective use of the Lomb-Scargle method
 for detection and characterization of periodic signals.
 This paper does not seek a complete or rigorous treatment of the mathematics
 involved, but rather seeks to develop the intuition of {\it how} to think
-about these questions.
+about these questions, with references to relevant technical treatments.
 
 \subsection{Why Lomb-Scargle?}
 \sectlabel{why-lomb-scargle}
@@ -209,7 +211,8 @@ categorized into a few broad categories:
 \begin{description}
   \item[Fourier Methods] are based on the Fourier transform, power spectra,
     and closely related correlation functions. These methods include the
-    Schuster periodogram \citep{Schuster98}, the Lomb-Scargle periodogram
+    classical or Schuster periodogram \citep{Schuster98},
+    the Lomb-Scargle periodogram
     \citep{Lomb76, Scargle82}, the correlation-based method of
     \citet{Edelson88}, and related approaches
     \citep[see also][for a discussion of wavelet transforms in this
@@ -369,7 +372,7 @@ the Fourier transform directly measures periodic content in a continuous functio
 Further, if we compute the squared amplitude of the resulting transform, we
 can both do away with complex components and remove the phase imparted by
 the choice of temporal baseline; this squared amplitude is usually known as the
-{\it power spectral density} or the {\it power spectrum}:
+{\it power spectral density} or simply the {\it power spectrum}:
 \begin{equation}
   \mathcal{P}_g \equiv \left|\mathcal{F}\{g\}\right|^2
   \eqlabel{power-spectrum}
@@ -617,8 +620,9 @@ from the transform of the observed data!
   \includegraphics[width=\textwidth]{fig08_comb_window_2}
   \caption{Repeating the visualization from \fig{comb-window-1}, but here with
     a lower sampling rate. The result is that the Fourier transform of the
-    window function (lower left) has spacing narrower than the Fourier transform
-    of the signal (middle left), meaning the observed Fourier transform has
+    window function (middle right) has spacing narrower than the Fourier
+    transform of the signal (upper right), meaning the observed Fourier
+    transform (lower right) has
     aliasing of signals, such that not all frequency information can be
     recovered. This is the reason for the famous Nyquist sampling theorem,
     which conceptually says that only a function whose Fourier transform can
@@ -696,12 +700,13 @@ Despite our lack of rigor here, I find this to be a helpful approach
 in developing intuition regarding the relationship between the
 continuous and discrete Fourier transforms.
 
+
 \subsection{The Classical Periodogram}
 
 With the discrete Fourier transform defined in \eqs{DFT-f}{DFT}, we can
 apply the definition of the Fourier power spectrum from \eq{power-spectrum}
-to compute the {\it Classical Periodogram}, sometimes called the
-{\it Schuster Periodogram} after \citet{Schuster98} who first proposed it:
+to compute the {\it classical periodogram}, sometimes called the
+{\it Schuster periodogram} after \citet{Schuster98} who first proposed it:
 \begin{equation}
   P_S(f) = \frac{1}{N}\left|\sum_{n=1}^N g_n e^{-2\pi i f t_n}\right|^2
   \eqlabel{schuster-periodogram}
@@ -1476,8 +1481,8 @@ computational complexity quickly becomes an issue, because fast
 $\mathcal{O}(N\log N)$ approaches which can be used for sinusoidal fits
 (see \sect{algorithmic-considerations}) are not available for more general
 functional forms, though there is some promising work in this area: see,
-for example, the {\it Fast Template Periodogram} (Hoffman et al. 2017,
-{\it in prep}\footnote{\url{http://ascl.net/code/v/1559}})
+for example, the {\it Fast Template Periodogram}\footnote{\url{http://ascl.net/code/v/1559}}
+(Hoffman et al. 2017, {\it in prep})
 which can quickly construct periodograms from Fourier approximations to templates.
 
 \subsection{A Note About ``Bayesian'' Periodograms}
@@ -1988,7 +1993,7 @@ than the precision of frequency detection.
     ratio $S/N$ on the expected width and height of the periodogram peak.
     Top panels show the normalized periodogram (\eq{lomb-scargle-normalized}),
     while bottom panels show the PSD-normalized periodogram
-    (\eq{lomb-scargle-periodogram})
+    (\eq{lomb-scargle-periodogram}) scaled by noise variance.
     Perhaps surprisingly, neither the number of points nor the signal-to-noise
     ratio affects the peak width. \figlabel{peak-width-height}}
 \end{figure}
@@ -2441,9 +2446,9 @@ it's common to see statements or implications along the lines of the following:
     is optimal for finding the frequency of a generic, potentially
     non-sinusoidal signal (see \sect{bayesian-periodograms}).
 \end{itemize}
-With these myths set aside, what is the practical advantage of Lomb-Scargle
-over a classical periodogram?
-What would we lose if we instead used a simple Fourier periodogram,
+With these misconceptions corrected, what is the practical advantage of
+Lomb-Scargle over a classical periodogram?
+What would we lose if we instead used the simple classical Fourier periodogram,
 estimating uncertainty, significance, and false alarm probability by
 resampling and simulation, as we must for Lomb-Scargle itself?
 
@@ -2462,11 +2467,11 @@ of a sinusoid is not well-founded.
 
 Conversely, if you replace your Lomb-Scargle approach with a classical periodogram,
 what you gain is the ability to reason quantitatively about the effects of the
-survey window function on the resulting periodogram (see \sect{CLEAN}).
+survey window function on the resulting periodogram (cf. \sect{CLEAN}).
 While the deconvolution problem is ill-posed, there is no reason to assume
 this is a fatal defect: ill-posed linear models are solved routinely in
-other areas of computational research, particularly by using priors or
-various forms of regularization.
+other areas of computational research, particularly by using sparsity
+priors or various forms of regularization.
 In any case, I would contend that there is ample room for practitioners to
 question the prevailing folk wisdom of the advantage of Lomb-Scargle
 over approaches based directly on the Fourier transform and classical
@@ -2493,7 +2498,7 @@ repository\footnote{Source code \& notebooks available at
 
 \acknowledgments
 {\it Acknowledgments:} I am grateful to Jeff Scargle, Max Mahlke, Dan
-Foreman-Mackey, and Zeljko Ivezic for helpful feedback
+Foreman-Mackey, Zeljko Ivezic, and David Hogg for helpful feedback
 on early drafts of this paper.
 This work was supported by the University of Washington eScience Institute,
 with funding from the Gordon and Betty Moore Foundation, the Alfred P. Sloan
