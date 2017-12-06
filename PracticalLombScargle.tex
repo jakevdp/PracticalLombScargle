@@ -370,7 +370,8 @@ These properties taken together make the Fourier transform quite useful for the 
 The linearity of the transform means that any signal made up of a sum of
 sinusoidal components will have a Fourier transform consisting of a sum
 of delta functions marking the frequencies of those sinusoids: that is,
-the Fourier transform directly measures periodic content in a continuous function.
+the Fourier transform directly measures additive periodic content in a
+continuous function.
 
 Further, if we compute the squared amplitude of the resulting transform, we
 can both do away with complex components and remove the phase imparted by
@@ -469,8 +470,8 @@ is defined as follows:
   [f \ast g](t) \equiv \int_{-\infty}^\infty f(\tau)g(t - \tau) d\tau
   \eqlabel{convolution-definition}
 \end{equation}
-From the definition, it is clear that a convolution amounts to ``sliding'' one
-function past the other, integrating at each step.
+The convolution can be thought of as an operation that ``slides'' one
+function past the other, integrating the product at each step.
 Such an operation is commonly used, for example, in smoothing a function,
 as visualized in \Fig{convolution} for a rectangular smoothing window.
 
@@ -490,7 +491,7 @@ Fourier transforms:
   \mathcal{F}\{f \ast g\} = \mathcal{F}\{f\} \cdot \mathcal{F}\{g\}
   \eqlabel{convolution-theorem}
 \end{equation}
-In practice, this can be a much more efficient means of computing a convolution
+In practice, this can be a much more efficient means of numerically computing a convolution
 than to directly solve at each time $t$ the integral over $\tau$ that appears
 in \eq{convolution-definition}.
 The identity in \eq{convolution-theorem} is known as the
@@ -574,8 +575,8 @@ this convolution has the effect of replacing each delta function with a
 sinc function.
 Because of the inverse relationship between the width of the window and the
 width of its transform (see \Fig{fourier-pairs}), it follows that a wider
-observing window leads to proportionally less spread in the Fourier
-transform of the observed function.
+observing window leads to proportionally less spread in each peak of
+the observed Fourier transform.
 
 
 \subsection{The Dirac Comb and the Discrete Fourier Transform}
@@ -681,8 +682,7 @@ Notice, though, that we glossed over one important thing: the effect of switchin
 from an infinite number of samples to a finite number of samples.
 In moving from \eq{DFT-f-inf} to \eq{DFT-f}, we have effectively applied
 to our data a rectangular window function of width $N\Delta t$.
-From the discussion accompanying \fig{rectangular-window}, we know what this
-does: it gives us a Fourier transform convolved with a sinc function of width
+From the discussion accompanying \fig{rectangular-window}, we know the result: it yields a Fourier transform convolved with a sinc function of width
 $1 / (N\Delta t)$, resulting in the ``smearing'' of the Fourier transform signal
 with this width.
 Roughly speaking, then, any two Fourier transform values at frequencies within
@@ -731,11 +731,11 @@ the periodogram---i.e., the statistic we compute from our data---is an
 {\it estimator} of the power spectrum---i.e., the underlying continuous
 function of interest.
 In fact, the classical periodogram and its extensions (including the
-Lomb-Scargle we will discuss momentarily)
+Lomb-Scargle periodogram that we will discuss momentarily)
 are not consistent estimators of the power spectrum: that is, the periodogram
 has unavoidable intrinsic variance, even in the limit of an infinite number
 of observations
-\citep[for a detailed discussion, see Chp 8.4 of][]{Anderson1971}.
+\citep[for a detailed discussion, see Chapter 8.4 of][]{Anderson1971}.
 
 
 \section{Non-uniform Sampling}
@@ -794,8 +794,8 @@ the non-uniformly spaced delta functions looks like random noise, and in some
 sense it is: the locations and heights of the Fourier peaks are related to
 the intervals between observations, and so randomization of observation times
 leads to a randomization of Fourier peak locations and heights.
-That is, {\it non-structured spacing of observations will lead to
-a non-structured frequency peaks in the window transform}.
+In other words, {\it non-structured spacing of observations lead directly to
+non-structured frequency peaks in the window transform}.
 This non-structured window transform, when convolved with the Fourier transform
 of the true signal, results in an observed Fourier transform reflecting the
 same random noise.
@@ -1125,7 +1125,8 @@ suggestive way:
 Although this form of the non-uniform periodogram can be useful for identifying
 periodic signals, its statistical properties are not as straightforward as in
 the uniform case.
-When the classical periodogram is applied to uniformly-sampled Gaussian noise,
+When the classical periodogram is applied to uniformly-sampled Gaussian
+white noise,
 the values of the resulting periodogram is chi-square distributed.
 This property becomes quite useful in practice when the periodogram is used in the
 context of a classical hypothesis test to distinguish between periodic and
@@ -1143,7 +1144,7 @@ observing times $\{t_i\}$ (but not the values $\{g_n\}$), and showed
 that you can choose a unique form of $A$, $B$, and $\tau$ such that
 \begin{enumerate}
   \item The periodogram reduces to the classical form in the case of equally-spaced observations,
-  \item The periodogram's statistics are analytically computable,
+  \item The periodogram's distribution is analytically computable,
   \item The periodogram is insensitive to global time-shifts in the data.
 \end{enumerate}
 The values of $A$ and $B$ leading to these properties result in the following
@@ -1262,13 +1263,13 @@ on more general forms of the above model to more effectively fit the data?
 \end{figure}
 
 
-\subsection{Measurement Errors}
+\subsection{Measurement Uncertainties}
 \sectlabel{extensions-observational-noise}
 Perhaps the most important modification to the periodogram is to
-construct it such that it correctly handles measurement error in the data.
+construct it such that it correctly handles uncertainties in the observed data.
 This can be done through the standard change to the $\chi^2$ expression:
 i.e., if there are Gaussian errors $\sigma_n$ on each observed $y_n$,
-we can re-write \eq{chi2-simple} in the following (standard) way:
+we can re-write \eq{chi2-simple} in the following way:
 \begin{equation}
   \chi^2(f) \equiv \sum_n \left(\frac{y_n - y_{model}(t_n;f)}{\sigma_n}\right)^2
   \eqlabel{chi2-with-errors}
@@ -1565,7 +1566,8 @@ but that appeal extends to the real world only in the most favorable of
 cases---i.e., high signal-to-noise measurements of near-sinusoidal data with
 a very well-behaved survey window.
 In short, you shiould be wary of placing too much trust in a Bayesian
-periodogram, unless you're certain of the type of signal you're looking for.
+periodogram, unless you're certain of the precise form of the signal
+you're looking for.
 
 This is not to say that all Bayesian approaches to periodic analysis are
 similarly flawed; there have been many interesting studies that go beyond
@@ -1587,7 +1589,7 @@ particularly for multimodal or other complicated posterior distributions
 \sectlabel{practical-considerations}
 The previous sections have given a conceptual introduction to the Lomb-Scargle
 periodogram and its roots in both Fourier and Least-squares analysis.
-This section gets to the meat of the subject at hand:
+We now come to the meat of the subject at hand:
 given this understanding of the Lomb-Scargle periodogram and related
 approaches, how should we use it most effectively in practice?
 The following sections will identify several of the important issues and
@@ -1615,7 +1617,7 @@ of Nyquist and/or limiting frequencies from \sect{pseudo-nyquist}:
 in order to not miss relevant information, it is important to compute the
 periodogram up to some well-motivated limiting frequency $f_{max}$. This could
 be a true Nyquist limit based on the \citet{Eyer99} definition, a pseudo-Nyquist
-limit based on careful scrutiny of the window function (cf. \fig{kepler-data}),
+limit based on careful scrutiny of the window function (cf.\ \fig{kepler-data}),
 a limiting frequency based on the integration time of individual
 observations, or a limit based on prior knowledge of the kinds of signals
 you expect to detect.
@@ -1712,7 +1714,7 @@ for this reason it is preferable to use a regular grid in frequency.
 
 When using the Lomb-Scargle periodogram in an observational pipeline, it is
 vital to keep in mind the failure modes of the periodogram approach, which
-are rooted in the aliasing and pseudo-aliasing effects rooted in the structure
+are related to the aliasing and pseudo-aliasing effects rooted in the structure
 of the window function (recall \sect{window-functions}).
 Due to the interaction of the signal, the convolution due to the survey window,
 and noise in the data, it is quite common for the largest peak in the
@@ -2145,8 +2147,8 @@ The random fluctuations in that count translate directly to an inability to
 accurately estimate the false positive rate at that level.
 A good rule-of-thumb is that to accurately characterize a false positive rate
 $r$ requires
-something like $\sim 10 / r$ individual periodograms to be computed---this grows
-computationally intractable quite quickly.
+something like $\sim 10 / r$ individual periodograms to be computed---this
+can grow computationally intractable quite quickly.
 The bootstrap is also not universally applicable: for example, it does not
 correctly account for cases where noise in observations is correlated;
 for more discussion of the bootstrap approach and its caveats, see
@@ -2181,6 +2183,19 @@ hybrid approach of the bootstrap method and the extreme value statistics
 of \citet{Baluev2008}; this has the ability to compute accurate FAPs
 without the need to compute thousands of full bootstrapped periodograms.
 
+\subsubsubsection{Detection Significance with Red Noise}
+It is important to recognize that the above methods of measuring peak significance
+or false alarm probability generally depend on the assumption of white noise:
+that is, that the height of spurious ``background'' peaks in the periodogram
+is independent of frequency.
+In many situations of interest, however, this assumption does not hold: for
+example, compact accreting objects often display ``red noise'' -- that is,
+noise that increases in power toward lower frequencies \citep{Vaughan2003}.
+The presence of red noise complicates both the detection of peaks and
+estimation of their significance or false alarm probability; for detailed
+discussion of various approaches to periodic analysis in this context,
+see \citet{Vaughan2005, Vaughan2010}.
+
 \subsubsubsection{What Does the False Alarm Probability Measure?}
 \sectlabel{what-FAP-measures}
 
@@ -2208,7 +2223,7 @@ would expect to identify an incorrect alias of a signal present in our data
 Too often users are tempted to interpret the FAP too broadly, with the hope that
 it would speak to questions that are beyond its reach.
 
-Unfortunately, there is no silver bullet for answering
+Unfortunately, there is no single, universally applicable answer to
 these broader, more relevant questions of uncertainty of Lomb-Scargle results.
 Perhaps the most fruitful path toward understanding of such effects for a
 particular set of observations---with particular noise characteristics and a
@@ -2319,8 +2334,8 @@ The first of these is discussed in \citet{Press89}, which uses an inverse
 interpolation operation along with a Fast Fourier Transform to compute the
 trigonometric components of \eq{lomb-scargle-periodogram} very efficiently over
 a large number of frequencies.
-\citet{Zechmeister09} showed how this approach can be easily extended to
-the floating mean periodogram discussed in \sect{floating-mean}.
+\citet{Zechmeister09} showed how this approach can be straightforwardly
+extended to the floating mean periodogram discussed in \sect{floating-mean}.
 
 A qualitatively similar approach to the \citet{Press89} algorithm
 is presented by \citet{Leroy2012}:
@@ -2369,8 +2384,8 @@ apply this algorithm to a dataset:
   \item Compute the periodogram for your data. You should always use the
     floating-mean model (\sect{floating-mean}), as it produces more robust
     periodograms and has few if any disadvantages. Avoid multi-term Fourier
-    extensions (\sect{multiterm}) when the signal is unknown, because its
-    main effect is to increase periodogram noise
+    extensions (\sect{multiterm}) when the signal has an unknown form, because
+    its main effect is to increase periodogram noise
     (cf. \figs{kepler-multiterm}{LINEAR-multiterm}).
   \item Plot the periodogram, and identify any patterns that may be caused
     by features you observed in the window function power. Plot reference
@@ -2386,7 +2401,8 @@ apply this algorithm to a dataset:
     (cf. \fig{binary-multiterm}) then consider
     re-fitting with a multi-term Fourier model (\sect{multiterm}).
   \item If you have prior knowledge of the shape of light curves you are
-    trying to detect, consider using more complex models to choose between
+    trying to detect, consider using more complex models, such as multi-term
+    models or physically-derived templates, to choose between
     multiple peaks in the periodogram (\sect{bayesian-periodograms}).
     This type of refinement can be quite useful in building automated
     pipelines for period fitting, especially in cases where the window
@@ -2501,8 +2517,8 @@ repository\footnote{Source code \& notebooks available at
 
 \acknowledgments
 {\it Acknowledgments:} I am grateful to Jeff Scargle, Max Mahlke, Dan
-Foreman-Mackey, Zeljko Ivezic, and David Hogg for helpful feedback
-on early drafts of this paper.
+Foreman-Mackey, Zeljko Ivezic, David Hogg, and the anonymous reviewer
+for helpful feedback on early drafts of this paper.
 This work was supported by the University of Washington eScience Institute,
 with funding from the Gordon and Betty Moore Foundation, the Alfred P. Sloan
 Foundation, and the Washington Research Foundation.
