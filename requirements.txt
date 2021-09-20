@@ -1,0 +1,9 @@
+jupyter
+
+# List of required packages to run all notebooks
+matplotlib
+numpy
+pandas
+scipy
+astropy
+astroML
